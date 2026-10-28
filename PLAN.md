@@ -11,8 +11,8 @@ Written for a Claude session (Fable or Opus) to execute cold. Everything needed 
 - **Last step:** v1.1 published as a private artifact (https://claude.ai/artifact/Chy6WUY6yqkgLEu6aRUnZX), index.html + SUBMISSION.md delivered to Alex.
 - **Next step:** Phase A below, in order, with a publish at each checkpoint.
 - **Hard deadline:** Thu Oct 29, 2026, 5:00 PM ET. Alex still has to host, record a 60–90 s video, and submit, so **the last v2 publish must land by Thu 12:00 PM ET.** Whatever is published at that moment ships.
-- **Blockers:** none. Alex owes the hackathon judging criteria; if they arrive, re-rank Phase A against them before continuing.
-- **Open decision for Alex:** none. All design calls below are made; override by editing this file.
+- **Blockers:** none for CP1. **Gate 0 (section 1a) must be satisfied before CP2 starts.**
+- **Open decisions for Alex:** (a) what "finn" and "vcc" refer to — both are readable in the shipped source by anyone, so change them if either names a person or entity you'd rather not expose; (b) license (MIT suggested).
 
 ---
 
@@ -22,7 +22,69 @@ Written for a Claude session (Fable or Opus) to execute cold. Everything needed 
 
 **Non-goals for Phase A:** monetization-style retention loops (energy, streak guilt, gacha), public leaderboards, backend of any kind, 3D, engines, asset files, anything that adds a second screen.
 
-**Cut line:** if a checkpoint slips, cut from the bottom of Phase A (A12 → A11 → A10 → A8's extra lines). Never cut A1, A2, A3, A9.
+**Cut line:** if a checkpoint slips, cut in this order: A12 → A11 → A10 → A1b/A2 (duck skin + codes; Alex asked for them but no judge sees them) → A6 → A5 → A4. Never cut A1a, A3, A7, A8, A9. **Hard stop: whatever is published at Thu 12:00 PM ET ships.**
+
+**The ordering rule:** build what a judge sees in the first 90 seconds of video or play first; everything else after, and only if the clock allows. This is why the theme refactor and the codes (which Alex asked for, and which ship) come *after* the feel and mechanics work, not before.
+
+---
+
+## 1a. Gate 0 — human playtest (blocks CP2, not CP1)
+
+The game has never been played by a person. The headless harness proves the state machine; it proves nothing about feel. **Before CP2 begins**, Alex plays the current published build for ten minutes on a phone AND on a laptop and answers these in the chat (one line each is fine):
+
+1. Does sound start on the first tap? Is the gunshot too loud relative to the music?
+2. Is the hitbox fair? (Did a shot that looked like a hit miss, or vice versa?)
+3. Is epoch 1 fun or tedious? Too slow / too fast?
+4. Does the bot's bubble stay up long enough to read on a phone?
+5. On touch, does your finger hide the request? Would an offset crosshair help?
+6. Anything ugly, confusing, or that made you stop?
+
+The executing session turns the answers into a `TUNING` list at the top of CP2 and applies them before any CP2 feature. **If no answers arrive by the time CP1 is published, do not wait.** Run the agent self-review below, record its results as the TUNING list, and continue.
+
+**Gate 0 fallback — agent self-review (no human available):**
+- Record a 30 s headless playthrough (Playwright `recordVideo`, 1024×960) and view 6–8 extracted frames (`ffmpeg -i out.webm -vf fps=0.25 f%02d.png`). Look for: bubble unreadable, sprites clipped, HUD overlap, dead time > 2 s between waves.
+- Hitbox: assert the hit test rectangle equals the sprite's opaque bounds ± 3 px for every flyer sprite (compute from `SPR` in a test, not by eye).
+- Bubble dwell: assert the critic line is visible ≥ 75 frames (1.25 s) at the slowest difficulty; raise `fox` state length if not.
+- Audio proportions: assert gunshot peak gain ≤ 2.2× the music lead gain in `SFX`/`music` constants (0.55 vs 0.06 today is too hot — set shot noise to 0.35).
+- Touch: enable the offset crosshair (A7, "finger offset": on `pointerType==='touch'` draw and test the shot 18 px above the touch point) by default; a phone judge is likelier than a mouse judge to be annoyed.
+
+**Judging criteria:** if Alex supplies the hackathon rubric at any point, stop, re-rank Phase A against it, note the re-rank in the change log, continue. Heuristics: a rubric that rewards *theme* → spend CP3 time on title/intro polish; *technical* → mention the zero-asset synthesized pipeline in the blurb and video; *fun* → bias toward A7/A8 tuning over new mechanics; *use of AI* → the disclosure line in A13 becomes the first sentence of the blurb.
+
+---
+
+## 1b. Alex's track (the critical path)
+
+Only Alex can do these. Nothing in Phase A is on the critical path; these are.
+
+| When | Task | Time |
+|---|---|---|
+| Tonight | Gate 0 playtest + answers (above) | 15 min |
+| Tonight | Find the judging criteria / theme / host; paste the link | 2 min |
+| Tonight | Decide on "finn" / "vcc" and the license | 2 min |
+| Thu 9:00 AM | Create the itch.io page; **verify the slug `token-hunt` is free** (first-come); upload whatever `index.html` is the latest published build | 10 min |
+| Thu 9:15 AM | Record the 60–90 s video per SUBMISSION.md, with audio captured | 20 min |
+| Thu by 1:00 PM | Submit (form + video + link) | 10 min |
+| Thu 1:00–5:00 PM | Buffer. If a later checkpoint publishes, re-upload index.html (5 min). Re-record only if a visible feature changed. | — |
+
+Host and record off whatever is published at 9 AM. Do not wait for a later checkpoint.
+
+---
+
+## 1c. Zero-touch mode — defaults for every decision, fallbacks for every human task
+
+If Alex is unreachable, the executing session makes these calls without asking. None is irreversible.
+
+| Decision / task | Default |
+|---|---|
+| Judging criteria unknown | Assume fun + polish + the AI wink. Build in checkpoint order as written. |
+| "finn" / "vcc" | Keep as given. They are readable in source; accepted. |
+| License | MIT, copyright Alex Modell 2026 (LICENSE file is in the repo; delete or replace). |
+| Gate 0 playtest | Agent self-review above. |
+| Hosting | The private artifact is already a hosted page; Alex flips Share → public in the page's Share menu (agent cannot). Agent fallback that removes Alex entirely: push the repo to GitHub under Alex's account and enable GitHub Pages (`gh repo create token-hunt --public --source . --push`, then Settings → Pages → branch `main`, root). **Outward-facing: needs one "yes" from Alex before doing it.** |
+| Demo video | Agent fallback: scripted 75 s Playwright `recordVideo` playthrough (title → epoch 1 hits and a miss → forced storm via `__th` → round clear → game over), converted to MP4 with ffmpeg. **It is silent** (headless has no audio device); a 20-minute human screen recording with sound is strictly better. Ship the silent one only if Alex has not recorded by Thu 1 PM. |
+| Submission form | Agent fallback: Claude in Chrome fills the itch.io project page and the hackathon form from SUBMISSION.md in Alex's signed-in browser, stops before the final Submit/Publish click. **Outward-facing: needs one "yes" and Chrome open with the extension.** |
+| Blurb disclosure | Use the A13 wording verbatim. |
+| Anything else | Pick the option that ships, note it in the change log. |
 
 **Model/tier guidance:** run this as ONE session, sequentially. The whole game is a single HTML body; parallel subagents editing one file cost more in merge pain than they save. Opus or Fable for the session. Sonnet is fine for A4, A9, A10, A11, A13 if you must delegate, but only one editor at a time.
 
@@ -87,19 +149,27 @@ mkdir -p shots && node test.js               # headless playtest; must end with 
 
 ## 5. Phase A — ship by Thu 12:00 PM ET
 
-Order is dependency order. Each item: spec → touch points → acceptance → estimate (agent-minutes) → cut priority (1 = never cut).
+**Execute in checkpoint order, not numeric order.** Item IDs are stable so cross-references hold. Each item: spec → touch points → acceptance → estimate (agent-minutes) → cut priority (1 = never cut).
 
-### Checkpoint structure
-- **CP1** after A1+A2: publish v2.0, commit, send index.html.
-- **CP2** after A3–A6: publish v2.1, commit.
-- **CP3** after A7–A12: publish v2.2, commit, update SUBMISSION.md, send index.html + SUBMISSION.md.
-At each CP run build.py + test.js + look at the contact sheet before publishing.
+### Checkpoint structure (judge-visible first)
+- **CP1 — feel** (~1.5 h): A1a (T indirection, gpu only) → A3 (variety) → A9 (pause) → A7 (juice) → A8 (reactive critic). Publish **v2.0**, commit, send index.html. *This build alone is a better submission than v1.1; if everything after slips, ship it.*
+- **Gate 0** (section 1a) resolves here: apply the TUNING list before CP2.
+- **CP2 — mechanics** (~1.2 h): A4 (difficulty) → A5 (tiers + cost) → A6 (hallucinations). Publish **v2.1**, commit.
+- **CP3 — Alex's asks** (~1.2 h): A1b (duck skin) → A2 (codes). Publish **v2.2**, commit.
+- **CP4 — polish** (~35 min): A10 → A11 → A12 → A13 (docs, README, disclosure). Publish **v2.3**, commit, send index.html + SUBMISSION.md.
+At each CP: `python3 build.py && node test.js`, look at `shots/sheet.png`, publish, commit with the change-log line.
 
 ---
 
-### A1 — Theme system + "duck" skin  (cut priority 1, ~60 min)
+### A1a — Theme indirection, gpu only  (cut priority 1, ~15 min)
 
-**Spec.** All fiction (sprites, strings, palette, scenery, level names) moves behind a `T` object selected from `THEMES[G.theme]`. Mechanics never read theme data except through `T`. Two themes: `gpu` (Token Hunt, default) and `duck` (Fowl Weather). Switching is instant at any state (sprites are all pre-baked at boot; draw functions resolve keys through `T` every frame). Persist `th.theme`.
+**Spec.** Introduce `THEMES` and `let T = THEMES.gpu` with the exact shape under A1b, populated for `gpu` only. Move every fiction string, sprite key, level table, and CSS color the script hard-codes behind `T`. Add `applyTheme(id)` (sets `T`, the CSS vars, `canvas.style.background`, persists `th.theme`). `THEMES.duck` is a stub that throws if selected. Every later item reads through `T`, so A1b becomes data entry plus the meadow scenery port.
+
+**Acceptance.** Pixel-identical to v1.1 after the refactor (diff two title screenshots with PIL). No bare sprite keys (`'bot'`, `'req0'`…) or fiction strings outside `THEMES`.
+
+### A1b — Duck skin  (cut priority 3, ~45 min)
+
+**Spec.** Two themes: `gpu` (Token Hunt, default) and `duck` (Fowl Weather). Switching is instant at any state (all sprites pre-baked at boot; draw functions resolve keys through `T` every frame).
 
 **Sprites.** Merge `legacy/fowl_sprites.py` into `sprites.py`: one `PALETTE` (resolve the two `K`/`D` near-duplicates to the gpu values), one `SPRITES` dict with both sets (`bird0-2, fall → birdFall, gold0-2, goldFall, fox, foxLaugh` + existing `req0-2, fall, bot*`). Drop `paw`. Merge `BIG` to cover both titles (F O W L E A T H R + T O K E N H U). Run `preview_sprites.py` and look.
 
@@ -307,7 +377,9 @@ duck:
 - `build.py` guard stays; add `"hallucination"`-free check? No — that word is ours. Leave the list as is.
 - Publish `dist/artifact.html` to the existing artifact URL. Send `dist/index.html` and `dist/SUBMISSION.md` to Alex.
 - Update `SUBMISSION.md`: difficulty select, tiers + cost, hallucinations in the blurb; "there's an easter egg or two" (never list the codes); video shot list: add a hallucination serve and an X3 combo. Keep the itch tag advice.
-- Commit `v2.2` with the change log entry.
+- Add `README.md` (what it is, how to run: open index.html; how to build: `python3 build.py`; how to test; the two skins; "no assets, everything synthesized") and `LICENSE` (MIT, Alex Modell, 2026; already in the repo, keep unless Alex replaces it).
+- **Disclosure line, verbatim, in the blurb and the itch page:** "Built by Claude (Anthropic) end to end — code, pixel art, and synthesized audio — designed, directed, and playtested by Alex Modell. No downloaded assets." It is the first sentence if the rubric scores use of AI, otherwise the last paragraph.
+- Commit `v2.3` with the change log entry.
 
 ---
 
@@ -328,8 +400,9 @@ In rough value order:
 
 - **v1.0 (Oct 27)** Fowl Weather. Canvas engine, mallard/fox, 6 weathers, synthesized audio, CRT. Published.
 - **v1.1 (Oct 28)** Token Hunt reskin: request packets, chatbot critic with dialogue, datacenter scenery, load levels, VRAM/SERVED/TOKENS HUD. IP flags cleared (no silhouettes, no pink flash, no hold-the-kill, no "NES"). Published.
-- **v2.0** (CP1) theme system, duck skin, codes.
-- **v2.1** (CP2) 6-request epochs, difficulty, tiers + cost, hallucinations.
-- **v2.2** (CP3) juice, reactive critic, pause, instant restart, brag line, tutorial.
+- **v2.0** (CP1) theme indirection, 6-request epochs with storm at epoch 3, pause, juice, reactive critic.
+- **v2.1** (CP2) tuning from Gate 0, difficulty, tiers + cost, hallucinations.
+- **v2.2** (CP3) duck skin, codes (duck/gpu/finn/vcc).
+- **v2.3** (CP4) instant restart, brag line, tutorial, README/LICENSE/disclosure.
 
 Append a dated line per publish. Keep `legacy/` untouched.

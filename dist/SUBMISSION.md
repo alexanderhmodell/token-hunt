@@ -32,6 +32,7 @@ Built in a day as a single HTML file — no engine, no asset files. Every sprite
 3. Viewport **1024 × 960**, enable **fullscreen button** and **mobile friendly**.
 4. Visibility **Public** → Save → copy the link.
 5. Tags: arcade, pixel-art, retro, chiptune, ai, html5. (Not: duck, hunt, nintendo.)
+6. **Check the slug first:** the page URL will be `<you>.itch.io/token-hunt`; if itch says the name is taken under your account, use `token-hunt-arcade`.
 
 ### Vercel
 Add New → Project → upload a folder containing only `index.html` · Framework: Other · Deploy.
@@ -60,7 +61,7 @@ That rolls into EPOCH 05 — VIRAL LAUNCH after a "perfect" panel (tap to skip).
 
 ## 5. If asked about originality / AI use
 
-All art, code, and audio are original to this project; no sprites, fonts, or sound files were downloaded. It's an homage to 1980s light-gun arcade games (mechanics aren't protected); no third-party characters, names, screen designs, or artwork appear. Built with Claude as the coding partner — which is the joke.
+Built by Claude (Anthropic) end to end — code, pixel art, and synthesized audio — designed, directed, and playtested by Alex Modell. No downloaded assets: no sprites, fonts, or sound files. It's an homage to 1980s light-gun arcade games (mechanics aren't protected); no third-party characters, names, screen designs, or artwork appear. The chatbot that heckles you is the joke.
 
 ---
 
