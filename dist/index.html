@@ -356,10 +356,10 @@ function endRound(){ const hits=G.tally.filter(t=>t==='hit').length; const need=
     if(!G.attract){ if(G.assist){ if(G.score>G.hiA){ G.hiA=G.score; G.newRecord=true; try{ localStorage.setItem('th.hiAssist',String(G.hiA)); }catch(e){} } }
       else if(G.score>G.hi){ G.hi=G.score; G.newRecord=true; try{ localStorage.setItem('th.hi',String(G.hi)); }catch(e){} } }
     showBrag(); } }
-function toTitle(){ G.attract=false; G.state='title'; G.t=0; G.idle=0; G.round=1; setWeather(); hideBrag(); }
+function toTitle(){ G.attract=false; G.state='title'; G.t=0; G.idle=0; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.combo=0; G.shots=G.assist?5:D.ammo; G.mouse.on=false; setWeather(); hideBrag(); }
 function attractAI(){ if(G.state!=='fly') return; G.aim.t++; const b=G.birds.find(b=>b.st==='fly'&&!b.bad); if(!b) return;
-  const tx=b.x+12+Math.sin(G.aim.t/9)*14, ty=b.y+10+Math.cos(G.aim.t/7)*10; G.aim.x+=(tx-G.aim.x)*0.18; G.aim.y+=(ty-G.aim.y)*0.18; G.mouse.x=G.aim.x; G.mouse.y=G.aim.y; G.mouse.on=true;
-  if(G.aim.t%34===0&&G.shots>0) shoot(G.aim.x+rnd(-9,9),G.aim.y+rnd(-9,9)); }
+  const tx=b.x+12+b.vx*6+Math.sin(G.aim.t/9)*6, ty=b.y+10+b.vy*6+Math.cos(G.aim.t/7)*5; G.aim.x+=(tx-G.aim.x)*0.25; G.aim.y+=(ty-G.aim.y)*0.25; G.mouse.x=G.aim.x; G.mouse.y=G.aim.y; G.mouse.on=true;
+  if(G.aim.t%30===0&&G.shots>0&&G.flightT>20) shoot(G.aim.x+rnd(-7,7),G.aim.y+rnd(-7,7)); }
 function nextRound(){ G.round++; G.wave=0; G.tally=[]; G.birds=[]; setWeather(); G.state='intro'; G.t=0; SFX.fanfare(); }
 
 const PAUSABLE={intro:1,fly:1,fox:1,gap:1};
@@ -574,7 +574,7 @@ function frame(now){ acc+=Math.min(100,now-last); last=now; while(acc>=STEP){ up
 function boot(data){ if(data&&data.hi>G.hi) G.hi=data.hi; let th='gpu'; try{ th=localStorage.getItem('th.theme')||'gpu'; }catch(e){} if(!THEMES[th]) th='gpu'; applyTheme(th); let df='medium'; try{ df=localStorage.getItem('th.diff')||'medium'; }catch(e){} setDiff(df); requestAnimationFrame(frame); }
 try{ window.claude&&window.claude.hot&&window.claude.hot.snapshot&&window.claude.hot.snapshot(()=>({hi:G.hi})); }catch(e){}
 if(window.claude&&window.claude.hot&&window.claude.hot.ready) window.claude.hot.ready(boot); else boot((window.claude&&window.claude.hot&&window.claude.hot.data)||{});
-window.__th=G; window.__applyTheme=applyTheme; window.__T=()=>T; // for headless tests
+window.__th=G; window.__applyTheme=applyTheme; window.__T=()=>T; window.__audio=()=>({ctx:!!ac,state:ac?ac.state:'none',muted,music:music.on,rain:!!rainNode}); // for tests
 })();
 </script>
 
