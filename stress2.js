@@ -141,11 +141,12 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       const G = window.__th; const cv = document.getElementById('g'); const R = () => cv.getBoundingClientRect();
       const tap = (x, y) => { const r = R(); cv.dispatchEvent(new PointerEvent('pointerdown', { clientX: r.left + x * r.width / 256, clientY: r.top + y * r.height / 240, pointerType: 'mouse', bubbles: true, cancelable: true })); };
       const seen = { levels: new Set(), halluc: 0, hallucServed: 0, doubles: 0, hi: 0, perfect: 0, maxRound: 1, maxCombo: 0, maxBirds: 0, lines: new Set() };
-      tap(128, 150); // start
+      tap(128, 100); // start (y=150 is the difficulty row)
       const t0 = performance.now();
       while (performance.now() - t0 < 150000) {
         await new Promise(r => setTimeout(r, 40));
-        if (G.state === 'boot' && G.boot.t > 41) tap(128, 150);
+        if (G.state === 'boot' && G.boot.t > 41) tap(128, 100);
+        else if (G.state === 'title') tap(128, 100);
         else if (G.state === 'fly') {
           seen.maxBirds = Math.max(seen.maxBirds, G.birds.length);
           if (G.birds.filter(b => !b.bad).length >= 2 && G.flightT < 3) seen.doubles++;
@@ -156,7 +157,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
         }
         else if (G.state === 'roundEnd' && G.t > 55) { if (G.perfect) seen.perfect++; tap(128, 100); seen.lastShot = 0; }
         else if (G.state === 'gap' || G.state === 'fox') seen.lastShot = 0;
-        else if (G.state === 'gameOver' && G.t > 75) tap(128, 150);
+        else if (G.state === 'gameOver' && G.t > 75) tap(128, 100);
         if (G.state === 'fox' && G.fox.line) seen.lines.add(G.fox.line);
         seen.levels.add(G.wx.name); seen.maxRound = Math.max(seen.maxRound, G.round); seen.maxCombo = Math.max(seen.maxCombo, G.combo);
       }
