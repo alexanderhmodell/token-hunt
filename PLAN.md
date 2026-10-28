@@ -61,7 +61,8 @@ Only Alex can do these. Nothing in Phase A is on the critical path; these are.
 | Tonight | Gate 0 playtest + answers (above) | 15 min |
 | Tonight | Find the judging criteria / theme / host; paste the link | 2 min |
 | Tonight | Decide on "finn" / "vcc" and the license | 2 min |
-| Thu 9:00 AM | Create the itch.io page; **verify the slug `token-hunt` is free** (first-come); upload whatever `index.html` is the latest published build | 10 min |
+| Tonight | Say "push" so the repo goes to GitHub; import it at vercel.com/new (Framework: Other, Output Directory `dist`). From then on deploys are automatic. | 3 min |
+| Thu 9:00 AM | Confirm the Vercel URL loads on your phone and sound starts on first tap. Optional: itch.io page too (slug check: `token-hunt`). | 5 min |
 | Thu 9:15 AM | Record the 60–90 s video per SUBMISSION.md, with audio captured | 20 min |
 | Thu by 1:00 PM | Submit (form + video + link) | 10 min |
 | Thu 1:00–5:00 PM | Buffer. If a later checkpoint publishes, re-upload index.html (5 min). Re-record only if a visible feature changed. | — |
@@ -80,7 +81,7 @@ If Alex is unreachable, the executing session makes these calls without asking. 
 | "finn" / "vcc" | Keep as given. They are readable in source; accepted. |
 | License | MIT, copyright Alex Modell 2026 (LICENSE file is in the repo; delete or replace). |
 | Gate 0 playtest | Agent self-review above. |
-| Hosting | The private artifact is already a hosted page; Alex flips Share → public in the page's Share menu (agent cannot). Agent fallback that removes Alex entirely: push the repo to GitHub under Alex's account and enable GitHub Pages (`gh repo create token-hunt --public --source . --push`, then Settings → Pages → branch `main`, root). **Outward-facing: needs one "yes" from Alex before doing it.** |
+| Hosting | **Vercel.** Preferred: push the repo to GitHub (`gh repo create token-hunt --public --source . --push`; outward-facing, needs one "yes" from Alex), then Alex imports it once at vercel.com/new (Framework: Other, Output Directory: `dist`). After that every commit auto-deploys to the same URL and no human step remains. Fallback: Alex drags a folder containing only `dist/index.html` onto vercel.com/new. The private claude.ai artifact stays the playtest link only. |
 | Demo video | Agent fallback: scripted 75 s Playwright `recordVideo` playthrough (title → epoch 1 hits and a miss → forced storm via `__th` → round clear → game over), converted to MP4 with ffmpeg. **It is silent** (headless has no audio device); a 20-minute human screen recording with sound is strictly better. Ship the silent one only if Alex has not recorded by Thu 1 PM. |
 | Submission form | Agent fallback: Claude in Chrome fills the itch.io project page and the hackathon form from SUBMISSION.md in Alex's signed-in browser, stops before the final Submit/Publish click. **Outward-facing: needs one "yes" and Chrome open with the extension.** |
 | Blurb disclosure | Use the A13 wording verbatim. |

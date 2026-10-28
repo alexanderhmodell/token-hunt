@@ -24,20 +24,15 @@ Built in a day as a single HTML file — no engine, no asset files. Every sprite
 
 ---
 
-## 3. Host it (5 minutes)
+## 3. Host it on Vercel
 
-### itch.io (recommended)
-1. Zip `index.html` by itself → `token-hunt.zip`.
-2. itch.io → Dashboard → **Create new project**. Title: Token Hunt · Kind: **HTML** · upload the zip · check **"This file will be played in the browser."**
-3. Viewport **1024 × 960**, enable **fullscreen button** and **mobile friendly**.
-4. Visibility **Public** → Save → copy the link.
-5. Tags: arcade, pixel-art, retro, chiptune, ai, html5. (Not: duck, hunt, nintendo.)
-6. **Check the slug first:** the page URL will be `<you>.itch.io/token-hunt`; if itch says the name is taken under your account, use `token-hunt-arcade`.
+**Preferred (one-time, then automatic):** the repo is on GitHub → vercel.com/new → Import `token-hunt` → Framework Preset **Other** → Output Directory **`dist`** → Deploy. Copy the `*.vercel.app` URL. Every later commit redeploys it.
 
-### Vercel
-Add New → Project → upload a folder containing only `index.html` · Framework: Other · Deploy.
+**Quick fallback:** vercel.com/new → drag a folder containing only `index.html` → Deploy.
 
-Open the link on your phone once to confirm the first tap starts the game with sound.
+Open the URL on your phone once: first tap should start the game with sound.
+
+**Optional itch.io mirror** (judges browse there): Create new project → Kind **HTML** → upload `index.html` zipped → "played in the browser" → viewport 1024×960 → tags: arcade, pixel-art, retro, chiptune, ai, html5. Slug `token-hunt` if free.
 
 ---
 
