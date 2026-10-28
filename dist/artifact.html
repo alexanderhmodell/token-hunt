@@ -346,7 +346,7 @@ function endRound(){ const hits=G.tally.filter(t=>t==='hit').length; const need=
 function toTitle(){ G.attract=false; G.state='title'; G.t=0; G.idle=0; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.combo=0; G.shots=G.assist?5:D.ammo; G.mouse.on=false; setWeather(); hideBrag(); }
 function attractAI(){ if(G.state!=='fly') return; G.aim.t++; const b=G.birds.find(b=>b.st==='fly'&&!b.bad); if(!b) return;
   const tx=b.x+12+b.vx*6+Math.sin(G.aim.t/9)*6, ty=b.y+10+b.vy*6+Math.cos(G.aim.t/7)*5; G.aim.x+=(tx-G.aim.x)*0.25; G.aim.y+=(ty-G.aim.y)*0.25; G.mouse.x=G.aim.x; G.mouse.y=G.aim.y; G.mouse.on=true;
-  if(G.aim.t%30===0&&G.shots>0&&G.flightT>20) shoot(G.aim.x+rnd(-7,7),G.aim.y+rnd(-7,7)); }
+  if(G.aim.t%30===0&&G.shots>0&&G.flightT>20) shoot(G.aim.x+rnd(-4,4),G.aim.y+rnd(-4,4)); }
 function nextRound(){ G.round++; G.wave=0; G.tally=[]; G.birds=[]; setWeather(); G.state='intro'; G.t=0; SFX.fanfare(); }
 
 const PAUSABLE={intro:1,fly:1,fox:1,gap:1};
@@ -358,7 +358,7 @@ function handleTap(x,y){
   if(G.attract){ toTitle(); return; }
   G.idle=0;
   switch(G.state){
-    case 'title': if(logoTap(x,y)) return; if(!titleTap(x,y)) startGame(); break;
+    case 'title': if(y<70){ logoTap(x,y); return; } if(!titleTap(x,y)) startGame(); break;
     case 'boot': if(G.boot.t>40) bootDone(); break;
     case 'fly': shoot(x,y); break;
     case 'roundEnd': if(G.t>50) nextRound(); break;
@@ -366,7 +366,7 @@ function handleTap(x,y){
   } }
 // 7 taps on the logo within 4 s opens the keyboard for code entry (mobile has no keys)
 const codeInput=document.getElementById('code');
-function logoTap(x,y){ if(y>70) return false; const now=performance.now(); G.taps=G.taps.filter(t=>now-t<4000); G.taps.push(now);
+function logoTap(x,y){ const now=performance.now(); G.taps=G.taps.filter(t=>now-t<4000); G.taps.push(now);
   if(G.taps.length>=7){ G.taps=[]; codeInput.style.pointerEvents='auto'; codeInput.value=''; codeInput.focus(); toast('TYPE A CODE'); setTimeout(()=>codeInput.blur(),6000); return true; } return false; }
 codeInput.addEventListener('input',()=>{ const v=codeInput.value.toLowerCase().replace(/[^a-z]/g,''); codeInput.value=''; for(const ch of v) feedKey(ch); });
 codeInput.addEventListener('blur',()=>{ codeInput.style.pointerEvents='none'; });

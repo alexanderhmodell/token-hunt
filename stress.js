@@ -80,9 +80,9 @@ const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? 'PAS
     ok(info.maxSp <= 3.2 * 1.3 * 1.2 * 1.05, `${theme}: speed capped (${info.maxSp.toFixed(2)})`);
   }
   // ---- 9. 500 shots as fast as possible during fly; cost accounting exact
-  await G(() => { const G = window.__th; G.state = 'fly'; G.shots = 5; G.assist = true; G.cost = 0; G.birds = []; });
-  let fired = 0; for (let i = 0; i < 500; i++) { const before = await G(() => window.__th.shots); if (before > 0) fired++; await page.mouse.click(...toPage(10, 10)); if (before <= 1) break; }
-  const cost = await G(() => window.__th.cost); ok(cost === fired * 100, `cost accounting exact: fired ${fired}, cost ${cost}`);
+  await G(() => { const G = window.__th; G.attract = false; G.paused = false; G.state = 'fly'; G.shots = 5; G.assist = true; G.cost = 0; G.flightT = 0; G.birds = [{ x: 200, y: 20, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; });
+  let fired = 0; for (let i = 0; i < 500; i++) { const before = await G(() => window.__th.shots); await page.mouse.click(...toPage(10, 10)); const after = await G(() => window.__th.shots); if (after < before) fired++; if (after === 0) break; }
+  const cost = await G(() => window.__th.cost); ok(cost === fired * 100 && fired === 5, `cost accounting exact: fired ${fired}, cost ${cost}`);
   await G(() => { window.__th.assist = false; });
   // ---- 10. Storage-less mode: block localStorage and reload
   const ctx2 = await browser.newContext({ viewport: { width: 800, height: 800 } });
