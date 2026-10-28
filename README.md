@@ -14,6 +14,7 @@ python3 build.py        # injects sprites → dist/artifact.html (body for claud
 python3 preview_sprites.py   # renders sprites_preview.png; look at it after any sprite change
 node test.js            # headless Playwright playtest → shots/*.png, shots/sheet.png
 node og.js              # renders dist/og.png (link preview card) from the title screen
+node stress.js          # stress battery: invariants under click/pause/skin spam, 30 epochs per skin, no-storage boot, hot reload
 ```
 
 `build.py` refuses to emit a build containing any third-party game names or trademarks (see `FORBIDDEN`).

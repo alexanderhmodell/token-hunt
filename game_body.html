@@ -197,7 +197,7 @@ const THEMES={
     },
     scenery:'datacenter', showCatch:true,
     boot:['TOKEN HUNT BIOS V2.3','4 GPUS DETECTED','VRAM ........... OK','LOADING WEIGHTS','CHATBOT ....... ONLINE'],
-    skinName:'TOKEN HUNT',
+    skinName:'TOKEN HUNT', foot:'CLICK / TAP TO SERVE A REQUEST &middot; <b>M</b> MUTE &middot; <b>P</b> PAUSE &middot; ORIGINAL ART &amp; CHIPTUNE, NO ASSETS LOADED',
     css:{ cab:'#0a0a12', bezel:'#262238', accent:'#3cd0ff', glow:'rgba(138,92,245,.18)', canvasBg:'#2a6fd6' },
   },
   duck:{ id:'duck', titleA:'FOWL', titleB:'WEATHER', titleColor:'#f0b22e',
@@ -236,14 +236,15 @@ const THEMES={
     },
     scenery:'meadow', showCatch:false,
     boot:['FOWL WEATHER','FIELD GUIDE V2.3','SHELLS ........ OK','WIND .......... CHECK','FOX ........... AWAKE'],
-    skinName:'FOWL WEATHER',
+    skinName:'FOWL WEATHER', foot:'CLICK / TAP TO SHOOT &middot; <b>M</b> MUTE &middot; <b>P</b> PAUSE &middot; ORIGINAL ART &amp; CHIPTUNE, NO ASSETS LOADED',
     css:{ cab:'#0b0a0f', bezel:'#2a2430', accent:'#f0b22e', glow:'rgba(60,188,252,.14)', canvasBg:'#3cbcfc' },
   },
 };
 let T=THEMES.gpu;
 function applyTheme(id){ const th=THEMES[id]; if(!th) throw new Error('unknown theme: '+id); T=th; G.theme=id;
   const r=document.documentElement.style; r.setProperty('--cab',th.css.cab); r.setProperty('--bezel',th.css.bezel); r.setProperty('--accent',th.css.accent); r.setProperty('--glow',th.css.glow);
-  cv.style.background=th.css.canvasBg; try{ localStorage.setItem('th.theme',id); }catch(e){} }
+  cv.style.background=th.css.canvasBg; try{ localStorage.setItem('th.theme',id); }catch(e){}
+  if(G.wx) setWeather(); const foot=document.getElementById('foot'); if(foot) foot.innerHTML=th.foot; }
 
 // ------------------------------------------------------------------ rules
 const EPOCH_LEN=6;
