@@ -15,6 +15,7 @@ PALETTE = {
     "Y": "#f2c438", "y": "#fff0a0",
     "P": "#8a5cf5", "p": "#c4a9ff", "D": "#1a1420",
     "E": "#39d353", "e": "#a9f0b5", "R": "#ff4d4d",
+    "G": "#1e7a3a", "g": "#4cc25e", "B": "#8c4b2a", "b": "#caa05f", "T": "#5a2e18", "O": "#f0b22e", "F": "#e8782a", "f": "#ffd9a8", "N": "#2a1e22",
 }
 
 # ------------------------------------------------------------ request packet (24x20)
@@ -230,6 +231,11 @@ BIG = {
     "N": "10001 11001 10101 10011 10001 10001 10001",
     "H": "10001 10001 10001 11111 10001 10001 10001",
     "U": "10001 10001 10001 10001 10001 10001 01110",
+    "F": "11111 10000 10000 11110 10000 10000 10000",
+    "W": "10001 10001 10001 10101 10101 11011 10001",
+    "L": "10000 10000 10000 10000 10000 10000 11111",
+    "A": "01110 10001 10001 11111 10001 10001 10001",
+    "R": "11110 10001 10001 11110 10100 10010 10001",
 }
 
 
@@ -263,7 +269,19 @@ for i in range(3):
 SPRITES["loFall"] = recolor(FALL, LO)
 SPRITES["hiFall"] = recolor(FALL, HI)
 SPRITES["badFall"] = recolor(SPRITES["loFall"], BAD)
-ICONS = {"vram": VRAM}
+# ---- Fowl Weather skin (original meadow art, kept in legacy/)
+import importlib.util as _ilu, os as _os
+_spec = _ilu.spec_from_file_location("fowl_sprites", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "legacy", "fowl_sprites.py"))
+_F = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_F)
+for i in range(3):
+    SPRITES[f"bird{i}"] = _F.SPRITES[f"bird{i}"]
+    SPRITES[f"gold{i}"] = _F.SPRITES[f"gold{i}"]
+SPRITES["birdFall"] = _F.SPRITES["fall"]
+SPRITES["goldFall"] = _F.SPRITES["goldFall"]
+SPRITES["decoyFall"] = recolor(_F.SPRITES["fall"], {"G": "T", "g": "T", "B": "b", "W": "L", "O": "T"})
+SPRITES["fox"] = _F.SPRITES["fox"]
+SPRITES["foxLaugh"] = _F.SPRITES["foxLaugh"]
+ICONS = {"vram": VRAM, "shell": _F.ICONS["shell"]}
 
 
 def check():

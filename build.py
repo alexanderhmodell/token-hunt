@@ -18,6 +18,12 @@ standalone = (
     "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
     "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no\">\n"
     "<meta name=\"description\" content=\"Token Hunt: an original 8-bit arcade game. You are a GPU cluster. Serve the requests, survive the load, ignore the chatbot.\">\n"
+    "<meta property=\"og:title\" content=\"Token Hunt\">\n"
+    "<meta property=\"og:description\" content=\"You are a GPU cluster. Serve the requests, survive the load, ignore the chatbot. 8-bit, one file, zero assets.\">\n"
+    "<meta property=\"og:type\" content=\"website\">\n"
+    "<meta property=\"og:image\" content=\"og.png\">\n"
+    "<meta name=\"twitter:card\" content=\"summary_large_image\">\n"
+    "<meta name=\"theme-color\" content=\"#0a0a12\">\n"
     + body.replace('<meta name="claude:viewport-fit-sides" content="cover">\n', "")
       .replace("</style>\n", "</style>\n</head>\n<body>\n", 1)
     + "\n</body>\n</html>\n"

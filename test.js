@@ -10,6 +10,7 @@ const path = require('path');
   await page.goto('file://' + path.resolve(__dirname, 'dist/index.html'));
   await page.waitForTimeout(600);
   const shot = (n) => page.screenshot({ path: path.resolve(__dirname, 'shots', n + '.png') });
+  const waitState = async (st, ms = 8000) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if ((await page.evaluate(() => window.__th.state)) === st) return true; await page.waitForTimeout(60); } return false; };
   await shot('01_title');
 
   const cv = await page.$('#g');
@@ -18,11 +19,17 @@ const path = require('path');
 
   // start game
   await page.mouse.click(...toPage(128, 100));
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(1200);
   let st = await page.evaluate(() => ({ state: window.__th.state, wx: window.__th.wx.name }));
-  console.log('after start:', st);
-  await shot('02_intro');
-  await page.waitForTimeout(2200);
+  console.log('after start (boot):', st);
+  await shot('02_boot');
+  await page.mouse.click(...toPage(128, 100)); // skip boot
+  await page.waitForTimeout(200);
+  console.log('after skip:', await page.evaluate(() => window.__th.state));
+  await shot('02b_intro');
+  // first wave is preceded by the tutorial bubble
+  await page.waitForTimeout(2300); await shot('02c_tutorial');
+  await waitState('fly');
   st = await page.evaluate(() => ({ state: window.__th.state, birds: window.__th.birds.map(b => [b.st, Math.round(b.x), Math.round(b.y)]) }));
   console.log('wave 1:', st);
   // move mouse over the bird and shoot it (aim at bird center)
@@ -89,7 +96,7 @@ const path = require('path');
   await page.evaluate(() => { const G = window.__th; G.state = 'title'; G.t = 0; });
   await page.keyboard.press('3'); await page.waitForTimeout(50);
   const d = await page.evaluate(() => window.__th.diff); console.log('hard selected:', d === 'hard');
-  await page.mouse.click(...toPage(128, 100)); await page.waitForTimeout(2400);
+  await page.mouse.click(...toPage(128, 100)); await page.waitForTimeout(900); await page.mouse.click(...toPage(128, 100)); await waitState('fly');
   const hardWave = await page.evaluate(() => ({ shots: window.__th.shots, birds: window.__th.birds.map(b => [b.tier, b.bad, +b.sp.toFixed(2)]) }));
   console.log('hard wave:', JSON.stringify(hardWave));
   const tiers = await page.evaluate(() => { const G = window.__th; let hi = 0; for (let i = 0; i < 400; i++) { G.round = 1; const b = (function(){ return window.__spawn ? window.__spawn() : null; })(); } return 'n/a'; });
@@ -101,7 +108,7 @@ const path = require('path');
   await page.waitForTimeout(300);
   const hw = await page.evaluate(() => { const G = window.__th; return { wave: G.wave, birds: G.birds.map(b => b.bad), tally: G.tally.length }; });
   console.log('halluc wave:', JSON.stringify(hw));
-  const bad = await page.evaluate(() => { const b = window.__th.birds.find(b => b.bad); return b ? { x: b.x + 12, y: b.y + 10 } : null; });
+  const bad = await page.evaluate(() => { for (const b of window.__th.birds) { b.vx = 0; b.vy = 0; b.dirT = 9999; } const b = window.__th.birds.find(b => b.bad); return b ? { x: b.x + 12, y: b.y + 10 } : null; });
   const scoreBefore = await page.evaluate(() => { window.__th.score = 2000; return 2000; });
   if (bad) { await page.mouse.click(...toPage(bad.x, bad.y)); await page.waitForTimeout(100); }
   const after = await page.evaluate(() => ({ score: window.__th.score, served: window.__th.hallucServed, tally: window.__th.tally.length, wave: window.__th.wave }));
@@ -109,6 +116,32 @@ const path = require('path');
   await page.evaluate(() => { window.__th.forceHalluc = false; });
   await page.waitForTimeout(1500); await shot('14_halluc_critic');
   await page.evaluate(() => { const G = window.__th; G.state = 'title'; G.t = 0; }); await page.waitForTimeout(100); await shot('15_title_diff');
+  // CP3/CP4: codes, duck skin, assisted mode, attract mode, brag
+  await page.evaluate(() => { const G = window.__th; G.state = 'title'; G.t = 0; G.attract = false; });
+  await page.keyboard.type('duck'); await page.waitForTimeout(150);
+  console.log('duck code → theme:', await page.evaluate(() => window.__th.theme));
+  await shot('16_duck_title');
+  await page.evaluate(() => { const G = window.__th; G.round = 3; G.state = 'fly'; G.wx = window.__T().levels[2]; G.rain = []; for (let i = 0; i < 130; i++) G.rain.push({ x: Math.random() * 256, y: Math.random() * 188, l: 3 }); G.lightning = 3; G.birds = [{ x: 80, y: 60, vx: 1, vy: -1, sp: 1.5, tier: 'hi', bad: false, st: 'fly', f: 0, at: 0, dirT: 999, hitT: 0 }, { x: 150, y: 100, vx: -1, vy: -1, sp: 1.5, tier: 'lo', bad: true, st: 'fly', f: 2, at: 5, dirT: 999, hitT: 0 }]; G.shots = 3; G.flightT = 0; });
+  await page.waitForTimeout(80); await shot('17_duck_storm');
+  await page.evaluate(() => { const G = window.__th; G.state = 'fox'; G.fox = { mode: 'miss', t: 60, x: 112, count: 0, line: 'THE WIND TOOK THAT ONE.' }; });
+  await page.waitForTimeout(60); await shot('18_duck_fox');
+  await page.keyboard.type('token'); await page.waitForTimeout(100);
+  console.log('token code → theme:', await page.evaluate(() => window.__th.theme));
+  await page.keyboard.type('finn'); await page.waitForTimeout(100);
+  console.log('finn → assist:', await page.evaluate(() => window.__th.assist));
+  await page.keyboard.type('vcc'); await page.waitForTimeout(100);
+  console.log('vcc toggles off:', await page.evaluate(() => window.__th.assist === false));
+  await page.evaluate(() => { const G = window.__th; G.state = 'title'; G.t = 0; G.idle = 539; });
+  await page.waitForTimeout(400);
+  console.log('attract started:', await page.evaluate(() => ({ attract: window.__th.attract, state: window.__th.state })));
+  await waitState('fly'); await page.waitForTimeout(1500); await shot('19_attract');
+  await page.mouse.click(...toPage(128, 100)); await page.waitForTimeout(100);
+  console.log('tap exits attract:', await page.evaluate(() => ({ attract: window.__th.attract, state: window.__th.state })));
+  await page.evaluate(() => { const G = window.__th; G.state = 'gameOver'; G.t = 100; G.score = 4200; G.round = 3; G.fox = { mode: 'miss', t: 30, x: 112, count: 0, line: 'YOUR SESSION HAS EXPIRED.' }; document.getElementById('brag').hidden = false; });
+  await page.waitForTimeout(100);
+  const bragVisible = await page.evaluate(() => !document.getElementById('brag').hidden);
+  console.log('brag button visible:', bragVisible);
+  await shot('20_gameover_brag');
   // phone-width layout
   await page.setViewportSize({ width: 390, height: 760 });
   await page.waitForTimeout(200);

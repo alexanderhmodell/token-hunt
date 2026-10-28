@@ -1,6 +1,6 @@
 # Token Hunt — hackathon submission kit
 
-**Deadline: Thu Oct 29, 5:00 PM ET.** Everything below is copy-paste ready. Never type "Duck Hunt" or "NES" anywhere public.
+**Deadline: Thu Oct 29, 5:00 PM ET.** Everything below is copy-paste ready. Never type "Duck Hunt" or "NES" anywhere public. Never list the codes (`duck`, `token`, `finn`, `vcc`) publicly; "easter eggs" is enough.
 
 ---
 
@@ -8,19 +8,19 @@
 
 **Token Hunt** — an original 8-bit arcade game where you are a GPU cluster.
 
-Requests fly in with wings; you have three VRAM per flight to serve them before they time out. Every epoch the load changes: a traffic spike drifts them sideways, autoscaling gusts shove them around, latency rains packets, and a viral launch brings 429 rate-limit lightning. Hit the quota or you're out of memory. Enterprise customers (gold) are worth triple. A perfect epoch pays 10,000 tokens for 99.9% uptime.
+Requests fly in with wings. You have three VRAM per flight to serve them before they time out. Open-weight requests are cheap and slow; frontier requests pay triple and fly fast; every shot burns compute, so the score is revenue minus cost. One in seven requests is a hallucination — glitchy, lying — and serving it costs you. Every epoch the load changes: a traffic spike drifts them, autoscaling gusts shove them around, latency rains packets, and a viral launch brings 429 rate-limit lightning. Miss, and a smug chatbot rises from the rack row: "As an AI, I can't help with that."
 
-And when you miss, a smug little chatbot rises from the rack row to tell you "As an AI, I can't help with that."
+Easy, Medium, Hard. A BIOS boot sequence. An attract mode that plays itself if you wait. A couple of easter eggs for people who read the source.
 
-Built in a day as a single HTML file — no engine, no asset files. Every sprite is hand-pixeled in code, the font is a 3×5 bitmap, and all sound (gunshot, chiptune loop, packet drizzle, thunder) is synthesized live with the Web Audio API. Native 256×240 scaled pixel-perfect with a CRT overlay. Mouse or touch.
+Built by Claude (Anthropic) end to end — code, pixel art, and synthesized audio — designed, directed, and playtested by Alex Modell. One HTML file, no engine, no downloaded assets: every sprite is hand-pixeled in code, the font is a 3×5 bitmap, and all sound (shots, chiptune loop, packet rain, thunder, the bot's voice) is synthesized live with the Web Audio API. Native 256×240, pixel-perfect scaling, CRT overlay. Mouse or touch.
 
-**Controls:** click or tap to serve · M to mute · Space/Enter to advance.
+**Controls:** click or tap to serve · M mute · P / Esc pause · 1/2/3 difficulty · Space/Enter advance.
 
 ---
 
 ## 2. One-line version
 
-8-bit arcade shooter where you're a GPU cluster serving winged requests through traffic spikes, 429 storms, and a chatbot that mocks your misses — original art and live-synthesized chiptune.
+8-bit arcade shooter where you're a GPU cluster serving winged requests through traffic spikes, 429 storms, and hallucinations — while a chatbot mocks your misses. One file, zero assets, built in a day with Claude.
 
 ---
 
@@ -38,19 +38,21 @@ Open the URL on your phone once: first tap should start the game with sound.
 
 ## 4. Demo video (60–90 s, no narration needed)
 
-Record with QuickTime (⌘⇧5) at a ~1000px-wide browser window so the game is 4× and scanlines show.
+Record with QuickTime (⌘⇧5) at a ~1000 px-wide browser window so the game is 4× and scanlines show. **Capture system audio** (QuickTime: choose an audio source like BlackHole/Loopback, or record with OBS). The bot's voice chirps and the chiptune are half the charm.
 
-1. **0:00–0:08** Title. Let the bot peek up. Tap to boot — fanfare.
-2. **0:08–0:30** Epoch 1 (IDLE). Serve two requests, deliberately miss one so the bot delivers "As an AI, I can't help with that." Let one time out ("504 TIMEOUT").
-3. **0:30–0:50** Jump to VIRAL LAUNCH — packet rain, a 429 lightning strike with thunder. Serve a gold enterprise request if one appears.
-4. **0:50–1:05** An epoch-complete panel (ideally "99.9% UPTIME! +10000"), then OUT OF MEMORY with the bot's send-off.
-5. **1:05–1:15** End on the title screen.
+0. **0:00–0:03** Title card over black (add in iMovie/CapCut): **"Built in 24 hours. One file. Zero assets."**
+1. **0:03–0:10** Title screen with the bot peeking. Tap → the BIOS boot crawl runs ("4 GPUS DETECTED… CHATBOT ONLINE"). Let it finish once; it's the hook.
+2. **0:10–0:30** Epoch 1. Serve two requests (one purple/frontier if it shows), deliberately miss one so the bot says "As an AI, I can't help with that." Let one time out for "504 TIMEOUT."
+3. **0:30–0:45** A hallucination appears (glitchy, "??%#"). Let it go once — bot: "Good call, that one was made up." Then serve one on purpose for the −500 and "I apologize, that was incorrect."
+4. **0:45–1:05** Jump to Epoch 3 (VIRAL LAUNCH): packet rain, a 429 lightning strike with thunder, an X2 combo flash.
+5. **1:05–1:20** OUT OF MEMORY with the bot's send-off, then "COPY RESULT."
+6. **1:20–1:25** Optional closer: type `duck` on the title and cut as the skin flips to Fowl Weather. Don't explain it.
 
-To jump to the storm for the recording, open the console (⌥⌘J) mid-epoch and paste:
+Console jump to the storm (⌥⌘J), mid-epoch:
 ```js
-__th.round = 4; __th.wave = 10; __th.tally = Array(10).fill('hit'); __th.state = 'fox'; __th.fox.t = 109;
+__th.round = 2; __th.wave = 6; __th.tally = Array(6).fill('hit'); __th.state = 'fox'; __th.fox.t = 109;
 ```
-That rolls into EPOCH 05 — VIRAL LAUNCH after a "perfect" panel (tap to skip). Use `5` for MAINTENANCE, `2` for LATENCY. Order: IDLE → TRAFFIC SPIKE → LATENCY → AUTOSCALE → VIRAL LAUNCH → MAINTENANCE.
+Rolls into EPOCH 03 — VIRAL LAUNCH after a round-clear panel (tap to skip). Force a hallucination next wave: `__th.forceHalluc = true`.
 
 ---
 
@@ -62,5 +64,5 @@ Built by Claude (Anthropic) end to end — code, pixel art, and synthesized audi
 
 ## 6. Files
 
-- `index.html` — the whole game, self-contained, host anywhere.
+- `index.html` — the whole game, self-contained, host anywhere. `og.png` beside it is the link-preview card (relative `og:image`; Discord/Slack/Facebook resolve it, Twitter wants an absolute URL — update the tag with the Vercel URL once known).
 - Playtest link (private artifact) — in the chat.
