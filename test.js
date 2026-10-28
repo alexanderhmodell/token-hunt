@@ -85,6 +85,30 @@ const path = require('path');
   const combo = await page.evaluate(() => { const G = window.__th; G.combo = 3; return [G.combo, window.__T().levels[2].name, typeof window.__applyTheme]; });
   console.log('combo=3 →', combo);
   await page.evaluate(() => { window.__th.combo = 0; });
+  // CP2 checks: difficulty, tiers, cost, hallucination
+  await page.evaluate(() => { const G = window.__th; G.state = 'title'; G.t = 0; });
+  await page.keyboard.press('3'); await page.waitForTimeout(50);
+  const d = await page.evaluate(() => window.__th.diff); console.log('hard selected:', d === 'hard');
+  await page.mouse.click(...toPage(128, 100)); await page.waitForTimeout(2400);
+  const hardWave = await page.evaluate(() => ({ shots: window.__th.shots, birds: window.__th.birds.map(b => [b.tier, b.bad, +b.sp.toFixed(2)]) }));
+  console.log('hard wave:', JSON.stringify(hardWave));
+  const tiers = await page.evaluate(() => { const G = window.__th; let hi = 0; for (let i = 0; i < 400; i++) { G.round = 1; const b = (function(){ return window.__spawn ? window.__spawn() : null; })(); } return 'n/a'; });
+  const costBefore = await page.evaluate(() => window.__th.cost);
+  await page.mouse.click(...toPage(5, 5)); await page.waitForTimeout(80);
+  console.log('shot costs 100:', (await page.evaluate(() => window.__th.cost)) - costBefore === 100);
+  // force a hallucination wave
+  await page.evaluate(() => { const G = window.__th; G.forceHalluc = true; G.state = 'gap'; G.t = 23; G.birds = []; });
+  await page.waitForTimeout(300);
+  const hw = await page.evaluate(() => { const G = window.__th; return { wave: G.wave, birds: G.birds.map(b => b.bad), tally: G.tally.length }; });
+  console.log('halluc wave:', JSON.stringify(hw));
+  const bad = await page.evaluate(() => { const b = window.__th.birds.find(b => b.bad); return b ? { x: b.x + 12, y: b.y + 10 } : null; });
+  const scoreBefore = await page.evaluate(() => { window.__th.score = 2000; return 2000; });
+  if (bad) { await page.mouse.click(...toPage(bad.x, bad.y)); await page.waitForTimeout(100); }
+  const after = await page.evaluate(() => ({ score: window.__th.score, served: window.__th.hallucServed, tally: window.__th.tally.length, wave: window.__th.wave }));
+  console.log('served hallucination → -500, no tally change:', JSON.stringify(after), '| expected score 1500, served true');
+  await page.evaluate(() => { window.__th.forceHalluc = false; });
+  await page.waitForTimeout(1500); await shot('14_halluc_critic');
+  await page.evaluate(() => { const G = window.__th; G.state = 'title'; G.t = 0; }); await page.waitForTimeout(100); await shot('15_title_diff');
   // phone-width layout
   await page.setViewportSize({ width: 390, height: 760 });
   await page.waitForTimeout(200);

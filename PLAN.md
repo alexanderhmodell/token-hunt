@@ -8,8 +8,8 @@ Written for a Claude session (Fable or Opus) to execute cold. Everything needed 
 
 - **Project:** Token Hunt (hackathon game). Working title history: Fowl Weather v1.0 → Token Hunt v1.1.
 - **Phase:** v2 feature build. v1.1 is published and playable; nothing below is required for a valid submission.
-- **Last step:** CP1 done — v2.0 published to the artifact, committed and pushed to github.com/alexanderhmodell/token-hunt.
-- **Next step:** Gate 0 (Alex plays v2.0, or run the agent self-review), then CP2 (A4 difficulty → A5 tiers + cost → A6 hallucinations).
+- **Last step:** CP2 done — v2.1 published, committed, pushed.
+- **Next step:** CP3 (A1b duck skin → A2 codes), then CP4 polish incl. the competitive additions listed under §5 CP4+.
 - **Hard deadline:** Thu Oct 29, 2026, 5:00 PM ET. Alex still has to host, record a 60–90 s video, and submit, so **the last v2 publish must land by Thu 12:00 PM ET.** Whatever is published at that moment ships.
 - **Blockers:** none for CP1. **Gate 0 (section 1a) must be satisfied before CP2 starts.**
 - **Open decisions for Alex:** (a) what "finn" and "vcc" refer to — both are readable in the shipped source by anyone, so change them if either names a person or entity you'd rather not expose; (b) license (MIT suggested).
@@ -402,7 +402,7 @@ In rough value order:
 - **v1.0 (Oct 27)** Fowl Weather. Canvas engine, mallard/fox, 6 weathers, synthesized audio, CRT. Published.
 - **v1.1 (Oct 28)** Token Hunt reskin: request packets, chatbot critic with dialogue, datacenter scenery, load levels, VRAM/SERVED/TOKENS HUD. IP flags cleared (no silhouettes, no pink flash, no hold-the-kill, no "NES"). Published.
 - **v2.0 (Oct 28, CP1 — published)** theme indirection (`THEMES`/`T`/`applyTheme`, gpu only), 6-request epochs with VIRAL LAUNCH at epoch 3, epoch-1 speed ×0.85, pause (P/Esc/icon/blur/hidden tab), hit-stop, scaled shake, muzzle flash, combo ×2/×3, quota-tick glow, near-miss detection, streak-aware critic lines, touch aim lifted 18 px, gunshot gain 0.55→0.35. Gate 0 fallback items applied: touch offset, shot gain. Still open from Gate 0: hitbox-vs-sprite assertion, bubble dwell assertion, recorded-playthrough review.
-- **v2.1** (CP2) tuning from Gate 0, difficulty, tiers + cost, hallucinations.
+- **v2.1 (Oct 28, CP2 — published)** Gate 0 fallback: hitbox margin verified (+3..+6 px), bubble dwell 76 f. Easy/Medium/Hard on the title (keys 1/2/3, arrows, tap; persisted; HUD tag + score mult), open-weight/frontier tiers (green/purple, 300/1000, ×0.85/×1.3 speed) with ×100 compute cost per shot and NET on panels, hallucinations (1/9–1/5 by difficulty, glitch flicker + garbled label, −500 if served, never tallied), `wrong` SFX, `<` `=` glyphs. Title copy shortened; title critic moved to x=214.
 - **v2.2** (CP3) duck skin, codes (duck/gpu/finn/vcc).
 - **v2.3** (CP4) instant restart, brag line, tutorial, README/LICENSE/disclosure.
 

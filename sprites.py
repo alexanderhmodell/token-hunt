@@ -14,7 +14,7 @@ PALETTE = {
     "C": "#3cd0ff", "c": "#bdeeff",
     "Y": "#f2c438", "y": "#fff0a0",
     "P": "#8a5cf5", "p": "#c4a9ff", "D": "#1a1420",
-    "E": "#39d353", "R": "#ff4d4d",
+    "E": "#39d353", "e": "#a9f0b5", "R": "#ff4d4d",
 }
 
 # ------------------------------------------------------------ request packet (24x20)
@@ -218,7 +218,7 @@ FONT = {
     ":": "000 010 000 010 000", "/": "001 001 010 100 100", " ": "000 000 000 000 000",
     "'": "010 010 000 000 000", ",": "000 000 000 010 100", "+": "000 010 111 010 000",
     "(": "010 100 100 100 010", ")": "010 001 001 001 010", "%": "101 001 010 100 101",
-    "?": "111 001 011 000 010", "#": "101 111 101 111 101", ">": "100 010 001 010 100",
+    "?": "111 001 011 000 010", "#": "101 111 101 111 101", ">": "100 010 001 010 100", "<": "001 010 100 010 001", "=": "000 111 000 111 000",
     "_": "000 000 000 000 111",
 }
 
@@ -247,18 +247,22 @@ def recolor(sprite, mapping):
     return ["".join(mapping.get(c, c) for c in r) for r in sprite]
 
 
-ENT = {"W": "Y", "L": "y", "C": "y", "c": "Y"}   # enterprise = gold
+LO = {"C": "E", "c": "e"}          # open-weight: green stamp, mint wings
+HI = {"C": "P", "c": "p"}          # frontier: purple stamp and wings
+BAD = {"E": "R"}                   # served hallucination: red mark instead of OK
 
 SPRITES = {
     "req0": overlay(BODY, WING_UP),
     "req1": overlay(BODY, WING_MID),
     "req2": overlay(BODY, WING_DOWN),
-    "fall": FALL,
     "bot": BOT, "botHappy": BOT_HAPPY, "botFlat": BOT_FLAT,
 }
 for i in range(3):
-    SPRITES[f"ent{i}"] = recolor(SPRITES[f"req{i}"], ENT)
-SPRITES["entFall"] = recolor(FALL, ENT)
+    SPRITES[f"lo{i}"] = recolor(SPRITES[f"req{i}"], LO)
+    SPRITES[f"hi{i}"] = recolor(SPRITES[f"req{i}"], HI)
+SPRITES["loFall"] = recolor(FALL, LO)
+SPRITES["hiFall"] = recolor(FALL, HI)
+SPRITES["badFall"] = recolor(SPRITES["loFall"], BAD)
 ICONS = {"vram": VRAM}
 
 

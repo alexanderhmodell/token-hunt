@@ -59,10 +59,10 @@ canvas:focus-visible{outline:2px solid var(--accent); outline-offset:9px}
 <script>
 (()=>{
 'use strict';
-const PAL={"K": "#1a1420", "W": "#f7f4e9", "L": "#cfc9dc", "C": "#3cd0ff", "c": "#bdeeff", "Y": "#f2c438", "y": "#fff0a0", "P": "#8a5cf5", "p": "#c4a9ff", "D": "#1a1420", "E": "#39d353", "R": "#ff4d4d"};
-const SPR={"req0":["...KK..............KK...","..KccK............KccK..","..KcccK..........KcccK..","...KcccK........KcccK...","...KccccK......KccccK...","....KccccKKKKKKccccK....","....KccccKWWWWKccccK....",".....KKKKWWWWWWKKKK.....",".....KWWLWWWWWLWWWK.....",".....KWWWLWWWLWWWWK.....",".....KWWWWLWLWWWWWK.....",".....KWWWWWLWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KKKKKKKKKKKKKK.....","........................","........................","........................","........................","........................"],"req1":["........................","........................","........................","........................","........................",".....KKKKKKKKKKKKKK.....",".....KWWWWWWWWWWCCK.....","KKKKKKWLWWWWWWWLCCKKKKKK","KcccccKWLWWWWWLWWKcccccK","KccccccKWLWWWLWWKccccccK",".KKKcccKWWLWLWWWKcccKKK.","....KKKWWWWLWWWWWKKK....",".....KWWWWWWWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KKKKKKKKKKKKKK.....","........................","........................","........................","........................","........................"],"req2":["........................","........................","........................","........................","........................",".....KKKKKKKKKKKKKK.....",".....KWWWWWWWWWWCCK.....",".....KWLWWWWWWWLCCK.....",".....KWWLWWWWWLWWWK.....",".....KWWWLWWWLWWWWK.....",".....KWWWWLWLWWWWWK.....","....KKKKWWWLWWKKKKK.....","....KccccKWWWWKccccK....","...KccccKWWWWWWKccccK...","...KcccKKKKKKKKKKcccK...","..KcccK..........KcccK..","..KccK............KccK..","...KK..............KK...","........................","........................"],"fall":["....KK....KK....","...KccK..KccK...","...KcccKKcccK...","....KKKKKKKK....","...KWWWWWWWWK...","...KWWWWWWWWK...","...KWWWWWWEWK...","...KWWWWWEEWK...","...KWEWWEEWWK...","...KWEEEEWWWK...","...KWWEEWWWWK...","...KWWWWWWWWK...","...KKKKKKKKKK...","....KccK..KcK...","....KcK...KcK...","....KK....KK....","................","................","................","................","................","................","................"],"bot":["....KKKKKKKKKKKKKKKKKKKKKKKK....","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPpppPPPPPPPPPPPPPPPPPPPPPPPK.","KPPpPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPKKKPPPPPPPPPPPKKKPPPPPPPK","KPPPPPKDDDKPPPPPPPPPKDDDKPPPPPPK","KPPPPPKDWDKPPPPPPPPPKDWDKPPPPPPK","KPPPPPKDDDKPPPPPPPPPKDDDKPPPPPPK","KPPPPPPKKKPPPPPPPPPPPKKKPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPKPPPPPPPPPPKPPPPPPPPPK","KPPPPPPPPPPKKPPPPPPKKPPPPPPPPPPK","KPPPPPPPPPPPPKKKKKKPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..","....KKKKPPPKKKKKKKKKKKKKKKKK....","......KPPPK.....................",".....KPPPK......................","....KPPK........................","....KKK.........................","................................","................................","................................","................................","................................"],"botHappy":["....KKKKKKKKKKKKKKKKKKKKKKKK....","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPpppPPPPPPPPPPPPPPPPPPPPPPPK.","KPPpPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPKPPPPPPPPPPPPPKPPPPPPPPK","KPPPPPPKDKPPPPPPPPPPPKDKPPPPPPPK","KPPPPPKDPDKPPPPPPPPPKDPDKPPPPPPK","KPPPPKDPPPDKPPPPPPPKDPPPDKPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPKPPPPPPPPPPPPPKPPPPPPPPK","KPPPPPPPPKKPPPPPPPPPKKPPPPPPPPPK","KPPPPPPPPPPKKKKKKKKKPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..","....KKKKPPPKKKKKKKKKKKKKKKKK....","......KPPPK.....................",".....KPPPK......................","....KPPK........................","....KKK.........................","................................","................................","................................","................................","................................"],"botFlat":["....KKKKKKKKKKKKKKKKKKKKKKKK....","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPpppPPPPPPPPPPPPPPPPPPPPPPPK.","KPPpPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPKKKKPPPPPPPPPKKKKPPPPPPPK","KPPPPPKDDDDKPPPPPPPKDDDDKPPPPPPK","KPPPPPPKKKKPPPPPPPPPKKKKPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPKKKKKKKKKKKKPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..","....KKKKPPPKKKKKKKKKKKKKKKKK....","......KPPPK.....................",".....KPPPK......................","....KPPK........................","....KKK.........................","................................","................................","................................","................................","................................"],"ent0":["...KK..............KK...","..KYYK............KYYK..","..KYYYK..........KYYYK..","...KYYYK........KYYYK...","...KYYYYK......KYYYYK...","....KYYYYKKKKKKYYYYK....","....KYYYYKYYYYKYYYYK....",".....KKKKYYYYYYKKKK.....",".....KYYyYYYYYyYYYK.....",".....KYYYyYYYyYYYYK.....",".....KYYYYyYyYYYYYK.....",".....KYYYYYyYYYYYYK.....",".....KYYYYYYYYYYYYK.....",".....KYYYYYYYYYYYYK.....",".....KKKKKKKKKKKKKK.....","........................","........................","........................","........................","........................"],"ent1":["........................","........................","........................","........................","........................",".....KKKKKKKKKKKKKK.....",".....KYYYYYYYYYYyyK.....","KKKKKKYyYYYYYYYyyyKKKKKK","KYYYYYKYyYYYYYyYYKYYYYYK","KYYYYYYKYyYYYyYYKYYYYYYK",".KKKYYYKYYyYyYYYKYYYKKK.","....KKKYYYYyYYYYYKKK....",".....KYYYYYYYYYYYYK.....",".....KYYYYYYYYYYYYK.....",".....KKKKKKKKKKKKKK.....","........................","........................","........................","........................","........................"],"ent2":["........................","........................","........................","........................","........................",".....KKKKKKKKKKKKKK.....",".....KYYYYYYYYYYyyK.....",".....KYyYYYYYYYyyyK.....",".....KYYyYYYYYyYYYK.....",".....KYYYyYYYyYYYYK.....",".....KYYYYyYyYYYYYK.....","....KKKKYYYyYYKKKKK.....","....KYYYYKYYYYKYYYYK....","...KYYYYKYYYYYYKYYYYK...","...KYYYKKKKKKKKKKYYYK...","..KYYYK..........KYYYK..","..KYYK............KYYK..","...KK..............KK...","........................","........................"],"entFall":["....KK....KK....","...KYYK..KYYK...","...KYYYKKYYYK...","....KKKKKKKK....","...KYYYYYYYYK...","...KYYYYYYYYK...","...KYYYYYYEYK...","...KYYYYYEEYK...","...KYEYYEEYYK...","...KYEEEEYYYK...","...KYYEEYYYYK...","...KYYYYYYYYK...","...KKKKKKKKKK...","....KYYK..KYK...","....KYK...KYK...","....KK....KK....","................","................","................","................","................","................","................"]};
+const PAL={"K": "#1a1420", "W": "#f7f4e9", "L": "#cfc9dc", "C": "#3cd0ff", "c": "#bdeeff", "Y": "#f2c438", "y": "#fff0a0", "P": "#8a5cf5", "p": "#c4a9ff", "D": "#1a1420", "E": "#39d353", "e": "#a9f0b5", "R": "#ff4d4d"};
+const SPR={"req0":["...KK..............KK...","..KccK............KccK..","..KcccK..........KcccK..","...KcccK........KcccK...","...KccccK......KccccK...","....KccccKKKKKKccccK....","....KccccKWWWWKccccK....",".....KKKKWWWWWWKKKK.....",".....KWWLWWWWWLWWWK.....",".....KWWWLWWWLWWWWK.....",".....KWWWWLWLWWWWWK.....",".....KWWWWWLWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KKKKKKKKKKKKKK.....","........................","........................","........................","........................","........................"],"req1":["........................","........................","........................","........................","........................",".....KKKKKKKKKKKKKK.....",".....KWWWWWWWWWWCCK.....","KKKKKKWLWWWWWWWLCCKKKKKK","KcccccKWLWWWWWLWWKcccccK","KccccccKWLWWWLWWKccccccK",".KKKcccKWWLWLWWWKcccKKK.","....KKKWWWWLWWWWWKKK....",".....KWWWWWWWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KKKKKKKKKKKKKK.....","........................","........................","........................","........................","........................"],"req2":["........................","........................","........................","........................","........................",".....KKKKKKKKKKKKKK.....",".....KWWWWWWWWWWCCK.....",".....KWLWWWWWWWLCCK.....",".....KWWLWWWWWLWWWK.....",".....KWWWLWWWLWWWWK.....",".....KWWWWLWLWWWWWK.....","....KKKKWWWLWWKKKKK.....","....KccccKWWWWKccccK....","...KccccKWWWWWWKccccK...","...KcccKKKKKKKKKKcccK...","..KcccK..........KcccK..","..KccK............KccK..","...KK..............KK...","........................","........................"],"bot":["....KKKKKKKKKKKKKKKKKKKKKKKK....","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPpppPPPPPPPPPPPPPPPPPPPPPPPK.","KPPpPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPKKKPPPPPPPPPPPKKKPPPPPPPK","KPPPPPKDDDKPPPPPPPPPKDDDKPPPPPPK","KPPPPPKDWDKPPPPPPPPPKDWDKPPPPPPK","KPPPPPKDDDKPPPPPPPPPKDDDKPPPPPPK","KPPPPPPKKKPPPPPPPPPPPKKKPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPKPPPPPPPPPPKPPPPPPPPPK","KPPPPPPPPPPKKPPPPPPKKPPPPPPPPPPK","KPPPPPPPPPPPPKKKKKKPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..","....KKKKPPPKKKKKKKKKKKKKKKKK....","......KPPPK.....................",".....KPPPK......................","....KPPK........................","....KKK.........................","................................","................................","................................","................................","................................"],"botHappy":["....KKKKKKKKKKKKKKKKKKKKKKKK....","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPpppPPPPPPPPPPPPPPPPPPPPPPPK.","KPPpPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPKPPPPPPPPPPPPPKPPPPPPPPK","KPPPPPPKDKPPPPPPPPPPPKDKPPPPPPPK","KPPPPPKDPDKPPPPPPPPPKDPDKPPPPPPK","KPPPPKDPPPDKPPPPPPPKDPPPDKPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPKPPPPPPPPPPPPPKPPPPPPPPK","KPPPPPPPPKKPPPPPPPPPKKPPPPPPPPPK","KPPPPPPPPPPKKKKKKKKKPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..","....KKKKPPPKKKKKKKKKKKKKKKKK....","......KPPPK.....................",".....KPPPK......................","....KPPK........................","....KKK.........................","................................","................................","................................","................................","................................"],"botFlat":["....KKKKKKKKKKKKKKKKKKKKKKKK....","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPpppPPPPPPPPPPPPPPPPPPPPPPPK.","KPPpPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPKKKKPPPPPPPPPKKKKPPPPPPPK","KPPPPPKDDDDKPPPPPPPKDDDDKPPPPPPK","KPPPPPPKKKKPPPPPPPPPKKKKPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPKKKKKKKKKKKKPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK","KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.",".KPPPPPPPPPPPPPPPPPPPPPPPPPPPPK.","..KKPPPPPPPPPPPPPPPPPPPPPPPPKK..","....KKKKPPPKKKKKKKKKKKKKKKKK....","......KPPPK.....................",".....KPPPK......................","....KPPK........................","....KKK.........................","................................","................................","................................","................................","................................"],"lo0":["...KK..............KK...","..KeeK............KeeK..","..KeeeK..........KeeeK..","...KeeeK........KeeeK...","...KeeeeK......KeeeeK...","....KeeeeKKKKKKeeeeK....","....KeeeeKWWWWKeeeeK....",".....KKKKWWWWWWKKKK.....",".....KWWLWWWWWLWWWK.....",".....KWWWLWWWLWWWWK.....",".....KWWWWLWLWWWWWK.....",".....KWWWWWLWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KKKKKKKKKKKKKK.....","........................","........................","........................","........................","........................"],"hi0":["...KK..............KK...","..KppK............KppK..","..KpppK..........KpppK..","...KpppK........KpppK...","...KppppK......KppppK...","....KppppKKKKKKppppK....","....KppppKWWWWKppppK....",".....KKKKWWWWWWKKKK.....",".....KWWLWWWWWLWWWK.....",".....KWWWLWWWLWWWWK.....",".....KWWWWLWLWWWWWK.....",".....KWWWWWLWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KKKKKKKKKKKKKK.....","........................","........................","........................","........................","........................"],"lo1":["........................","........................","........................","........................","........................",".....KKKKKKKKKKKKKK.....",".....KWWWWWWWWWWEEK.....","KKKKKKWLWWWWWWWLEEKKKKKK","KeeeeeKWLWWWWWLWWKeeeeeK","KeeeeeeKWLWWWLWWKeeeeeeK",".KKKeeeKWWLWLWWWKeeeKKK.","....KKKWWWWLWWWWWKKK....",".....KWWWWWWWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KKKKKKKKKKKKKK.....","........................","........................","........................","........................","........................"],"hi1":["........................","........................","........................","........................","........................",".....KKKKKKKKKKKKKK.....",".....KWWWWWWWWWWPPK.....","KKKKKKWLWWWWWWWLPPKKKKKK","KpppppKWLWWWWWLWWKpppppK","KppppppKWLWWWLWWKppppppK",".KKKpppKWWLWLWWWKpppKKK.","....KKKWWWWLWWWWWKKK....",".....KWWWWWWWWWWWWK.....",".....KWWWWWWWWWWWWK.....",".....KKKKKKKKKKKKKK.....","........................","........................","........................","........................","........................"],"lo2":["........................","........................","........................","........................","........................",".....KKKKKKKKKKKKKK.....",".....KWWWWWWWWWWEEK.....",".....KWLWWWWWWWLEEK.....",".....KWWLWWWWWLWWWK.....",".....KWWWLWWWLWWWWK.....",".....KWWWWLWLWWWWWK.....","....KKKKWWWLWWKKKKK.....","....KeeeeKWWWWKeeeeK....","...KeeeeKWWWWWWKeeeeK...","...KeeeKKKKKKKKKKeeeK...","..KeeeK..........KeeeK..","..KeeK............KeeK..","...KK..............KK...","........................","........................"],"hi2":["........................","........................","........................","........................","........................",".....KKKKKKKKKKKKKK.....",".....KWWWWWWWWWWPPK.....",".....KWLWWWWWWWLPPK.....",".....KWWLWWWWWLWWWK.....",".....KWWWLWWWLWWWWK.....",".....KWWWWLWLWWWWWK.....","....KKKKWWWLWWKKKKK.....","....KppppKWWWWKppppK....","...KppppKWWWWWWKppppK...","...KpppKKKKKKKKKKpppK...","..KpppK..........KpppK..","..KppK............KppK..","...KK..............KK...","........................","........................"],"loFall":["....KK....KK....","...KeeK..KeeK...","...KeeeKKeeeK...","....KKKKKKKK....","...KWWWWWWWWK...","...KWWWWWWWWK...","...KWWWWWWEWK...","...KWWWWWEEWK...","...KWEWWEEWWK...","...KWEEEEWWWK...","...KWWEEWWWWK...","...KWWWWWWWWK...","...KKKKKKKKKK...","....KeeK..KeK...","....KeK...KeK...","....KK....KK....","................","................","................","................","................","................","................"],"hiFall":["....KK....KK....","...KppK..KppK...","...KpppKKpppK...","....KKKKKKKK....","...KWWWWWWWWK...","...KWWWWWWWWK...","...KWWWWWWEWK...","...KWWWWWEEWK...","...KWEWWEEWWK...","...KWEEEEWWWK...","...KWWEEWWWWK...","...KWWWWWWWWK...","...KKKKKKKKKK...","....KppK..KpK...","....KpK...KpK...","....KK....KK....","................","................","................","................","................","................","................"],"badFall":["....KK....KK....","...KeeK..KeeK...","...KeeeKKeeeK...","....KKKKKKKK....","...KWWWWWWWWK...","...KWWWWWWWWK...","...KWWWWWWRWK...","...KWWWWWRRWK...","...KWRWWRRWWK...","...KWRRRRWWWK...","...KWWRRWWWWK...","...KWWWWWWWWK...","...KKKKKKKKKK...","....KeeK..KeK...","....KeK...KeK...","....KK....KK....","................","................","................","................","................","................","................"]};
 const ICON={"vram":["XXXXX","X.X.X","XXXXX","X.X.X","XXXXX",".X.X."]};
-const FONT={"A":"010 101 111 101 101","B":"110 101 110 101 110","C":"011 100 100 100 011","D":"110 101 101 101 110","E":"111 100 110 100 111","F":"111 100 110 100 100","G":"011 100 101 101 011","H":"101 101 111 101 101","I":"111 010 010 010 111","J":"001 001 001 101 010","K":"101 101 110 101 101","L":"100 100 100 100 111","M":"101 111 111 101 101","N":"110 101 101 101 101","O":"010 101 101 101 010","P":"110 101 110 100 100","Q":"010 101 101 110 011","R":"110 101 110 101 101","S":"011 100 010 001 110","T":"111 010 010 010 010","U":"101 101 101 101 111","V":"101 101 101 101 010","W":"101 101 111 111 101","X":"101 101 010 101 101","Y":"101 101 010 010 010","Z":"111 001 010 100 111","0":"111 101 101 101 111","1":"010 110 010 010 111","2":"111 001 111 100 111","3":"111 001 111 001 111","4":"101 101 111 001 001","5":"111 100 111 001 111","6":"111 100 111 101 111","7":"111 001 001 001 001","8":"111 101 111 101 111","9":"111 101 111 001 111","-":"000 000 111 000 000",".":"000 000 000 000 010","!":"010 010 010 000 010",":":"000 010 000 010 000","/":"001 001 010 100 100"," ":"000 000 000 000 000","'":"010 010 000 000 000",",":"000 000 000 010 100","+":"000 010 111 010 000","(":"010 100 100 100 010",")":"010 001 001 001 010","%":"101 001 010 100 101","?":"111 001 011 000 010","#":"101 111 101 111 101",">":"100 010 001 010 100","_":"000 000 000 000 111"};
+const FONT={"A":"010 101 111 101 101","B":"110 101 110 101 110","C":"011 100 100 100 011","D":"110 101 101 101 110","E":"111 100 110 100 111","F":"111 100 110 100 100","G":"011 100 101 101 011","H":"101 101 111 101 101","I":"111 010 010 010 111","J":"001 001 001 101 010","K":"101 101 110 101 101","L":"100 100 100 100 111","M":"101 111 111 101 101","N":"110 101 101 101 101","O":"010 101 101 101 010","P":"110 101 110 100 100","Q":"010 101 101 110 011","R":"110 101 110 101 101","S":"011 100 010 001 110","T":"111 010 010 010 010","U":"101 101 101 101 111","V":"101 101 101 101 010","W":"101 101 111 111 101","X":"101 101 010 101 101","Y":"101 101 010 010 010","Z":"111 001 010 100 111","0":"111 101 101 101 111","1":"010 110 010 010 111","2":"111 001 111 100 111","3":"111 001 111 001 111","4":"101 101 111 001 001","5":"111 100 111 001 111","6":"111 100 111 101 111","7":"111 001 001 001 001","8":"111 101 111 101 111","9":"111 101 111 001 111","-":"000 000 111 000 000",".":"000 000 000 000 010","!":"010 010 010 000 010",":":"000 010 000 010 000","/":"001 001 010 100 100"," ":"000 000 000 000 000","'":"010 010 000 000 000",",":"000 000 000 010 100","+":"000 010 111 010 000","(":"010 100 100 100 010",")":"010 001 001 001 010","%":"101 001 010 100 101","?":"111 001 011 000 010","#":"101 111 101 111 101",">":"100 010 001 010 100","<":"001 010 100 010 001","=":"000 111 000 111 000","_":"000 000 000 000 111"};
 const BIG={"T":"11111 00100 00100 00100 00100 00100 00100","O":"01110 10001 10001 10001 10001 10001 01110","K":"10001 10010 10100 11000 10100 10010 10001","E":"11111 10000 10000 11110 10000 10000 11111","N":"10001 11001 10101 10011 10001 10001 10001","H":"10001 10001 10001 11111 10001 10001 10001","U":"10001 10001 10001 10001 10001 10001 01110"};
 
 // ------------------------------------------------------------------ setup
@@ -85,8 +85,10 @@ function bake(rows, mirrorX, flat){
       d[o]=n>>16&255; d[o+1]=n>>8&255; d[o+2]=n&255; d[o+3]=255; } }
   x.putImageData(img,0,0); return c;
 }
+function glitchRows(rows,seed){ const r=seeded(seed); return rows.map(row=>row.split('').map(ch=> ch!=='.'&&r()<0.18 ? (r()<0.5?'R':'K') : ch).join('')); }
 const S={};
-for(const k in SPR){ S[k]=bake(SPR[k]); S[k+'L']=bake(SPR[k],true); S[k+'W']=bake(SPR[k],false,'#ffffff'); S[k+'WL']=bake(SPR[k],true,'#ffffff'); }
+for(const k in SPR){ S[k]=bake(SPR[k]); S[k+'L']=bake(SPR[k],true); S[k+'W']=bake(SPR[k],false,'#ffffff'); S[k+'WL']=bake(SPR[k],true,'#ffffff');
+  if(/^(lo|hi|bird|gold)\d$/.test(k)){ const g=glitchRows(SPR[k],k.length*131+k.charCodeAt(2)); S[k+'G']=bake(g); S[k+'GL']=bake(g,true); } }
 const BIRD_FRAMES=[0,1,2,1];
 const SHADOW='#1a1420';
 
@@ -141,6 +143,7 @@ const SFX={
   over(){ [440,415,392,370,349,330,311,294].forEach((f,i)=>tone(f,0.16,'triangle',0.25,null,i*0.17)); tone(262,0.9,'triangle',0.25,null,1.4); },
   thunder(when){ noise(1.4,0.45,when||0,220); },
   blip(){ tone(880,0.05,'square',0.15); },
+  wrong(){ tone(220,0.12,'square',0.3,160); tone(160,0.25,'square',0.3,90,0.12); },
 };
 function rainStart(level){ if(!ac||rainNode) return; const s=ac.createBufferSource(); s.buffer=getNoise(); s.loop=true;
   const f=ac.createBiquadFilter(); f.type='bandpass'; f.frequency.value=level>1?800:1500; f.Q.value=0.6;
@@ -163,11 +166,11 @@ function toggleMute(){ muted=!muted; if(master) master.gain.value=muted?0:0.5; t
 const THEMES={
   gpu:{ id:'gpu', titleA:'TOKEN', titleB:'HUNT', titleColor:'#3cd0ff',
     tagline:['YOU ARE A GPU CLUSTER.','SERVE THE REQUESTS. SURVIVE THE LOAD.'],
-    howto:['CLICK OR TAP TO SERVE','3 VRAM PER FLIGHT','GOLD = ENTERPRISE CUSTOMER, 3X'],
+    howto:['CLICK OR TAP TO SERVE','PURPLE PAYS 3X. IT FLIES FAST.','GLITCHY ONES LIE. LET THEM GO.'],
     start:'TAP TO BOOT', restart:'TAP TO REBOOT',
-    spr:{ fly:['req0','req1','req2'], flyHi:['ent0','ent1','ent2'], fall:'fall', fallHi:'entFall', critic:'bot', criticHappy:'botHappy', criticFlat:'botFlat' },
+    spr:{ fly:['lo0','lo1','lo2'], flyHi:['hi0','hi1','hi2'], fall:'loFall', fallHi:'hiFall', fallBad:'badFall', amb:['req0','req1','req2'], critic:'bot', criticHappy:'botHappy', criticFlat:'botFlat' },
     ammoIcon:'vram',
-    hud:{ ammo:'VRAM', served:'SERVED', need:'NEED', score:'TOKENS', round:'EPOCH', best:'BEST', levelColor:'#c4a9ff' },
+    hud:{ ammo:'VRAM', served:'SERVED', need:'NEED', score:'TOKENS', round:'EPOCH', best:'BEST', cost:'COST', net:'NET', levelColor:'#c4a9ff' },
     levels:[
       {name:'IDLE',          sky:'#2a6fd6', floor:'#2b2f44', wind:0,   rain:0, cloud:'#dfe7ff', tag:'0.2 RPS'},
       {name:'TRAFFIC SPIKE', sky:'#2f7fe0', floor:'#2b2f44', wind:0.55,rain:0, cloud:'#dfe7ff', tag:'WIND FROM THE LOAD BALANCER'},
@@ -180,7 +183,7 @@ const THEMES={
               perfect:'99.9% UPTIME! +10000', over:'OUT OF MEMORY', overColor:'#ff4d4d', unit:'TOKENS', load:'LOAD: ', quota:'SERVE %N OF %E', served:'%H OF %E SERVED' },
     boltLabel:'429',
     rainLo:'#3cd0ff', rainHi:'#8a5cf5', dusk:{band1:'#a84e3a', band2:'#bb5a40', sun1:'#ffd86a', sun2:'#fff0a0'},
-    fx:{ hiPop:'#ffe98a', loPop:'#f7f4e9', hiTag:' ENT', featherLo:'#bdeeff', featherHi:'#fff0a0', puff:'#39d353' },
+    fx:{ hiPop:'#e2ccff', loPop:'#f7f4e9', badPop:'#ff4d4d', featherLo:'#a9f0b5', featherHi:'#c4a9ff', puff:'#39d353', glitchTags:['??%#','#@!?','%%?!','#!??'] },
     lines:{
       hit:['GREAT QUESTION!','HAPPY TO HELP!','CERTAINLY! HERE IS YOUR ANSWER.','I HOPE THIS HELPS!'],
       hit2:['BATCHED. VERY EFFICIENT.','TWO AT ONCE? IMPRESSIVE.'],
@@ -208,16 +211,27 @@ function applyTheme(id){ const th=THEMES[id]; if(!th) throw new Error('theme not
 // ------------------------------------------------------------------ rules
 const EPOCH_LEN=6;
 const NEED=[3,3,4,4,5,5,5,6];
-const req=r=> NEED[Math.min(r-1,NEED.length-1)];
+const DIFFS={
+  easy:  {label:'EASY',   tag:'E', ammo:4, speed:0.85, need:-1, doublesFrom:3, doubleP:0.35, halluc:1/9, mult:1},
+  medium:{label:'MEDIUM', tag:'M', ammo:3, speed:1.0,  need:0,  doublesFrom:2, doubleP:0.35, halluc:1/7, mult:1.5},
+  hard:  {label:'HARD',   tag:'H', ammo:3, speed:1.2,  need:1,  doublesFrom:1, doubleP:0.5,  halluc:1/5, mult:2},
+};
+const DIFF_ORDER=['easy','medium','hard'];
+let D=DIFFS.medium;
+function setDiff(id){ if(!DIFFS[id]) return; D=DIFFS[id]; G.diff=id; try{ localStorage.setItem('th.diff',id); }catch(e){} }
+const req=r=> clamp(NEED[Math.min(r-1,NEED.length-1)]+D.need, 2, EPOCH_LEN);
 const lvl=r=> T.levels[(r-1)%T.levels.length];
-const baseValue=()=> Math.min(1500, 500+100*(G.round-1));
+const TIERS={ lo:{p:0.72, value:300,  speed:0.85, dirT:[30,70]}, hi:{p:0.28, value:1000, speed:1.3, dirT:[15,40]} };
+const COST=100;
+const roundScale=()=> Math.min(2, 1+0.1*(G.round-1));
+const valueOf=b=> Math.round(TIERS[b.tier].value*roundScale()*D.mult/10)*10;
 const comboMult=c=> c<3?1 : c<6?2 : 3;
 
 // ------------------------------------------------------------------ game state
 const G={ state:'title', t:0, theme:'gpu', round:1, score:0, hi:0, shots:3, wave:0, tally:[], birds:[], fx:[], wx:null, windDir:1, wind:0,
   clouds:[], rain:[], flash:0, shake:0, freeze:0, muzzle:null, lightning:0, nextLightning:300, boltX:128,
   mouse:{x:128,y:90,on:false,touch:false}, fox:{mode:null,t:0,x:112,count:0,line:''}, flightT:0, newRecord:false, amb:{x:-30,y:50,t:0}, titleFox:0,
-  paused:false, combo:0, comboFlash:0, streak:{hit:0,miss:0}, nearMiss:false, lastLine:'', toast:null };
+  paused:false, combo:0, comboFlash:0, streak:{hit:0,miss:0}, nearMiss:false, lastLine:'', toast:null, diff:'medium', cost:0, hallucServed:false, hallucEscaped:false, forceHalluc:false };
 try{ G.hi=parseInt(localStorage.getItem('th.hi')||'0',10)||0; }catch(e){}
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function line(kind){ const pool=T.lines[kind]||T.lines.miss; let s=pick(pool); if(pool.length>1&&s===G.lastLine) s=pool[(pool.indexOf(s)+1)%pool.length]; G.lastLine=s; return s; }
@@ -230,25 +244,31 @@ function setWeather(){ G.wx=lvl(G.round); G.windDir=Math.random()<0.5?-1:1;
   rainStop(); if(G.wx.rain) rainStart(G.wx.rain); }
 setWeather();
 
-function startGame(){ G.round=1; G.score=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.streak={hit:0,miss:0}; G.nearMiss=false; setWeather(); G.state='intro'; G.t=0; SFX.fanfare(); music.start(); }
-function startWave(){ G.state='fly'; G.shots=3; G.flightT=0; G.nearMiss=false; const left=EPOCH_LEN-G.wave; let n=1;
-  if(left>=2){ const p=G.round>=5?0.5:G.round>=2?0.35:0; if(Math.random()<p) n=2; }
-  G.birds=[]; for(let i=0;i<n;i++) G.birds.push(spawnBird(i,n)); G.wave+=n; SFX.flap(); }
-function spawnBird(i,n){ const gold=G.round>=2&&Math.random()<0.08; let sp=Math.min(3.2,1.25+G.round*0.13)*(gold?1.4:1); if(G.round===1) sp*=0.85;
-  const x= n===1? rnd(60,190) : (i===0? rnd(36,96) : rnd(150,200));
-  return {x,y:150,vx:(Math.random()<0.5?-1:1)*sp*0.6,vy:-sp,sp,gold,st:'fly',f:0,at:0,dirT:rnd(30,60),hitT:0}; }
+function startGame(){ G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.streak={hit:0,miss:0}; G.nearMiss=false; setWeather(); G.state='intro'; G.t=0; SFX.fanfare(); music.start(); }
+function startWave(){ G.state='fly'; G.shots=D.ammo; G.flightT=0; G.nearMiss=false; G.hallucServed=false; G.hallucEscaped=false; const left=EPOCH_LEN-G.wave; let n=1;
+  if(left>=2&&G.round>=D.doublesFrom&&Math.random()<D.doubleP) n=2;
+  G.birds=[]; for(let i=0;i<n;i++) G.birds.push(spawnBird(i,n,false)); G.wave+=n;
+  if(G.forceHalluc||Math.random()<D.halluc) G.birds.push(spawnBird(n,n+1,true));
+  SFX.flap(); }
+function spawnBird(i,n,bad){ const tier= bad?'lo' : (Math.random()<TIERS.hi.p?'hi':'lo'); const tr=TIERS[tier];
+  let sp=Math.min(3.2,1.25+G.round*0.13)*tr.speed*D.speed; if(G.round===1) sp*=0.85;
+  const x= n===1? rnd(60,190) : rnd(30+i*(190/n), 30+(i+1)*(190/n)-24);
+  return {x,y:150,vx:(Math.random()<0.5?-1:1)*sp*0.6,vy:-sp,sp,tier,bad:!!bad,st:'fly',f:0,at:0,dirT:bad?rnd(10,25):rnd(tr.dirT[0],tr.dirT[1]),hitT:0}; }
 function newDir(b){ const up=Math.random()<0.7||b.y>120; const a= up? 0.3+Math.random()*(Math.PI-0.6) : -(0.35+Math.random()*0.9);
-  b.vx=Math.cos(a)*b.sp; b.vy=-Math.sin(a)*b.sp; if(Math.abs(b.vx)<0.45) b.vx=(b.vx<0?-1:1)*0.45; b.dirT=rnd(25,70); }
+  b.vx=Math.cos(a)*b.sp; b.vy=-Math.sin(a)*b.sp; if(Math.abs(b.vx)<0.45) b.vx=(b.vx<0?-1:1)*0.45; const tr=TIERS[b.tier]; b.dirT= b.bad? rnd(10,25) : rnd(tr.dirT[0],tr.dirT[1]); }
 
-function shoot(x,y){ if(G.state!=='fly'||G.shots<=0) return; G.shots--; SFX.shot(); G.flash=2; G.shake=2; G.muzzle={x,y,t:2};
+function shoot(x,y){ if(G.state!=='fly'||G.shots<=0) return; G.shots--; G.cost+=COST; SFX.shot(); G.flash=2; G.shake=2; G.muzzle={x,y,t:2};
   let hitAny=false, nearest=999;
   for(const b of G.birds){ if(b.st!=='fly') continue;
-    if(x>=b.x-3&&x<=b.x+27&&y>=b.y-3&&y<=b.y+23){ hitAny=true; b.st='hit'; b.hitT=0; G.combo++; const m=comboMult(G.combo); if(m!==comboMult(G.combo-1)) G.comboFlash=10;
-      const p=baseValue()*(b.gold?3:1)*m; G.score+=p; G.tally.push('hit'); G.freeze=3; G.shake=b.gold?6:4;
-      G.fx.push({type:'pts',x:b.x-2,y:b.y-4,t:0,txt:'+'+p+(b.gold?T.fx.hiTag:''),col:b.gold?T.fx.hiPop:T.fx.loPop,sc:(b.gold||m>1)?2:1});
-      for(let i=0;i<6;i++) G.fx.push({type:'feather',x:b.x+12,y:b.y+10,vx:rnd(-1,1),vy:rnd(-1.5,0),t:0,col:b.gold?T.fx.featherHi:T.fx.featherLo});
-      if(b.gold) SFX.gold(); else SFX.hit(); }
-    else { const d=Math.hypot(x-(b.x+12),y-(b.y+10)); if(d<nearest) nearest=d; } }
+    if(x>=b.x-3&&x<=b.x+27&&y>=b.y-3&&y<=b.y+23){ hitAny=true; b.st='hit'; b.hitT=0; G.freeze=3;
+      if(b.bad){ G.score=Math.max(0,G.score-500); G.combo=0; G.hallucServed=true; G.shake=5;
+        G.fx.push({type:'pts',x:b.x-2,y:b.y-4,t:0,txt:'-500',col:T.fx.badPop,sc:2}); SFX.wrong(); continue; }
+      const hi=b.tier==='hi'; G.combo++; const m=comboMult(G.combo); if(m!==comboMult(G.combo-1)) G.comboFlash=10;
+      const p=valueOf(b)*m; G.score+=p; G.tally.push('hit'); G.shake=hi?6:4;
+      G.fx.push({type:'pts',x:b.x-2,y:b.y-4,t:0,txt:'+'+p,col:hi?T.fx.hiPop:T.fx.loPop,sc:(hi||m>1)?2:1});
+      for(let i=0;i<6;i++) G.fx.push({type:'feather',x:b.x+12,y:b.y+10,vx:rnd(-1,1),vy:rnd(-1.5,0),t:0,col:hi?T.fx.featherHi:T.fx.featherLo});
+      if(hi) SFX.gold(); else SFX.hit(); }
+    else if(!b.bad){ const d=Math.hypot(x-(b.x+12),y-(b.y+10)); if(d<nearest) nearest=d; } }
   if(!hitAny&&nearest<24) G.nearMiss=true; }
 
 function updateBirds(){ const limit=Math.max(200,460-G.round*18); let flying=0;
@@ -260,14 +280,14 @@ function updateBirds(){ const limit=Math.max(200,460-G.round*18); let flying=0;
     else if(b.st==='hit'){ b.hitT++; if(b.hitT>=22){ b.st='fall'; b.at=0; SFX.fall(); } }
     else if(b.st==='fall'){ b.y+=2.5; b.x+=Math.sin(b.at/5)*0.8; b.at++; if(b.y>=GROUND-6){ b.st='landed'; SFX.thud(); b.lx=b.x;
       for(let i=0;i<8;i++) G.fx.push({type:'puff',x:b.x+8+rnd(0,8),y:GROUND,vx:rnd(-1.2,1.2),vy:rnd(-2,-0.5),t:0,col:T.fx.puff}); } }
-    else if(b.st==='away'){ b.y-=3.5; b.at++; if(b.at%3===0) b.f=(b.f+1)&3; if(b.y<-26){ b.st='gone'; G.tally.push('miss'); } } }
+    else if(b.st==='away'){ b.y-=3.5; b.at++; if(b.at%3===0) b.f=(b.f+1)&3; if(b.y<-26){ b.st='gone'; if(b.bad) G.hallucEscaped=true; else G.tally.push('miss'); } } }
   G.flightT++;
-  if(flying&&(G.shots===0||G.flightT>=limit)){ let any=false; for(const b of G.birds) if(b.st==='fly'){ b.st='away'; b.at=0; any=true; } if(any){ SFX.away(); G.combo=0; } }
-  if(G.birds.every(b=>b.st==='landed'||b.st==='gone')){ const hits=G.birds.filter(b=>b.st==='landed'); const n=hits.length;
+  if(flying&&(G.shots===0||G.flightT>=limit)){ let any=false, real=false; for(const b of G.birds) if(b.st==='fly'){ b.st='away'; b.at=0; any=true; if(!b.bad) real=true; } if(any){ SFX.away(); if(real) G.combo=0; } }
+  if(G.birds.every(b=>b.st==='landed'||b.st==='gone')){ const hits=G.birds.filter(b=>b.st==='landed'&&!b.bad); const n=hits.length;
     if(n){ G.streak.hit+=n; G.streak.miss=0; } else { G.streak.miss++; G.streak.hit=0; }
     G.state='fox'; G.fox.t=0; G.fox.count=n; G.fox.mode=n?'hit':'miss';
-    G.fox.line= !n&&G.nearMiss? line('nearMiss') : !n&&G.streak.miss>=3? line('miss3') : n&&G.streak.hit>=3? line('hit3') : n>=2? line('hit2') : n? line('hit') : line('miss');
-    G.fox.x=clamp(Math.round(n? hits[0].lx-4 : rnd(40,180)),8,216); if(!n) SFX.laugh(); else SFX.blip(); } }
+    G.fox.line= G.hallucServed? line('hallucServed') : !n&&G.nearMiss? line('nearMiss') : !n&&G.streak.miss>=3? line('miss3') : n&&G.streak.hit>=3? line('hit3') : n>=2? line('hit2') : n? line('hit') : G.hallucEscaped? line('hallucEscaped') : line('miss');
+    G.fox.x=clamp(Math.round(n? hits[0].lx-4 : rnd(40,180)),8,216); if(G.hallucServed||!n) SFX.laugh(); else SFX.blip(); } }
 
 function endRound(){ const hits=G.tally.filter(t=>t==='hit').length; const need=req(G.round);
   if(hits>=need){ G.state='roundEnd'; G.t=0; G.perfect=hits===EPOCH_LEN; if(G.perfect){ G.score+=10000; SFX.perfect(); } else SFX.clear(); }
@@ -282,7 +302,7 @@ function setPaused(p){ if(p&&!PAUSABLE[G.state]) return; if(G.paused===p) return
 function handleTap(x,y){
   if(G.paused){ setPaused(false); return; }
   switch(G.state){
-    case 'title': startGame(); break;
+    case 'title': if(!titleTap(x,y)) startGame(); break;
     case 'fly': shoot(x,y); break;
     case 'roundEnd': if(G.t>50) nextRound(); break;
     case 'gameOver': if(G.t>70){ G.state='title'; G.t=0; G.round=1; setWeather(); } break;
@@ -333,11 +353,12 @@ function drawRackRow(){ ctx.fillStyle=SHADOW; ctx.fillRect(0,FRONT,W,SKY_H-FRONT
   const r=seeded(99); for(let x=2;x<W;x+=12){ ctx.fillStyle='#1f1c30'; ctx.fillRect(x,FRONT+3,9,6); const ph=Math.floor(r()*60); const on=((G.t+ph)>>3)&1; ctx.fillStyle= on?'#39d353':'#1f3a26'; ctx.fillRect(x+2,FRONT+7,2,1); ctx.fillStyle=((G.t+ph*3)>>5)&1?'#3cd0ff':'#1a3a4a'; ctx.fillRect(x+5,FRONT+7,2,1); } }
 const SCENERY={ datacenter:[drawDatacenter,drawRackRow] };
 
-function drawBird(b){ const left=b.vx<0; let key, img;
-  if(b.st==='fall'||b.st==='landed'){ key=b.gold?T.spr.fallHi:T.spr.fall; img=S[key]; ctx.drawImage(img, Math.round(b.x+4), Math.round(b.y)); return; }
-  key=(b.gold?T.spr.flyHi:T.spr.fly)[b.st==='hit'?1:BIRD_FRAMES[b.f]];
-  if(b.st==='hit'&&(b.hitT>>1)%2===1) key+='W';
-  img=S[key+(left?'L':'')]; ctx.drawImage(img, Math.round(b.x), Math.round(b.y)); }
+function drawBird(b){ const left=b.vx<0; let key, img; const hi=b.tier==='hi';
+  if(b.st==='fall'||b.st==='landed'){ key=b.bad?T.spr.fallBad: hi?T.spr.fallHi:T.spr.fall; img=S[key]; ctx.drawImage(img, Math.round(b.x+4), Math.round(b.y)); return; }
+  key=(hi?T.spr.flyHi:T.spr.fly)[b.st==='hit'?1:BIRD_FRAMES[b.f]];
+  if(b.st==='hit'&&(b.hitT>>1)%2===1) key+='W'; else if(b.bad&&((b.at>>2)&1)) key+='G';
+  img=S[key+(left?'L':'')]; ctx.drawImage(img, Math.round(b.x), Math.round(b.y));
+  if(b.bad&&b.st==='fly'){ const tags=T.fx.glitchTags; textS(tags[(b.at/10|0)%tags.length],Math.round(b.x+5),Math.round(b.y-7),T.fx.badPop,1); } }
 
 function drawFox(){ const f=G.fox; let y; const t=f.t;
   if(t<18) y=SKY_H-Math.round(t/18*44); else if(t<92) y=SKY_H-44; else y=SKY_H-44+Math.round((t-92)/18*44);
@@ -357,22 +378,22 @@ function drawFx(){ for(const f of G.fx){ if(f.type==='pts'){ if(f.t<40||(f.t&2))
 
 function drawHUD(){ ctx.fillStyle=SHADOW; ctx.fillRect(0,SKY_H,W,H-SKY_H); ctx.fillStyle='#0a0a12'; ctx.fillRect(0,SKY_H,W,1);
   const lab='#8a8494', ink='#f7f4e9', h=T.hud; const hits=G.tally.filter(t=>t==='hit').length, need=req(G.round);
-  text(h.ammo,10,205,lab); for(let i=0;i<3;i++) icon(ICON[T.ammoIcon],10+i*7,213,i<G.shots?T.css.accent:'#3a344c');
+  text(h.ammo,10,205,lab); for(let i=0;i<D.ammo;i++) icon(ICON[T.ammoIcon],10+i*7,213,i<G.shots?T.css.accent:'#3a344c');
   text(h.served+' '+hits+'/'+EPOCH_LEN+'  '+h.need+' '+need,66,205,lab);
   for(let i=0;i<EPOCH_LEN;i++){ const s=G.tally[i]; ctx.fillStyle= s==='hit'?'#39d353': s==='miss'?'#ff4d4d':'#3a344c'; ctx.fillRect(66+i*11,213,9,5); }
   const glow= hits===need-1 && ((G.t>>3)&1); ctx.fillStyle= glow?'#fff6c8':'#f2c438'; ctx.fillRect(66+need*11-2,glow?211:212,1,glow?9:7);
   const m=comboMult(G.combo); if(m>1){ const flash=G.comboFlash>0&&((G.comboFlash>>1)&1); textS('X'+m,150,205,flash?'#fff6c8':'#ffe98a',flash?2:1); }
-  text(h.score,204,205,lab); text(pad(G.score,6),204,213,ink);
-  text(h.round+' '+pad(G.round,2),10,229,lab); text(G.wx.name,66,229,h.levelColor); text(h.best+' '+pad(G.hi,6),204,229,lab); }
+  text(h.score,204,205,lab); if(D.mult!==1) text('X'+D.mult,232,205,'#ffe98a'); text(pad(G.score,6),204,213,ink); text(h.cost+' -'+pad(G.cost,5),204,221,'#5a5468');
+  text(h.round+' '+pad(G.round,2)+' '+D.tag,10,229,lab); text(G.wx.name,66,229,h.levelColor); text(h.best+' '+pad(G.hi,6),204,229,lab); }
 
 const fmt=(s,m)=>s.replace('%R',pad(G.round,2)).replace('%L',G.wx.name).replace('%N',String(req(G.round))).replace('%E',String(EPOCH_LEN)).replace('%H',String(m||0));
 function drawBanner(){ const t=G.t, B=T.banners;
   if(G.state==='intro'){ if(t<110||(t&4)){ textC(T.hud.round+' '+pad(G.round,2),52,'#f7f4e9',2,true); textC(B.load+G.wx.name,74,'#ffe98a',1,true); textC(G.wx.tag,84,'#bdeeff',1,true); textC(fmt(B.quota),96,'#f7f4e9',1,true); } }
   if(G.state==='fly'&&G.birds.some(b=>b.st==='away')) textC(B.escaped,64,'#f7f4e9',2,true);
   if(G.state==='roundEnd'){ panel(44,62,168,74); textC(fmt(B.clear),74,'#ffe98a',1); const hits=G.tally.filter(x=>x==='hit').length;
-    textC(fmt(B.served,hits),90,'#f7f4e9',1); if(G.perfect){ if((t>>2)&1) textC(B.perfect,106,'#ffe98a',1); } else textC(fmt(B.survived),106,'#bdeeff',1);
+    textC(fmt(B.served,hits)+'  '+T.hud.net+' '+pad(Math.max(0,G.score-G.cost),6),90,'#f7f4e9',1); if(G.perfect){ if((t>>2)&1) textC(B.perfect,106,'#ffe98a',1); } else textC(fmt(B.survived),106,'#bdeeff',1);
     if(t>50&&((t>>4)&1)) textC('TAP TO CONTINUE',122,'#8a8494',1); }
-  if(G.state==='gameOver'){ panel(44,40,168,78); textC(B.over,50,B.overColor,2); textC(B.unit+' '+pad(G.score,6),74,'#f7f4e9',1);
+  if(G.state==='gameOver'){ panel(44,40,168,78); textC(B.over,50,B.overColor,2); textC(B.unit+' '+pad(G.score,6)+'  '+T.hud.net+' '+pad(Math.max(0,G.score-G.cost),6),74,'#f7f4e9',1);
     if(G.newRecord){ if((t>>2)&1) textC('NEW BEST!',88,'#ffe98a',1); } else textC(T.hud.best+' '+pad(G.hi,6),88,'#8a8494',1);
     if(t>70&&((t>>4)&1)) textC(T.restart,104,'#8a8494',1); }
   if(G.paused){ panel(68,80,120,44); textC('PAUSED',90,'#f7f4e9',2); textC('TAP TO RESUME',110,'#8a8494',1); }
@@ -380,15 +401,20 @@ function drawBanner(){ const t=G.t, B=T.banners;
 function panel(x,y,w,h){ ctx.fillStyle=SHADOW; ctx.fillRect(x,y,w,h); ctx.fillStyle='#f7f4e9'; ctx.fillRect(x+2,y+2,w-4,1); ctx.fillRect(x+2,y+h-3,w-4,1); ctx.fillRect(x+2,y+2,1,h-4); ctx.fillRect(x+w-3,y+2,1,h-4); }
 
 function drawTitle(){ const t=G.t;
-  const f=BIRD_FRAMES[(G.amb.t/6|0)&3]; ctx.drawImage(S[T.spr.fly[f]], Math.round(G.amb.x), Math.round(G.amb.y));
+  const f=BIRD_FRAMES[(G.amb.t/6|0)&3]; ctx.drawImage(S[(T.spr.amb||T.spr.fly)[f]], Math.round(G.amb.x), Math.round(G.amb.y));
   const ft=G.titleFox; if(ft<200){ let y; if(ft<18) y=SKY_H-Math.round(ft/18*40); else if(ft<180) y=SKY_H-40; else y=SKY_H-40+Math.round((ft-180)/20*40);
-    ctx.drawImage(((ft>>4)&1)?S[T.spr.criticHappy]:S[T.spr.critic],176,y); }
+    ctx.drawImage(((ft>>4)&1)?S[T.spr.criticHappy]:S[T.spr.critic],214,y); }
   bigText(T.titleA,22,'#f7f4e9',3); bigText(T.titleB,48,T.titleColor,3);
   textC(T.tagline[0],84,SHADOW,1); textC(T.tagline[0],83,'#f7f4e9',1);
   textC(T.tagline[1],94,'#f7f4e9',1,true);
-  textC(T.howto[0],112,'#bdeeff',1,true); textC(T.howto[1],122,'#bdeeff',1,true);
-  textC(T.howto[2],132,'#ffe98a',1,true);
-  if((t>>4)&1) textC(T.start,154,'#f7f4e9',2,true); }
+  textC(T.howto[0],110,'#bdeeff',1,true); textC(T.howto[1],120,'#e2ccff',1,true);
+  textC(T.howto[2],130,'#ff9a9a',1,true);
+  // difficulty row
+  let x=52; for(const id of DIFF_ORDER){ const d=DIFFS[id], sel=id===G.diff; const w=textW(d.label,1); const cx=x+28-w/2;
+    if(sel){ textS('>',Math.round(cx-8),143,T.titleColor,1); textS('<',Math.round(cx+w+5),143,T.titleColor,1); }
+    textS(d.label,Math.round(cx),143,sel?T.titleColor:'#8a8494',1); x+=56; }
+  if((t>>4)&1) textC(T.start,158,'#f7f4e9',2,true); }
+function titleTap(x,y){ if(y>=138&&y<=152){ const i=clamp(Math.floor((x-52)/56),0,2); setDiff(DIFF_ORDER[i]); SFX.blip(); return true; } return false; }
 
 function drawCrosshair(){ if(!G.mouse.on||G.state!=='fly'||G.paused) return; const x=Math.round(G.mouse.x), y=Math.round(G.mouse.y);
   ctx.fillStyle=SHADOW; ctx.fillRect(x-7,y-1,15,3); ctx.fillRect(x-1,y-7,3,15);
@@ -418,6 +444,8 @@ cv.addEventListener('pointermove',e=>{ const p=pos(e); G.mouse.x=p.x; G.mouse.y=
 cv.addEventListener('pointerleave',()=>{ G.mouse.on=false; });
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 window.addEventListener('keydown',e=>{ const k=e.key;
+  if(G.state==='title'&&(k==='1'||k==='2'||k==='3')){ setDiff(DIFF_ORDER[+k-1]); SFX.blip(); return; }
+  if(G.state==='title'&&(k==='ArrowLeft'||k==='ArrowRight')){ const i=DIFF_ORDER.indexOf(G.diff); setDiff(DIFF_ORDER[clamp(i+(k==='ArrowRight'?1:-1),0,2)]); SFX.blip(); e.preventDefault(); return; }
   if(k==='m'||k==='M') toggleMute();
   else if(k==='p'||k==='P'||k==='Escape'){ setPaused(!G.paused); e.preventDefault(); }
   else if(k===' '||k==='Enter'){ if(G.paused) setPaused(false); else if(G.state!=='fly'){ audioInit(); handleTap(-100,-100); } e.preventDefault(); } });
@@ -432,7 +460,7 @@ window.addEventListener('resize',fit); fit();
 // ------------------------------------------------------------------ loop (fixed 60 Hz)
 let last=performance.now(), acc=0; const STEP=1000/60;
 function frame(now){ acc+=Math.min(100,now-last); last=now; while(acc>=STEP){ update(); acc-=STEP; } draw(); requestAnimationFrame(frame); }
-function boot(data){ if(data&&data.hi>G.hi) G.hi=data.hi; let th='gpu'; try{ th=localStorage.getItem('th.theme')||'gpu'; }catch(e){} if(!THEMES[th]) th='gpu'; applyTheme(th); requestAnimationFrame(frame); }
+function boot(data){ if(data&&data.hi>G.hi) G.hi=data.hi; let th='gpu'; try{ th=localStorage.getItem('th.theme')||'gpu'; }catch(e){} if(!THEMES[th]) th='gpu'; applyTheme(th); let df='medium'; try{ df=localStorage.getItem('th.diff')||'medium'; }catch(e){} setDiff(df); requestAnimationFrame(frame); }
 try{ window.claude&&window.claude.hot&&window.claude.hot.snapshot&&window.claude.hot.snapshot(()=>({hi:G.hi})); }catch(e){}
 if(window.claude&&window.claude.hot&&window.claude.hot.ready) window.claude.hot.ready(boot); else boot((window.claude&&window.claude.hot&&window.claude.hot.data)||{});
 window.__th=G; window.__applyTheme=applyTheme; window.__T=()=>T; // for headless tests
