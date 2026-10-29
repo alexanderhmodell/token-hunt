@@ -339,6 +339,73 @@ SPRITES["agent1"] = AGENT1
 SPRITES["hawk0"] = recolor(AGENT0, {"R": "T", "W": "b", "D": "K"})
 SPRITES["hawk1"] = recolor(AGENT1, {"R": "T", "W": "b", "D": "K"})
 
+# ---- E5 bosses (48x40), generated: a spiky DDoS malware ball (gpu) and a thunderhead (duck)
+import math as _m
+PALETTE.update({"r": "#a8262e", "h": "#ff9a8a", "M": "#3e4664", "m": "#8c95b4", "n": "#c9d0e4"})
+
+def _boss(inside, shade, fill, dark, light, bolt=False, lo=-0.62):
+    w, h = 48, 40
+    g = [["." for _ in range(w)] for _ in range(h)]
+    m = [[inside(x, y) for x in range(w)] for y in range(h)]
+    for y in range(h):
+        for x in range(w):
+            if m[y][x]:
+                g[y][x] = dark if shade(x, y) > 0.55 else (light if shade(x, y) < lo else fill)
+            elif any(0 <= x + dx < w and 0 <= y + dy < h and m[y + dy][x + dx] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                g[y][x] = "K"
+    def put(x, y, c):
+        if 0 <= x < w and 0 <= y < h: g[y][x] = c
+    # eyes: white, pupils looking down at the racks
+    for ex in (16, 27):
+        for yy in range(15, 20):
+            for xx in range(ex, ex + 6):
+                edge = (yy in (15, 19)) and (xx in (ex, ex + 5))
+                put(xx, yy, "K" if edge else "W")
+        for yy in range(15, 20):
+            put(ex - 1, yy, "K"); put(ex + 6, yy, "K")
+        for xx in range(ex, ex + 6):
+            put(xx, 14, "K"); put(xx, 20, "K")
+        for yy in (17, 18):
+            for xx in (ex + 2, ex + 3):
+                put(xx, yy, "D")
+    # angry brows slanting down to the middle
+    for i in range(7):
+        put(14 + i, 10 + i // 2, "K"); put(14 + i, 11 + i // 2, "K")
+        put(33 - i, 10 + i // 2, "K"); put(33 - i, 11 + i // 2, "K")
+    # jagged mouth with teeth
+    for xx in range(17, 32):
+        for yy in (24, 25, 26, 27):
+            put(xx, yy, "D")
+        put(xx, 23, "K"); put(xx, 28, "K")
+    put(16, 24, "K"); put(16, 25, "K"); put(16, 26, "K"); put(16, 27, "K"); put(32, 24, "K"); put(32, 25, "K"); put(32, 26, "K"); put(32, 27, "K")
+    for k, xx in enumerate(range(18, 31, 3)):
+        put(xx, 24, "W"); put(xx + 1, 24, "W"); put(xx, 25, "W")
+        put(xx + 1, 27, "W"); put(xx + 2, 27, "W"); put(xx + 2, 26, "W")
+    if bolt:
+        for (xx, yy) in ((22, 33), (23, 33), (21, 34), (22, 34), (20, 35), (21, 35), (22, 35), (23, 35), (22, 36), (21, 37), (20, 38)):
+            put(xx, yy, "Y")
+    return ["".join(r) for r in g]
+
+def _ddos_inside(x, y):
+    dx, dy = x + 0.5 - 24, y + 0.5 - 19.5
+    a = _m.atan2(dy, dx)
+    base = 1 / _m.hypot(_m.cos(a) / 15.5, _m.sin(a) / 13.5)
+    spike = ((_m.cos(a * 11 + 0.3) + 1) / 2) ** 7
+    return _m.hypot(dx, dy) <= base + 5.5 * spike
+
+def _ddos_shade(x, y):
+    return ((x - 24) / 15 + (y - 19) / 13) * 0.75
+
+_PUFFS = [(13, 22, 9), (22, 14, 11), (34, 15, 10), (40, 23, 7), (25, 24, 10), (8, 26, 6), (33, 26, 8)]
+def _cloud_inside(x, y):
+    return any(_m.hypot(x + 0.5 - cx, (y + 0.5 - cy) * 1.05) <= r for cx, cy, r in _PUFFS) and y < 33
+
+def _cloud_shade(x, y):
+    return (y - 17) / 10 - 0.15
+
+SPRITES["ddos"] = _boss(_ddos_inside, _ddos_shade, "R", "r", "h", lo=-0.9)
+SPRITES["stormBoss"] = _boss(_cloud_inside, _cloud_shade, "m", "M", "n", bolt=True)
+
 ICONS = {"vram": VRAM, "shell": _F.ICONS["shell"]}
 
 

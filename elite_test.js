@@ -43,6 +43,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     const { ctx, page, errs } = await newPage(browser);
     await page.goto(url); await sleep(500);
     await runBot(page, 'aim', 60000);
+    await runBot(page, 'aim', 90000, "window.__th.recOn&&window.__th.frame>=2400&&window.__th.state!=='gameOver'"); // capture inside a long recording
     // capture the live state and replay the recording headlessly three times, all in one synchronous block
     const r = await page.evaluate(async () => {
       for (let i = 0; i < 100 && !window.__th.recOn; i++) await new Promise(r => setTimeout(r, 50));
@@ -344,6 +345,47 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     await page.screenshot({ path: path.resolve(__dirname, 'shots', 'e4_feel.png') });
     await page.evaluate(() => { window.__th.freeze = 0; });
     ok(errs.length === 0, 'E4: zero page errors' + (errs.length ? ' ' + errs[0] : ''));
+    await ctx.close();
+  }
+
+  // ---------------------------------------------------------------- E5 DDoS boss (Tier 2)
+  if (want('E5')) {
+    const { ctx, page, errs } = await newPage(browser);
+    await page.goto(url); await sleep(500);
+    await page.evaluate(() => window.__tap(128, 100)); await sleep(150); await page.evaluate(() => window.__tap(128, 100)); await sleep(150);
+    const toBoss = (round) => page.evaluate((round) => { const G = window.__th; G.attract = false; G.paused = false; G.round = round; G.bossDone = false; G.swarmDone = true; G.wave = 2; G.birds = []; G.vramLost = 0; G.state = 'gap'; G.t = 11; }, round);
+    const waitFor = (cond, ms) => page.evaluate(async ([cond, ms]) => { const t0 = performance.now(); while (performance.now() - t0 < ms) { if (eval(cond)) return true; await new Promise(r => setTimeout(r, 30)); } return false; }, [cond, ms]);
+    await toBoss(3); await sleep(250);
+    ok(await page.evaluate(() => { const G = window.__th; return !G.birds.some(b => b.boss) && !(G.state === 'fox' && G.fox.mode === 'warn'); }), 'E5: no boss in epoch 3');
+    await toBoss(4); await sleep(150);
+    const warn = await page.evaluate(() => ({ state: window.__th.state, mode: window.__th.fox.mode, line: window.__th.fox.line }));
+    ok(warn.state === 'fox' && warn.mode === 'warn' && /DDOS|40,000/.test(warn.line), `E5: epoch 4 — the bot warns first ("${warn.line}")`);
+    ok(await waitFor("window.__th.birds.some(b=>b.boss&&b.st==='fly')", 4000), 'E5: then the DDoS arrives');
+    await page.screenshot({ path: path.resolve(__dirname, 'shots', 'e5_boss_arrives.png') });
+    // fight: six hits, every second one splits off two agents
+    const fight = await page.evaluate(async () => { const G = window.__th, log = [];
+      const boss = () => G.birds.find(b => b.boss); const t0 = performance.now();
+      while (boss() && boss().st === 'fly' && performance.now() - t0 < 15000) { const b = boss(); if (b.x > 4 && b.x < 204 && G.freeze === 0) { window.__tap(b.x + 24, b.y + 20); log.push({ hp: b.hp, agents: G.birds.filter(a => a.agent).length }); if (b.hp === 3) window.__shotAt3 = 1; } await new Promise(r => setTimeout(r, 120)); }
+      const b = boss(); return { hp: b && b.hp, st: b && b.st, killed: G.swarm && G.swarm.killed, agents: G.birds.filter(a => a.agent).length, log, score: G.score }; });
+    ok(fight.killed && fight.hp === 0 && fight.st === 'gone', `E5: six hits mitigate it (hp after each tap: ${fight.log.map(l => l.hp).join(',')})`);
+    ok(fight.agents === 6, `E5: every 2nd hit split off two rogue agents (${fight.agents} spawned)`);
+    // clear the agents, the wave ends with the win line
+    await page.evaluate(async () => { const G = window.__th; const t0 = performance.now(); while (performance.now() - t0 < 12000 && G.state === 'fly') { const a = G.birds.find(b => b.agent && b.st === 'fly'); if (a && G.freeze === 0 && G.shots > 0) window.__tap(a.x + 6, a.y + 5); await new Promise(r => setTimeout(r, 90)); } });
+    const after = await page.evaluate(() => ({ state: window.__th.state, mode: window.__th.fox.mode, line: window.__th.fox.line }));
+    ok(after.state === 'fox' && after.mode === 'hit' && /MITIGATED|ABSORBED/.test(after.line), `E5: after the fight the bot reacts ("${after.line}")`);
+    // escape path: costs a VRAM for the epoch and gets the loss line
+    await page.evaluate(() => { window.__th.round = 7; }); await toBoss(8); await waitFor("window.__th.birds.some(b=>b.boss&&b.st==='fly')", 4000);
+    await page.evaluate(() => { const b = window.__th.birds.find(b => b.boss); b.x = b.vx > 0 ? 250 : -48; });
+    ok(await waitFor("window.__th.state==='fox'", 3000), 'E5: an escaped boss ends the wave');
+    const esc = await page.evaluate(() => ({ v: window.__th.vramLost, line: window.__th.fox.line, mode: window.__th.fox.mode }));
+    ok(esc.v === 1 && esc.mode === 'miss' && /DDOS|OUTAGE/.test(esc.line), `E5: escape costs 1 VRAM and the bot gloats ("${esc.line}")`);
+    // music: the boss layer comes in while it is on screen
+    await page.evaluate(() => { const G = window.__th; G.state = 'gameOver'; G.t = 100; G.fox.t = 100; }); await page.evaluate(() => window.__tap(128, 100)); await sleep(150); // fresh run: music on again
+    await toBoss(12); await waitFor("window.__th.birds.some(b=>b.boss&&b.st==='fly')", 4000);
+    await page.evaluate(() => { const b = window.__th.birds.find(b => b.boss); b.vx *= 0.2; });
+    ok(await waitFor("window.__mix()&&window.__mix().layers.boss>0.99", 6500), 'E5: unique boss music layer fades in');
+    await page.screenshot({ path: path.resolve(__dirname, 'shots', 'e5_boss_fight.png') });
+    ok(errs.length === 0, 'E5: zero page errors' + (errs.length ? ' ' + errs[0] : ''));
     await ctx.close();
   }
 
