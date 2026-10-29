@@ -6,9 +6,13 @@
 
 ## 1. Submission blurb (paste into the form)
 
-**Token Hunt** — a light-gun arcade homage where the dog is a chatbot. You are a GPU cluster.
+**Token Hunt** — a light-gun arcade homage where the dog is a chatbot and the hallucinations train on you. You are a GPU cluster.
 
-Requests fly in with wings. You have three VRAM per flight to serve them before they time out. Open-weight requests are cheap and slow; frontier requests pay triple and fly fast; every shot burns compute, so the score is revenue minus cost. Some requests are hallucinations — glitchy, lying — and serving one costs you. From epoch 3 a rogue agent swarm dives at your GPU nodes: stop all four before they reach the racks or one gets in and eats a VRAM. Every fourth epoch a DDoS attack crosses the sky — a red spiked mass that takes six hits and spills rogue agents every second time you wound it. The rules keep arriving — hallucinations start wearing frontier purple, traffic comes in bursts of three, the load climbs — and every epoch's load changes how you aim: a traffic spike pushes requests sideways, autoscaling gusts shove them back and forth, latency makes them time out sooner, and a viral launch brings 429 strikes that freeze the requests mid-air until the rate limit clears. The music shifts key, tempo and layers with the load.
+Requests fly in with wings. You have three VRAM per flight to serve them before they time out. Open-weight requests are cheap and slow; frontier requests pay triple and fly fast; every shot burns compute, so the score is revenue minus cost, and a request served within half a second of arriving pays double — latency is revenue.
+
+Some requests are hallucinations: grey, glitching ghosts tagged FAKE. Serve one and it costs you. And they learn. Every epoch an adversary model trains on how you play — which tier you serve, where you aim, whether its tag gives it away — and builds the next epoch's fakes to fool you: wearing your favourite colour, spawning in your favourite lane, hiding the tag once you've learned to read it. The round-clear screen shows you exactly what it learned ("YOU SERVE PURPLE 67% > FAKES WEAR PURPLE"). The only counter is to stop being predictable. It runs entirely in your browser, deterministically, with no network.
+
+From epoch 3 a rogue agent swarm dives at your GPU nodes: stop all four before they reach the racks. Every fourth epoch a DDoS attack crosses the sky — six hits, spilling rogue agents as you wound it — and it comes back stronger. Bursts of three arrive with an autoscaled extra VRAM. Every epoch's load changes how you aim: a traffic spike pushes requests sideways, autoscaling gusts shove them back and forth, latency makes them time out sooner, and a viral launch brings 429 strikes that freeze the requests mid-air until the rate limit clears. The music shifts key, tempo and layers with the load.
 
 Miss, and a smug chatbot rises from the rack row and says, out loud: "As an AI, I can't help with that." It watches what you do — two frontier in a row, your last shot, waiting out a 429, letting a hallucination go — and says so, then keeps heckling while the next wave is already in the air. When you finally run out of memory it reads your receipt back — accuracy, best combo, hallucinations served — roasts you with it, makes you a share card, and offers to replay your run at double speed so you can see exactly where it went wrong.
 
@@ -22,7 +26,7 @@ Built by Claude (Anthropic) end to end — code, pixel art, shaders, and synthes
 
 ## 2. One-line version
 
-Light-gun arcade homage where you're a GPU cluster serving winged requests through 429 storms, hallucinations and a DDoS boss — while a chatbot heckles you out loud. One file, zero assets, built in two days with Claude.
+Light-gun arcade homage where you're a GPU cluster serving winged requests — while the hallucinations train on your habits to fool you, and a chatbot heckles you out loud. One file, zero assets, zero network, built in two days with Claude.
 
 ---
 
