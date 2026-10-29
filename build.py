@@ -31,7 +31,8 @@ standalone = (
 
 # IP guard: these strings must never appear in anything we ship
 import re
-FORBIDDEN = [r"duck\s*hunt", r"nintendo", r"\bnes\b", r"fly\s*away", r"zapper", r"famicom"]
+FORBIDDEN = [r"duck\s*hunt", r"nintendo", r"\bnes\b", r"fly\s*away", r"zapper", r"famicom",
+             r"nvidia", r"\bdgx\b", r"\bh100\b", r"geforce", r"\brtx\b"]
 for pat in FORBIDDEN:
     assert not re.search(pat, standalone, re.I), f"forbidden string matches /{pat}/"
 os.makedirs(os.path.join(root, "dist"), exist_ok=True)
