@@ -13,9 +13,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const tp = (x, y) => [box.x + x * box.width / 256, box.y + y * box.height / 240];
   const G = (fn, a) => page.evaluate(fn, a);
   const waitState = async (st, ms = 10000) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if ((await G(() => window.__th.state)) === st) return true; await sleep(50); } return false; };
-  const moveTo = async (x, y) => page.mouse.move(...tp(x, y), { steps: 6 });
-  const shootAt = async (b, errX = 0, errY = 0) => { await moveTo(b.x + 12 + errX, b.y + 10 + errY); await sleep(120); await page.mouse.click(...tp(b.x + 12 + errX, b.y + 10 + errY)); };
-  const liveBird = async (bad = false) => G((bad) => { const b = window.__th.birds.find(b => b.st === 'fly' && !!b.bad === bad); return b ? { x: b.x + b.vx * 4, y: b.y + b.vy * 4 } : null; }, bad);
+  // Exact, instant shots: glide the crosshair to the live bird position over ~10 frames, then fire from inside the page.
+  const shootLive = (bad, errX, errY) => G(async ({ bad, errX, errY }) => { const G = window.__th; const cv = document.getElementById('g');
+    const ev = (type, x, y) => { const r = cv.getBoundingClientRect(); cv.dispatchEvent(new PointerEvent(type, { clientX: r.left + x * r.width / 256, clientY: r.top + y * r.height / 240, pointerType: 'mouse', button: 0, isPrimary: true, bubbles: true, cancelable: true })); };
+    const pick = () => G.birds.find(b => b.st === 'fly' && !!b.bad === bad); let b = pick(); if (!b) return false;
+    for (let i = 0; i < 10; i++) { b = pick() || b; const tx = b.x + 12 + errX, ty = b.y + 10 + errY; G.mouse.on = true; G.mouse.x += (tx - G.mouse.x) * 0.45; G.mouse.y += (ty - G.mouse.y) * 0.45; await new Promise(r => setTimeout(r, 33)); }
+    b = pick() || b; let x = b.x + 12 + errX, y = b.y + 10 + errY; if (x > 215 && y < 20) y = 24; ev('pointermove', x, y); ev('pointerdown', x, y); return true; }, { bad, errX, errY });
+  const shootAt = async (b, errX = 0, errY = 0) => shootLive(false, errX, errY);
+  const liveBird = async (bad = false) => G((bad) => { const b = window.__th.birds.find(b => b.st === 'fly' && !!b.bad === bad); return b ? { x: b.x, y: b.y } : null; }, bad);
 
   // 0:00 title — let the bot peek, then boot
   await sleep(4000);
@@ -24,7 +29,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await waitState('fly', 12000);
   // epoch 1: two serves, one deliberate miss, one timeout
   for (let i = 0; i < 2; i++) { const b = await liveBird(); if (b) { await shootAt(b); } await sleep(2600); await waitState('fly', 8000); }
-  { const b = await liveBird(); if (b) { await shootAt(b, 60, -40); await sleep(600); await shootAt({ x: b.x + 40, y: b.y + 30 }, 50, 40); await sleep(600); await page.mouse.click(...tp(20, 20)); } }
+  await shootLive(false, -45, 30); await sleep(700); await shootLive(false, 40, 35); await sleep(700); await G(() => { const cv = document.getElementById('g'); const r = cv.getBoundingClientRect(); cv.dispatchEvent(new PointerEvent('pointerdown', { clientX: r.left + 30 * r.width / 256, clientY: r.top + 40 * r.height / 240, pointerType: 'mouse', button: 0, isPrimary: true, bubbles: true, cancelable: true })); });
   await sleep(3200); await waitState('fly', 8000);
   // hallucination: force one; let it go, then serve the real one
   await G(() => { window.__th.forceHalluc = true; });
@@ -34,7 +39,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await sleep(3000); await waitState('fly', 8000);
   // force another and serve it on purpose for the apology
   await G(() => { window.__th.forceHalluc = true; }); await waitState('fly', 8000); await sleep(300); await G(() => { window.__th.forceHalluc = false; });
-  { const bad = await liveBird(true); if (bad) await shootAt(bad); }
+  await shootLive(true, 0, 0);
   await sleep(3200);
   // jump to the storm
   await G(() => { const G = window.__th; G.round = 2; G.wave = 6; G.tally = ['hit','hit','hit','hit','hit','miss']; G.state = 'fox'; G.fox.t = 109; G.fox.mode = 'hit'; G.fox.line = 'HAPPY TO HELP!'; G.birds = []; });
@@ -47,6 +52,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   // closer: back to title, type duck
   await page.mouse.click(...tp(60, 110)); await sleep(1500);
   await page.keyboard.type('duck', { delay: 120 }); await sleep(3500);
+  console.log('end state:', JSON.stringify(await G(() => ({ score: window.__th.score, theme: window.__th.theme, state: window.__th.state, muted: localStorage.getItem('th.muted') }))));
   await ctx.close(); await browser.close();
   const webm = fs.readdirSync(outDir).find(f => f.endsWith('.webm'));
   execSync(`ffmpeg -y -loglevel error -i "${path.join(outDir, webm)}" -vf "crop=1024:960:0:0,scale=1024:960:flags=neighbor" -c:v libx264 -pix_fmt yuv420p -crf 18 -r 30 "${path.resolve(__dirname, 'dist/demo.mp4')}"`);
