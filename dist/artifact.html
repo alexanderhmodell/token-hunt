@@ -706,7 +706,7 @@ function update1(){
       // non-blocking critic: once the line is typed the next wave starts and the bubble lingers over play
       if(!G.swarm&&G.wave<EPOCH_LEN&&G.fox.t>=foxTyped()+10){ G.linger={line:G.fox.line,x:G.fox.x,mode:G.fox.mode,count:G.fox.count,t:G.fox.t,len:foxLen()}; G.state='gap'; G.t=0; break; }
       if(G.fox.t>=foxLen()){ if(G.wave>=EPOCH_LEN) endRound(); else { G.state='gap'; G.t=0; } } break;
-    case 'gap': if(G.t>=12) startWave(); break;
+    case 'gap': if(G.t>=12){ startWave(); if(G.linger) G.linger.len=Math.min(G.linger.len,G.linger.t+36); } break; // the bubble leaves ~0.6 s into the next wave so it never hides a request for long
     case 'roundEnd': if(G.t>=200) nextRound(); break;
     case 'gameOver': G.fox.t++; if(G.fox.t===16) say(G.fox.line); break;
   }
@@ -1009,7 +1009,7 @@ cv.addEventListener('contextmenu',e=>e.preventDefault());
 if(!window.PointerEvent){ const fake=(ev,type,touch)=>{ const t=touch?ev.changedTouches[0]:ev; cv.dispatchEvent(Object.assign(new Event(type,{bubbles:true,cancelable:true}),{clientX:t.clientX,clientY:t.clientY,pointerType:touch?'touch':'mouse',button:0,isPrimary:true})); };
   cv.addEventListener('touchstart',e=>{ e.preventDefault(); fake(e,'pointerdown',true); },{passive:false}); cv.addEventListener('touchend',e=>{ fake(e,'pointerup',true); });
   cv.addEventListener('mousedown',e=>fake(e,'pointerdown',false)); cv.addEventListener('mousemove',e=>fake(e,'pointermove',false)); cv.addEventListener('mouseup',e=>fake(e,'pointerup',false)); }
-window.addEventListener('keydown',e=>{ const k=e.key; if(e.repeat) return; if(document.activeElement===codeInput) return; document.body.classList.remove('pointer'); voiceGesture();
+window.addEventListener('keydown',e=>{ const k=e.key; if(e.repeat) return; if(document.activeElement===codeInput) return; if(document.activeElement&&document.activeElement.tagName==='BUTTON'&&(k==='Enter'||k===' ')) return; // a focused SHARE/COPY/CLOSE button owns Enter and Space document.body.classList.remove('pointer'); voiceGesture();
   if(!cardBox.hidden){ if(k==='Escape'||k==='Enter'||k===' '){ hideCard(); e.preventDefault(); } return; } const prevKeys=G.keys; if(k.length===1&&/[a-z]/i.test(k)) feedKey(k.toLowerCase());
   if((k==='c'||k==='C')&&!/vc?$/.test(prevKeys)) toggleCRT(); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
   if(G.state==='title'&&(k==='1'||k==='2'||k==='3'||k==='4')){ setDiff(DIFF_ORDER[+k-1]); SFX.blip(); return; }
