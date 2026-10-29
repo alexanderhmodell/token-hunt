@@ -56,7 +56,8 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     ok(r.live.frame > 2500 && r.inputs > 50, `E0: recorded a real run (${r.live.frame} frames, ${r.inputs} inputs)`);
     r.reps.forEach((s, i) => { const same = JSON.stringify(s) === L; ok(same, `E0: replay ${i + 1}/3 identical (score ${s.score}, tally ${s.tally.map(t => t[0]).join('')}, round ${s.round}, run stats, birds, rng state)` + (same ? '' : '\n    live ' + L + '\n    rep  ' + JSON.stringify(s))); });
     // a recording replayed with one input removed must diverge (the test can tell runs apart)
-    const div = await page.evaluate(() => { const G = window.__th; const run = { init: G.recInit, rec: G.rec.slice(), frames: G.frame }; if (!run.init) return null; const a = window.__replay(run, { headless: true, toFrame: 2400 }); const i = run.rec.findIndex(e => e[0] > 300 && e[1] === 't'); const run2 = { ...run, rec: run.rec.filter((e, j) => j !== i) }; const b = window.__replay(run2, { headless: true, toFrame: 2400 }); return JSON.stringify(a) !== JSON.stringify(b); });
+    const div = await page.evaluate(() => { const G = window.__th; const run = { init: G.recInit, rec: G.rec.slice(), frames: G.frame }; if (!run.init) return null; const a = JSON.stringify(window.__replay(run, { headless: true, toFrame: 2400 })); const cand = run.rec.map((e, j) => [e, j]).filter(([e]) => e[0] > 300 && e[0] < 2300 && (e[1] === 't' || e[1] === 'm')).slice(0, 8); // some taps are no-ops (READY lockout, 4-frame debounce)
+      for (const [, j] of cand) { const b = JSON.stringify(window.__replay({ ...run, rec: run.rec.filter((e, k) => k !== j) }, { headless: true, toFrame: 2400 })); if (b !== a) return true; } return false; });
     ok(div === true, 'E0: dropping one input changes the outcome (replay is input-sensitive, not a fluke)');
 
     // WATCH REPLAY from the game-over panel: end the run, play a fresh short run to game over, watch it back at 2x
@@ -415,6 +416,39 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     const fixed = await page.evaluate(() => { const G = window.__th, o = {}; for (const d of ['hard', 'daily']) { G.diff = d; G.daily = d === 'daily'; G.flow = { speed: 1, halluc: 0, hist: [] }; for (let i = 0; i < 12; i++) window.__flowNote(true); o[d] = G.flow.speed; } G.diff = 'medium'; G.daily = false; return o; });
     ok(fixed.hard === 1 && fixed.daily === 1 && r.diffMedium, `E6: Hard and Daily stay fixed (x${fixed.hard}, x${fixed.daily})`);
     ok(errs.length === 0, 'E6: zero page errors' + (errs.length ? ' ' + errs[0] : ''));
+    await ctx.close();
+  }
+
+  // ---------------------------------------------------------------- E9 accessibility (Tier 2)
+  if (want('E9')) {
+    const { ctx, page, errs } = await newPage(browser);
+    await page.goto(url); await sleep(500);
+    await page.evaluate(() => window.__tap(128, 100)); await sleep(150); await page.evaluate(() => window.__tap(128, 100)); await sleep(150);
+    // a hallucination carries a dashed outline (shape cue, independent of its colour)
+    const dash = await page.evaluate(async () => { const G = window.__th; G.state = 'fly'; G.paused = false; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = -1e9; G.nextLightning = 1e9;
+      G.birds = [{ x: 100, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: true, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }, { x: 60, y: 110, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }];
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); G.freeze = 1e6; await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const b = G.birds[0], x0 = Math.round(b.x) - 1, y0 = Math.round(b.y) - 1, d = document.getElementById('g').getContext('2d').getImageData(0, 0, 256, 240).data;
+      const red = (x, y) => { const i = (y * 256 + x) * 4; return d[i] === 255 && d[i + 1] === 77 && d[i + 2] === 77; }; let on = 0, n = 0;
+      for (let i = 0; i < 26; i++) { n += 2; on += red(x0 + i, y0) + red(x0 + i, y0 + 21); } for (let j = 0; j < 22; j++) { n += 2; on += red(x0, y0 + j) + red(x0 + 25, y0 + j); }
+      const r2 = G.birds[1]; let onReal = 0; for (let i = 0; i < 26; i++) onReal += red(Math.round(r2.x) - 1 + i, Math.round(r2.y) - 1); G.freeze = 0; return { frac: on / n, onReal }; });
+    ok(dash.frac > 0.35 && dash.frac < 0.65 && dash.onReal === 0, `E9: hallucinations get a dashed outline (${(dash.frac * 100).toFixed(0)}% of the box perimeter dashed; real requests none)`);
+    // captions when muted
+    await page.keyboard.press('m');
+    const caps = await page.evaluate(async () => { const G = window.__th; G.state = 'fly'; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.birds = [{ x: 100, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; window.__tap(112, 70); await new Promise(r => setTimeout(r, 50)); return window.__caps(); });
+    await page.screenshot({ path: path.resolve(__dirname, 'shots', 'e9_captions.png') });
+    await page.keyboard.press('m'); const capsUnmuted = await page.evaluate(async () => { const G = window.__th; G.shots = 3; G.lastShotF = -99; G.birds = [{ x: 100, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; const n = window.__caps().length; window.__tap(112, 70); return window.__caps().length - n; });
+    ok(caps.includes('(DING)') && capsUnmuted === 0, `E9: muted -> sound captions (${caps.join(' ')}); unmuted -> none`);
+    // one-hand mode: code THUMB; the crosshair drifts onto the nearest real request and a tap on the HUD fires there
+    await page.evaluate(() => { window.__th.state = 'title'; }); await page.keyboard.type('thumb'); await sleep(60);
+    const on = await page.evaluate(() => window.__oneHand());
+    const oh = await page.evaluate(async () => { const G = window.__th; G.state = 'fly'; G.paused = false; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = -1e9; G.tally = []; G.mouse = { x: 20, y: 20, on: true, touch: false };
+      G.birds = [{ x: 150, y: 80, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }, { x: 40, y: 30, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: true, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }];
+      await new Promise(r => setTimeout(r, 1500)); const tb = G.birds[0], m = { x: G.mouse.x, y: G.mouse.y, dx: G.mouse.x - (tb.x + 12), dy: G.mouse.y - (tb.y + 10) }; window.__tap(60, 226, 'touch'); await new Promise(r => setTimeout(r, 60)); return { m, hit: G.birds[0].st, bad: G.birds[1].st, tally: G.tally.slice() }; });
+    ok(on && Math.abs(oh.m.dx) < 15 && Math.abs(oh.m.dy) < 13 && oh.hit === 'hit' && (oh.bad === 'fly' || oh.bad === 'away'), `E9: one-hand mode (THUMB): crosshair trails the drifting request by ${Math.hypot(oh.m.dx, oh.m.dy).toFixed(1)} px (slow tracking, inside its hitbox), a HUD tap served it, the hallucination was ignored` + (oh.hit === "hit" && (oh.bad === "fly" || oh.bad === "away") ? "" : " " + JSON.stringify(oh)));
+    await page.screenshot({ path: path.resolve(__dirname, 'shots', 'e9_onehand.png') });
+    await page.evaluate(() => { window.__th.state = 'title'; }); await page.keyboard.type('thumb'); await sleep(60);
+    ok(!(await page.evaluate(() => window.__oneHand())) && errs.length === 0, 'E9: THUMB toggles it back off; zero page errors' + (errs.length ? ' ' + errs[0] : ''));
     await ctx.close();
   }
 
