@@ -83,6 +83,101 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     await ctx.close();
   }
 
+  // ---------------------------------------------------------------- E1 WebGL CRT
+  if (want('E1')) {
+    const pngStats = (page, a, b) => page.evaluate(async ([a, b]) => {
+      const load = async (b64) => { const img = new Image(); img.src = 'data:image/png;base64,' + b64; await img.decode(); const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const x = c.getContext('2d'); x.drawImage(img, 0, 0); return x.getImageData(0, 0, c.width, c.height).data; };
+      const A = await load(a); let s = 0, s2 = 0; const n = A.length / 4; for (let i = 0; i < A.length; i += 4) { const l = (A[i] + A[i + 1] + A[i + 2]) / 3; s += l; s2 += l * l; }
+      const r = { mean: s / n, sd: Math.sqrt(Math.max(0, s2 / n - (s / n) ** 2)) };
+      if (b) { const B = await load(b); let d = 0; for (let i = 0; i < A.length; i += 4) d += (Math.abs(A[i] - B[i]) + Math.abs(A[i + 1] - B[i + 1]) + Math.abs(A[i + 2] - B[i + 2])) / 3; r.diff = d / n; }
+      return r; }, [a.toString('base64'), b ? b.toString('base64') : null]);
+    const raf = (page, n = 180) => page.evaluate((n) => new Promise(res => { let k = 0, s = performance.now(); const tk = () => { if (++k >= n) return res((performance.now() - s) / n); requestAnimationFrame(tk); }; requestAnimationFrame(tk); }), n);
+    const clipOf = async (page) => { const b = await (await page.$('#g')).boundingBox(); return { x: b.x, y: b.y, width: b.width, height: b.height }; };
+    const freeze = (page) => page.evaluate(() => { const G = window.__th; G.state = 'fly'; G.paused = false; G.attract = false; G.round = 2; G.wx = window.__T().levels[0]; G.rain = []; G.shots = 3; G.flightT = 30; G.mouse.on = false;
+      G.birds = [{ x: 60, y: 50, vx: 0, vy: 0, sp: 0, tier: 'hi', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }, { x: 150, y: 90, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 2, at: 0, dirT: 1e9, hitT: 0 }]; G.flightT = -1e9; });
+    {
+      const { ctx, page, errs } = await newPage(browser);
+      await page.goto(url); await sleep(700);
+      const c0 = await page.evaluate(() => window.__crt());
+      console.log(`  auto: tier ${c0.tier}, calibration ${JSON.stringify(c0.cal)}, backing ${c0.w}x${c0.h}`);
+      ok(c0.ok && c0.want, `E1: WebGL post-process initialised (${c0.cal && c0.cal.renderer})`);
+      ok(c0.active ? (c0.canvasShown && !c0.overlay) : (!c0.canvasShown && c0.overlay), `E1: DOM matches the selected tier (active=${c0.active}, GL canvas shown=${c0.canvasShown}, CSS overlay=${c0.overlay})`);
+      // screenshots: full, lite, off — all non-blank, all different
+      await freeze(page); const shots = {};
+      for (const [name, t] of [['full', 2], ['lite', 1]]) { await page.evaluate((t) => window.__crtTier(t), t); await sleep(250); shots[name] = await page.screenshot({ clip: await clipOf(page) }); }
+      await page.evaluate(() => window.__toggleCRT()); await sleep(250); shots.off = await page.screenshot({ clip: await clipOf(page) });
+      const off = await page.evaluate(() => window.__crt());
+      ok(!off.active && !off.canvasShown && off.overlay, 'E1: CRT OFF hides the GL canvas and restores the CSS scanlines');
+      const fs = await pngStats(page, shots.full, shots.off), ls = await pngStats(page, shots.lite, shots.off), os = await pngStats(page, shots.off), fl = await pngStats(page, shots.full, shots.lite);
+      ok(fs.sd > 20 && ls.sd > 20 && os.sd > 20, `E1: full, lite and off frames are non-blank (luma sd ${fs.sd.toFixed(1)} / ${ls.sd.toFixed(1)} / ${os.sd.toFixed(1)})`);
+      ok(fs.diff > 6 && ls.diff > 3 && fl.diff > 3, `E1: CRT frames differ from the plain frame (mean abs diff full ${fs.diff.toFixed(1)}, lite ${ls.diff.toFixed(1)}, full-vs-lite ${fl.diff.toFixed(1)})`);
+      require('fs').writeFileSync(path.resolve(__dirname, 'shots', 'e1_full.png'), shots.full); require('fs').writeFileSync(path.resolve(__dirname, 'shots', 'e1_lite.png'), shots.lite); require('fs').writeFileSync(path.resolve(__dirname, 'shots', 'e1_off.png'), shots.off);
+      // frame time per tier (work = update+draw+post-process, synced with readPixels so GPU time counts) and rAF interval
+      const perf = {};
+      for (const [name, t] of [['full', 2], ['lite', 1], ['off', -1]]) {
+        await page.evaluate((t) => { if (t < 0) { if (window.__crt().want) window.__toggleCRT(); } else { if (!window.__crt().want) window.__toggleCRT(); window.__crtTier(t); } }, t); await sleep(300);
+        const w = await page.evaluate(() => window.__perf(150)); const r = await raf(page); perf[name] = { work: +w.avg.toFixed(2), p95: +w.p95.toFixed(2), raf: +r.toFixed(2), tier: (await page.evaluate(() => window.__crt())).tier, active: w.crt, px: w.w + 'x' + w.h };
+      }
+      console.log('  frame time (ms): ' + JSON.stringify(perf));
+      await page.evaluate(() => { if (!window.__crt().want) window.__toggleCRT(); window.__crtTier(0); });
+      // auto quality on a fresh load: calibration + governor must settle at a tier that holds the frame rate
+      { const p2 = await ctx.newPage(); await p2.goto(url); await sleep(500); await p2.evaluate(() => { const G = window.__th; G.state = 'fly'; G.attract = false; G.wx = window.__T().levels[1]; G.birds = []; G.flightT = -1e9; });
+        await sleep(7000); const a = await p2.evaluate(() => window.__crt()); const r = await raf(p2, 240); const w = await p2.evaluate(() => window.__perf(120));
+        console.log(`  auto after 7 s: tier ${a.tier} (active ${a.active}), governor steps ${a.governed}, raf ${r.toFixed(2)} ms, work ${w.avg.toFixed(2)} ms`);
+        ok(r <= 18, `E1: auto quality holds ~60 fps headless (raf ${r.toFixed(2)} ms at tier ${a.tier}${a.active ? '' : ' = CSS fallback'})`); await p2.close(); }
+      // input stays aligned with the curved image: click where a sprite is DISPLAYED (inverse barrel) near the corners
+      await page.evaluate(() => window.__crtTier(2)); await sleep(150);
+      const box = await clipOf(page);
+      const inv = (x, y) => { const K = 0.08, N = 1 + K * 0.25; const t = [x / 256, y / 240]; let u = t.slice(); for (let i = 0; i < 20; i++) { const cx = u[0] - .5, cy = u[1] - .5, k = (1 + K * (cx * cx + cy * cy)) / N; u = [.5 + (t[0] - .5) / k, .5 + (t[1] - .5) / k]; } return [box.x + u[0] * box.width, box.y + u[1] * box.height]; };
+      let hits = 0; const spots = [[4, 30], [228, 30], [4, 140], [228, 140], [110, 8], [110, 145], [30, 90], [210, 70]];
+      for (const [bx, by] of spots) {
+        await page.evaluate(([bx, by]) => { const G = window.__th; G.state = 'fly'; G.paused = false; G.shots = 3; G.flightT = 30; G.tally = []; G.birds = [{ x: bx, y: by, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; }, [bx, by]);
+        await page.mouse.click(...inv(bx + 12, by + 10)); await sleep(60);
+        if (await page.evaluate(() => window.__th.tally.includes('hit') || window.__th.birds[0].st !== 'fly')) hits++;
+      }
+      ok(hits === spots.length, `E1: mouse clicks on displayed sprites under barrel distortion hit (${hits}/${spots.length}, incl. corners)`);
+      // keyboard C toggles; typing the vcc code does not
+      const w0 = await page.evaluate(() => window.__crt().want); await page.keyboard.press('c'); await sleep(50); const w1 = await page.evaluate(() => window.__crt().want);
+      await page.keyboard.press('c'); await sleep(50);
+      await page.evaluate(() => { window.__th.state = 'title'; }); const a0 = await page.evaluate(() => window.__th.assist); await page.keyboard.type('vcc'); await sleep(50);
+      const after = await page.evaluate(() => ({ want: window.__crt().want, assist: window.__th.assist }));
+      ok(w1 === !w0 && after.want === w0 && after.assist === !a0, `E1: C toggles the CRT; typing VCC toggles assist without flipping the CRT (${w0}->${w1}->${after.want}, assist ${a0}->${after.assist})`);
+      if (after.assist) await page.keyboard.type('vcc');
+      // the third HUD icon toggles it too
+      await page.evaluate(() => { window.__th.state = 'fly'; window.__th.birds = []; }); const i0 = await page.evaluate(() => window.__crt().want);
+      await page.evaluate(() => window.__tap(220, 6)); await sleep(50); const i1 = await page.evaluate(() => window.__crt().want);
+      await page.evaluate(() => window.__tap(220, 6)); await sleep(50);
+      ok(i1 === !i0, `E1: CRT icon (215,2) toggles (${i0}->${i1})`);
+      // context loss -> 2D fallback -> restore
+      const lost = await page.evaluate(async () => { const gl = document.getElementById('crtgl').getContext('webgl'); const ext = gl.getExtension('WEBGL_lose_context'); ext.loseContext(); await new Promise(r => setTimeout(r, 200)); const a = window.__crt(); ext.restoreContext(); await new Promise(r => setTimeout(r, 400)); return { a, b: window.__crt() }; });
+      ok(lost.a.lost && !lost.a.active && lost.a.overlay && !lost.a.canvasShown && lost.b.ok && !lost.b.lost, `E1: webglcontextlost falls back to 2D, restored re-initialises (lost: active=${lost.a.active}; restored: ok=${lost.b.ok}, tier ${lost.b.tier}, err ${lost.b.err})`);
+      await sleep(300);
+      ok(errs.length === 0, 'E1: zero page errors' + (errs.length ? ' ' + errs[0] : ''));
+      await ctx.close();
+    }
+    // no WebGL at all: getContext('webgl') stubbed to null
+    {
+      const { ctx, page, errs } = await newPage(browser);
+      await page.addInitScript(() => { const g = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function (t, o) { return /webgl/.test(t) ? null : g.call(this, t, o); }; });
+      await page.goto(url); await sleep(600);
+      const c = await page.evaluate(() => window.__crt());
+      await page.evaluate(() => window.__tap(128, 100)); await sleep(150); const st = await page.evaluate(() => window.__th.state);
+      await freeze(page); await sleep(150); const shot = await page.screenshot({ clip: await clipOf(page) }); const s = await pngStats(page, shot);
+      await page.keyboard.press('c'); await sleep(80); const toast = await page.evaluate(() => window.__th.toast && window.__th.toast.txt);
+      ok(!c.ok && !c.active && !c.canvasShown && c.overlay && st === 'boot' && s.sd > 20, `E1: WebGL stubbed off -> 2D canvas + CSS scanlines, game starts, frame non-blank (err "${c.err}", sd ${s.sd.toFixed(1)})`);
+      ok(/CRT (OFF|UNAVAILABLE)/.test(toast || '') && errs.length === 0, `E1: toggling without WebGL is harmless (toast "${toast}"), zero errors`);
+      await ctx.close();
+    }
+    // reduced motion: CRT off by default
+    {
+      const { ctx, page, errs } = await newPage(browser, { reducedMotion: 'reduce' });
+      await page.goto(url); await sleep(600);
+      const c = await page.evaluate(() => window.__crt());
+      ok(!c.want && !c.active && errs.length === 0, `E1: prefers-reduced-motion starts with the CRT off (want=${c.want})`);
+      await ctx.close();
+    }
+  }
+
   await browser.close();
   console.log(`\n${fails.length ? 'FAILURES: ' + fails.length + '\n - ' + fails.join('\n - ') : 'ALL PASS'}`);
   process.exit(fails.length ? 1 : 0);

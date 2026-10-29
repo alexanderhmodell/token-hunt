@@ -1,7 +1,8 @@
 """Render every sprite to one PNG (scaled) on a sky-blue ground so I can eyeball them."""
-import sys
+import os, sys
 from PIL import Image, ImageDraw
-sys.path.insert(0, "/home/claude/token-hunt")
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
 import sprites as S
 
 S.check()
@@ -21,6 +22,6 @@ for name, s in items:
             col = S.PALETTE[c]
             d.rectangle([(x + i) * SCALE, (GAP + y) * SCALE, (x + i + 1) * SCALE - 1, (GAP + y + 1) * SCALE - 1], fill=col)
     x += len(s[0]) + GAP
-out = "/home/claude/token-hunt/sprites_preview.png"
+out = os.path.join(HERE, "sprites_preview.png")
 img.save(out)
 print(out, img.size)
