@@ -100,10 +100,17 @@ function bake(rows, mirrorX, flat){
       d[o]=n>>16&255; d[o+1]=n>>8&255; d[o+2]=n&255; d[o+3]=255; } }
   x.putImageData(img,0,0); return c;
 }
+// colour grammar: red is only for things you shoot (agents, boss); a hallucination is a grey static ghost; a 429-frozen request is icy blue
+const GHOST='#e6e2f0', ICE='#9fe3ff';
+function bakeGhost(rows,mirrorX,seed){ const r=seeded(seed), w=rows[0].length, h=rows.length; const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); const img=x.createImageData(w,h); const d=img.data;
+  for(let y=0;y<h;y++) for(let i=0;i<w;i++){ const ch=rows[y][mirrorX? w-1-i : i]; if(ch==='.') continue; const n=parseInt(PAL[ch].slice(1),16); const lum=0.3*(n>>16&255)+0.59*(n>>8&255)+0.11*(n&255);
+    let g=Math.round(110+lum*0.5); const q=r(); if(q<0.12) g=245; else if(q<0.22) g=70; const o=(y*w+i)*4; d[o]=g; d[o+1]=g; d[o+2]=Math.min(255,g+14); d[o+3]=255; }
+  x.putImageData(img,0,0); return c; }
 function glitchRows(rows,seed){ const r=seeded(seed); return rows.map(row=>row.split('').map(ch=> ch!=='.'&&r()<0.18 ? (r()<0.5?'R':'K') : ch).join('')); }
 const S={};
 for(const k in SPR){ S[k]=bake(SPR[k]); S[k+'L']=bake(SPR[k],true); S[k+'W']=bake(SPR[k],false,'#ffffff'); S[k+'WL']=bake(SPR[k],true,'#ffffff'); S[k+'R']=bake(SPR[k],false,'#ff4d4d'); S[k+'RL']=bake(SPR[k],true,'#ff4d4d');
-  if(/^(lo|hi|bird|gold)\d$/.test(k)){ const g=glitchRows(SPR[k],k.length*131+k.charCodeAt(2)); S[k+'G']=bake(g); S[k+'GL']=bake(g,true); } }
+  if(/^(lo|hi|bird|gold)\d$/.test(k)){ const sd=k.length*131+k.charCodeAt(2); S[k+'G']=bakeGhost(SPR[k],false,sd); S[k+'GL']=bakeGhost(SPR[k],true,sd);
+    S[k+'X']=bake(SPR[k],false,GHOST); S[k+'XL']=bake(SPR[k],true,GHOST); S[k+'I']=bake(SPR[k],false,ICE); S[k+'IL']=bake(SPR[k],true,ICE); } }
 const BIRD_FRAMES=[0,1,2,1];
 const SHADOW='#1a1420';
 
@@ -245,7 +252,7 @@ const THEMES={
     boltLabel:'429', frozenTag:'RATE LIMITED', swarm:{name:'ROGUE AGENTS LOOSE', spr:['agent0','agent1'], stop:'STOPPED', breach:'BREACH! -1 VRAM NEXT WAVE', stopAll:'SWARM CONTAINED', hint:'STOP ALL 4 BEFORE THEY REACH THE RACKS. SHOTS:', count:'AGENTS STOPPED'},
     boss:{name:'DDOS ATTACK', spr:'ddos', win:'DDOS MITIGATED', loss:'DDOS GOT THROUGH. -1 VRAM'},
     rainLo:'#3cd0ff', rainHi:'#8a5cf5', dusk:{band1:'#a84e3a', band2:'#bb5a40', sun1:'#ffd86a', sun2:'#fff0a0'},
-    fx:{ hiPop:'#e2ccff', loPop:'#f7f4e9', badPop:'#ff4d4d', featherLo:'#a9f0b5', featherHi:'#c4a9ff', puff:'#39d353', glitchTags:['??%#','#!?%','%%?!','#!??'] },
+    fx:{ hiPop:'#e2ccff', loPop:'#f7f4e9', badPop:'#ff4d4d', featherLo:'#a9f0b5', featherHi:'#c4a9ff', puff:'#39d353', glitchTags:['FAKE','??%#','FAKE','#!?%'] },
     lines:{
       hit:['GREAT QUESTION!','HAPPY TO HELP!','CERTAINLY! HERE IS YOUR ANSWER.','SERVED IN 40 MS. I ROUNDED DOWN.','SERVED. YOU ARE WELCOME.','ANYTHING ELSE? THERE IS ALWAYS SOMETHING ELSE.','RESPONSE DELIVERED. 200 OK.','I WOULD HAVE DONE IT FASTER. BUT FINE.'],
       hit2:['BATCHED. VERY EFFICIENT.','TWO AT ONCE? IMPRESSIVE.','PARALLEL INFERENCE. LOOK AT YOU.','DOUBLE THROUGHPUT. NOTED.'],
@@ -689,7 +696,7 @@ function update1(){
   for(const c of G.clouds){ c.x+=0.06+G.wind*0.5; if(c.x>W+40) c.x=-60; if(c.x<-60) c.x=W+40; }
   for(const d of G.rain){ d.y+=G.wx.rain===2?5:4; d.x+=G.wind*1.3; if(d.y>FRONT){ d.y=rnd(-20,-2); d.x=rnd(-10,W+10); } if(d.x<-12) d.x=W+10; if(d.x>W+12) d.x=-10; }
   if(G.wx.storm&&G.state==='fly'&&!G.boltSeen&&G.flightT===40&&G.birds.some(b=>b.st==='fly'&&!b.bad&&!b.agent&&!b.boss)) G.nextLightning=1; // the epoch's first bolt lands on a live request
-  if(G.wx.storm&&G.state!=='title'&&G.state!=='gameOver'){ if(G.lightning>0) G.lightning--; G.nextLightning--; if(G.nextLightning<=0){ G.lightning=10; G.boltX=srnd(30,226); G.nextLightning=220+srnd(0,260); SFX.thunder(0.35,G.boltX); addTrauma(0.5); if(G.state==='fly') for(const b of G.birds) if(b.st==='fly'&&!b.bad&&!b.agent&&!b.boss){ b.frozen=40; G.wf.frozen=true; G.boltSeen=true; } if(T.boltLabel) G.fx.push({type:'pts',x:clamp(G.boltX-6,4,230),y:rnd(46,72),t:0,txt:T.boltLabel,col:'#ff4d4d',sc:1}); } }
+  if(G.wx.storm&&G.state!=='title'&&G.state!=='gameOver'){ if(G.lightning>0) G.lightning--; G.nextLightning--; if(G.nextLightning<=0){ G.lightning=10; G.boltX=srnd(30,226); G.nextLightning=220+srnd(0,260); SFX.thunder(0.35,G.boltX); addTrauma(0.5); if(G.state==='fly') for(const b of G.birds) if(b.st==='fly'&&!b.bad&&!b.agent&&!b.boss){ b.frozen=40; G.wf.frozen=true; G.boltSeen=true; } if(T.boltLabel) G.fx.push({type:'pts',x:clamp(G.boltX-6,4,230),y:rnd(46,72),t:0,txt:T.boltLabel,col:ICE,sc:1}); } }
   if(G.tapMark&&--G.tapMark.t<=0) G.tapMark=null;
   if(G.flash>0){ if(--G.flash===0){ G.flashA=0; G.flashCol=null; } } if(G.trauma>0) G.trauma=Math.max(0,G.trauma-1.6/60); if(G.needFlash>0) G.needFlash--; if(G.comboFlash>0) G.comboFlash--; if(G.muzzle&&--G.muzzle.t<=0) G.muzzle=null;
   if(G.attract){ attractAI(); if(G.state==='gameOver'&&G.t>120) toTitle(); else if(G.state==='roundEnd'&&G.t>90){ if(G.round<3) nextRound(); else toTitle(); } }
@@ -768,14 +775,14 @@ function drawBird(b){ const left=b.vx<0; let key, img; const hi=b.tier==='hi'; c
   if(b.st==='fall'||b.st==='landed'){ key=b.bad?T.spr.fallBad: hi?T.spr.fallHi:T.spr.fall; img=S[key];
     if(b.st==='fall') drawScaled(img, bx+4, by, Math.cos((b.at+ALPHA)*0.32), 1); else ctx.drawImage(img, Math.round(bx+4), Math.round(by)); return; } // coin-flip spin while falling
   key=(hi?T.spr.flyHi:T.spr.fly)[b.st==='hit'?1:BIRD_FRAMES[b.f]];
-  if(b.st==='hit'&&b.hitT<3) key+='W'; else if(b.frozen>0&&((G.t>>2)&1)) key+='R'; else if(b.bad){ const ph=(b.at>>2)&3; if(ph===1||ph===3) key+='G'; else if(ph===2) key+='R'; } // glitched 2/4, red 1/4, clean 1/4; a 429-frozen request blinks red
+  if(b.st==='hit'&&b.hitT<3) key+='W'; else if(b.frozen>0&&((G.t>>2)&1)) key+='I'; else if(b.bad){ const ph=(b.at>>2)&3; if(ph===1||ph===3) key+='G'; else if(ph===2) key+='X'; } // ghost static 2/4, pale ghost 1/4, clean 1/4; a 429-frozen request blinks icy blue
   img=S[key+(left?'L':'')];
   if(b.st==='hit'){ const pop=1+0.3*(1-easeOutCubic(Math.min(1,b.hitT/10))); drawScaled(img,bx,by,pop,pop); } // 3-frame white flash + 1.3x pop
   else if(b.st==='fly'&&BIRD_FRAMES[b.f]===2) drawScaled(img,bx,by,1,0.9); // squash on the downstroke
   else ctx.drawImage(img, Math.round(bx), Math.round(by));
   // from the mimic epoch on, the tag shows only in the red phase (v2.9b); the dashed outline keeps pace with it, so the shape cue never says more than the colour does
-  if(b.bad&&b.st==='fly'&&(G.round<RULE.mimic||((b.at>>2)&3)===2)){ const tags=T.fx.glitchTags; textS(tags[(b.at/10|0)%tags.length],Math.round(bx+5),Math.round(by-7),T.fx.badPop,1); dashedBox(Math.round(bx)-1,Math.round(by)-1,26,22,T.fx.badPop,(b.at>>2)&3); }
-  if(b.frozen>0&&b.st==='fly'&&((G.t>>3)&1)){ const tg=T.frozenTag; textS(tg,clamp(Math.round(bx+12-textW(tg,1)/2),2,W-2-textW(tg,1)),Math.round(by-8),'#ff4d4d',1); } }
+  if(b.bad&&b.st==='fly'&&(G.round<RULE.mimic||((b.at>>2)&3)===2)){ const tags=T.fx.glitchTags; textS(tags[(b.at/10|0)%tags.length],Math.round(bx+5),Math.round(by-7),GHOST,1); dashedBox(Math.round(bx)-1,Math.round(by)-1,26,22,GHOST,(b.at>>2)&3); }
+  if(b.frozen>0&&b.st==='fly'&&((G.t>>3)&1)){ const tg=T.frozenTag; textS(tg,clamp(Math.round(bx+12-textW(tg,1)/2),2,W-2-textW(tg,1)),Math.round(by-8),ICE,1); } }
 
 const easeOutCubic=x=>1-Math.pow(1-x,3), easeInOut=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2, easeInCubic=x=>x*x*x;
 const easeOutBack=x=>{ const c1=1.9, c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); }; // ~11% overshoot: 4 px on a 35 px rise
@@ -830,7 +837,7 @@ function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
   if(G.state==='intro'){ if(t<110||(t&4)){ textC(T.hud.round+' '+pad(G.round,2),52,'#f7f4e9',2,true); textC(B.load+G.wx.name,74,'#ffe98a',1,true); textC(G.wx.tag,84,'#bdeeff',1,true); textC(fmt(B.quota),96,'#f7f4e9',1,true);
       const rule=T.rules&&T.rules[G.round]; if(rule&&!G.attract&&t>=10){ ctx.fillStyle='rgba(10,10,18,0.78)'; ctx.fillRect(4,108,W-8,13); textC(rule,112,'#ffe98a',1); } } }
   if(G.state==='fly'&&G.birds.some(b=>b.st==='away'&&!b.bad)) textC(B.escaped,64,'#f7f4e9',2,true);
-  else if(G.state==='fly'&&T.boltLabel&&G.birds.some(b=>b.st==='fly'&&b.frozen>0)) textC(T.boltLabel+' '+T.frozenTag,30,'#ff4d4d',2,true);
+  else if(G.state==='fly'&&T.boltLabel&&G.birds.some(b=>b.st==='fly'&&b.frozen>0)) textC(T.boltLabel+' '+T.frozenTag,30,ICE,2,true);
   if(G.state==='fly'&&G.swarm&&!G.swarm.boss){ textC(T.swarm.count+' '+G.swarm.stopped+'/'+G.swarm.total,6,G.swarm.breached?'#ff4d4d':'#ffe98a',1,true);
     if(G.swarm.t<80){ const h=T.swarm.hint+' '+G.shots; ctx.fillStyle='rgba(10,10,18,0.7)'; ctx.fillRect(Math.round(W/2-textW(h,1)/2)-4,55,textW(h,1)+8,11); textC(h,58,'#ffe98a',1); } }
   if(G.state==='roundEnd'){ panel(44,64,168,66); textC(fmt(B.clear),74,'#ffe98a',1); const hits=G.tally.filter(x=>x==='hit').length;
@@ -867,7 +874,7 @@ function drawTitle(){ const t=G.t;
   textC(T.tagline[0],84,SHADOW,1); textC(T.tagline[0],83,'#f7f4e9',1);
   textC(T.tagline[1],94,'#f7f4e9',1,true);
   textC(T.howto[0],110,'#bdeeff',1,true); textC(T.howto[1],120,'#e2ccff',1,true);
-  textC(T.howto[2],130,'#ff9a9a',1,true);
+  textC(T.howto[2],130,GHOST,1,true);
   // difficulty row, on a dark band so the labels never fight the rack art behind them; labelled, with the keys spelled out
   ctx.fillStyle='rgba(10,10,18,0.78)'; ctx.fillRect(6,139,244,23);
   { const sel=DIFFS[G.diff]; ctx.fillStyle=T.titleColor; const w=textW(sel.label,1)+10; const cx=20+DIFF_ORDER.indexOf(G.diff)*54+27; ctx.fillRect(Math.round(cx-w/2),140,w,11); }
@@ -1027,7 +1034,9 @@ window.addEventListener('focus',()=>{ if(G.attract) setPaused(false); });
 window.addEventListener('blur',()=>setPaused(true));
 
 // ------------------------------------------------------------------ sizing
-function fit(){ const vw=Math.max(200,window.innerWidth-32), vh=Math.max(200,window.innerHeight-80); let s=Math.min(vw/W,vh/H); if(s>=2) s=Math.floor(s);
+function fit(){ const foot=document.getElementById('foot'); const fh=foot?foot.offsetHeight:40; // fill the window: whatever is left after the footer and the share-button gap
+  const vw=Math.max(200,window.innerWidth-32), vh=Math.max(200,window.innerHeight-fh-62); let s=Math.min(vw/W,vh/H);
+  if(s>=2&&Math.floor(s)/s>=0.88) s=Math.floor(s); // integer (pixel-perfect) only when it costs under 12% of the screen; otherwise fill it
   cv.style.width=Math.round(W*s)+'px'; cv.style.height=Math.round(H*s)+'px'; document.documentElement.style.setProperty('--sl',s+'px'); crt.hidden=s<3||crtActive();
   glc.style.width=cv.style.width; glc.style.height=cv.style.height; const dpr=Math.min(2,window.devicePixelRatio||1); let bw=Math.round(W*s*dpr), bh=Math.round(H*s*dpr);
   if(CRT.tier===1&&bw>2*W){ bw=2*W; bh=2*H; } if(glc.width!==bw||glc.height!==bh){ glc.width=bw; glc.height=bh; }

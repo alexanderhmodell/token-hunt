@@ -14,7 +14,7 @@ Miss, and a smug chatbot rises from the rack row and says, out loud: "As an AI, 
 
 Easy, Medium, Hard, and a Daily where everyone gets the same requests. A BIOS boot, an attract mode that plays itself, a WebGL CRT (barrel, mask, bloom, phosphor — press C) that calibrates itself to your GPU and steps down on weak ones, captions when muted, a one-hand mode, and a deterministic, replayable simulation. A couple of easter eggs for people who read the source.
 
-Built by Claude (Anthropic) end to end — code, pixel art, shaders, and synthesized audio — designed, directed, and playtested by Alex Modell. One HTML file, no engine, zero assets, zero network requests: every sprite is hand-pixeled in code, the font is a 3×5 bitmap, the CRT is a shader string, the voice is the browser's own, and every other sound is synthesized live with the Web Audio API. Native 256×240, pixel-perfect scaling. Mouse or touch.
+Built by Claude (Anthropic) end to end — code, pixel art, shaders, and synthesized audio — designed, directed, and playtested by Alex Modell. One HTML file, no engine, zero assets, zero network requests: every sprite is hand-pixeled in code, the font is a 3×5 bitmap, the CRT is a shader string, the voice is the browser's own, and every other sound is synthesized live with the Web Audio API. Native 256×240, scaled to fill your screen. Mouse or touch.
 
 **Controls:** click or tap to serve · tap to skip the chatter · M mute · P / Esc pause · C CRT on/off · 1/2/3/4 difficulty (4 = Daily) · Space/Enter advance.
 
