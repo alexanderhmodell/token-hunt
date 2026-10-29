@@ -430,7 +430,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       G.birds = [{ x: 100, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: true, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }, { x: 60, y: 110, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }];
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); G.freeze = 1e6; await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       const b = G.birds[0], x0 = Math.round(b.x) - 1, y0 = Math.round(b.y) - 1, d = document.getElementById('g').getContext('2d').getImageData(0, 0, 256, 240).data;
-      const red = (x, y) => { const i = (y * 256 + x) * 4; return d[i] === 230 && d[i + 1] === 226 && d[i + 2] === 240; }; // the ghost outline colour (v3.5) let on = 0, n = 0;
+      const red = (x, y) => { const i = (y * 256 + x) * 4; return d[i] === 230 && d[i + 1] === 226 && d[i + 2] === 240; }; /* the ghost outline colour (v3.5) */ let on = 0, n = 0;
       for (let i = 0; i < 26; i++) { n += 2; on += red(x0 + i, y0) + red(x0 + i, y0 + 21); } for (let j = 0; j < 22; j++) { n += 2; on += red(x0, y0 + j) + red(x0 + 25, y0 + j); }
       const r2 = G.birds[1]; let onReal = 0; for (let i = 0; i < 26; i++) onReal += red(Math.round(r2.x) - 1 + i, Math.round(r2.y) - 1); G.freeze = 0; return { frac: on / n, onReal }; });
     ok(dash.frac > 0.35 && dash.frac < 0.65 && dash.onReal === 0, `E9: hallucinations get a dashed outline (${(dash.frac * 100).toFixed(0)}% of the box perimeter dashed; real requests none)`);
