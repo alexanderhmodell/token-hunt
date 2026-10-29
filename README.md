@@ -19,6 +19,7 @@ node og.js              # renders dist/og.png (link preview card) from the title
 node stress.js          # stress battery: invariants under click/pause/skin spam, 30 epochs per skin, no-storage boot, hot reload
 node stress2.js         # touch emulation, keyboard + state fuzz, blur/focus, keyboard paths, 150 s aimbot run
 node elite_test.js      # v3 systems: replay determinism, WebGL CRT tiers, speech, audio mix, interpolation, boss, flow, gates (ONLY=E0,E3 for a subset)
+node visual_test.js     # 9 canonical states rendered deterministically, pixel-diffed against goldens/ (0.5%); --update-goldens to rewrite
 ```
 
 Tests find Playwright and Chromium at this sandbox's paths by default (`pw.js`); set `PLAYWRIGHT_MODULE=playwright CHROME_PATH=` to use an npm install and its bundled browser. `.github/workflows/test.yml` runs the whole suite on every push in the Playwright container and fails if the committed `dist/` does not match the source.

@@ -1034,6 +1034,7 @@ window.__replay=(run,opts)=>{ opts=opts||{}; run=run||G.lastRun;
   try{ let n=0; while(G.replay&&G.frame<to&&n<500000){ update(); n++; } const R=G.replay; if(R) while(R.i<R.rec.length&&R.rec[R.i][0]<=G.frame) applyInput(R.rec[R.i++]); } finally{ quiet=false; } // inputs that arrived after the last step
   const s=simStats(); G.replay=null; return s; };
 window.__simStats=simStats;
+window.__seedRun=s=>seedRun(s); window.__seedFx=n=>fxRng.set(n); window.__loopReset=t=>{ last=t; acc=0; }; // visual regression: deterministic frames
 function boot(data){ if(data&&data.hi>G.hi){ G.hi=data.hi; G.hiBoot=data.hi; } if(crtWant) crtInit(); crtApplyDom(); let th='gpu'; try{ th=localStorage.getItem('th.theme')||'gpu'; }catch(e){} if(!THEMES[th]) th='gpu'; applyTheme(th); let df='medium'; try{ df=localStorage.getItem('th.diff')||'medium'; }catch(e){} setDiff(df); requestAnimationFrame(frame); }
 try{ window.claude&&window.claude.hot&&window.claude.hot.snapshot&&window.claude.hot.snapshot(()=>({hi:G.hi})); }catch(e){}
 if(window.claude&&window.claude.hot&&window.claude.hot.ready) window.claude.hot.ready(boot); else boot((window.claude&&window.claude.hot&&window.claude.hot.data)||{});
