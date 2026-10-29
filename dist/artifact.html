@@ -261,7 +261,7 @@ const DIFFS={
 const DIFF_ORDER=['easy','medium','hard'];
 let D=DIFFS.medium;
 function setDiff(id){ if(!DIFFS[id]) return; D=DIFFS[id]; G.diff=id; try{ localStorage.setItem('th.diff',id); }catch(e){} }
-const req=r=> clamp(NEED[Math.min(r-1,NEED.length-1)]+D.need, 2, EPOCH_LEN);
+const req=r=> clamp(NEED[Math.min(r-1,NEED.length-1)]+D.need, 2, EPOCH_LEN-1); // never demand a perfect epoch
 const lvl=r=> T.levels[(r-1)%T.levels.length];
 const TIERS={ lo:{p:0.72, value:300,  speed:0.85, dirT:[30,70]}, hi:{p:0.28, value:1000, speed:1.3, dirT:[15,40]} };
 const COST=100;
@@ -313,10 +313,10 @@ function shoot(x,y){ if(G.state!=='fly'||G.shots<=0) return; G.shots--; G.cost+=
   for(const b of G.birds){ if(b.st!=='fly') continue;
     if(b===target){ hitAny=true; b.st='hit'; b.hitT=0; G.freeze=3;
       if(b.bad){ G.score=Math.max(0,G.score-500); G.combo=0; G.hallucServed=true; G.shake=5;
-        G.fx.push({type:'pts',x:b.x-2,y:b.y-4,t:0,txt:'-500',col:T.fx.badPop,sc:2}); SFX.wrong(); continue; }
+        G.fx.push({type:'pts',x:clamp(b.x-2,2,W-2-textW('-500',2)),y:Math.max(6,b.y-4),t:0,txt:'-500',col:T.fx.badPop,sc:2}); SFX.wrong(); continue; }
       const hi=b.tier==='hi'; G.combo++; const m=comboMult(G.combo); if(m!==comboMult(G.combo-1)) G.comboFlash=10;
       const p=valueOf(b)*m*(G.assist?3:1); G.score+=p; G.tally.push('hit'); G.shake=hi?6:4;
-      G.fx.push({type:'pts',x:b.x-2,y:b.y-4,t:0,txt:'+'+p,col:hi?T.fx.hiPop:T.fx.loPop,sc:(hi||m>1)?2:1});
+      { const sc=(hi||m>1)?2:1, txt='+'+p; G.fx.push({type:'pts',x:clamp(b.x-2,2,W-2-textW(txt,sc)),y:Math.max(6,b.y-4),t:0,txt,col:hi?T.fx.hiPop:T.fx.loPop,sc}); }
       for(let i=0;i<6;i++) G.fx.push({type:'feather',x:b.x+12,y:b.y+10,vx:rnd(-1,1),vy:rnd(-1.5,0),t:0,col:hi?T.fx.featherHi:T.fx.featherLo});
       if(hi) SFX.gold(); else SFX.hit(); }
     else if(!b.bad){ const d=Math.hypot(x-(b.x+12),y-(b.y+10)); if(d<nearest) nearest=d; } }
@@ -402,10 +402,10 @@ function update(){
     case 'title': G.amb.x+=1.1; if(G.amb.x>W+10){ G.amb.x=-40; G.amb.y=rnd(20,90); } G.amb.t++; G.titleFox=(G.titleFox+1)%420;
       G.idle++; if(G.idle>=540&&!G.attract) startGame(true); break;
     case 'boot': G.boot.t++; { const li=Math.min(T.boot.length-1,Math.floor(G.boot.t/22)); if(li!==G.boot.line){ G.boot.line=li; SFX.tick(); } if(G.boot.t>=T.boot.length*22+40) bootDone(); } break;
-    case 'intro': if(G.t>=(G.round===1?95:130)){ if(G.wave===0&&G.round===1) beginFirstWave(); else startWave(); } break;
+    case 'intro': if(G.t>=(G.round===1?80:130)){ if(G.wave===0&&G.round===1) beginFirstWave(); else startWave(); } break;
     case 'fly': updateBirds(); break;
     case 'fox': G.fox.t++; { const k=G.fox.t-16; if(k>=0&&k<G.fox.line.length&&(k&1)===0&&G.fox.line[k]!==' ') SFX.chirp(); }
-      if(G.fox.mode==='tut'){ if(G.fox.t>=100) startWave(); break; }
+      if(G.fox.mode==='tut'){ if(G.fox.t>=70) startWave(); break; }
       if(G.fox.t>=110){ if(G.wave>=EPOCH_LEN) endRound(); else { G.state='gap'; G.t=0; } } break;
     case 'gap': if(G.t>=24) startWave(); break;
     case 'roundEnd': if(G.t>=300) nextRound(); break;
@@ -526,7 +526,8 @@ function drawIcons(){ // pause (229,2) + mute (243,2)
   ctx.fillStyle=SHADOW; ctx.fillRect(243,2,11,9); ctx.fillStyle=muted?'#8a8494':'#f7f4e9'; ctx.fillRect(245,5,2,3); ctx.fillRect(247,4,1,5); ctx.fillRect(248,3,1,7);
   if(muted){ ctx.fillStyle='#ff4d4d'; ctx.fillRect(250,4,1,1); ctx.fillRect(251,5,1,1); ctx.fillRect(252,6,1,1); ctx.fillRect(252,4,1,1); ctx.fillRect(250,6,1,1); } else { ctx.fillRect(250,5,1,3); ctx.fillRect(252,4,1,5); } }
 
-function draw(){ ctx.save(); if(G.shake>0&&!G.paused) ctx.translate(rnd(-1,1)|0,rnd(-1,1)|0);
+const REDUCED=(()=>{ try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } })();
+function draw(){ ctx.save(); if(G.shake>0&&!G.paused&&!REDUCED) ctx.translate(rnd(-1,1)|0,rnd(-1,1)|0);
   const [back,front]=SCENERY[T.scenery];
   drawSky(); back();
   if(G.state==='title') drawTitle();
@@ -538,16 +539,19 @@ function draw(){ ctx.save(); if(G.shake>0&&!G.paused) ctx.translate(rnd(-1,1)|0,
 // ------------------------------------------------------------------ input
 const TOUCH_LIFT=18; // finger offset so the thumb doesn't hide the target
 function pos(e){ const r=cv.getBoundingClientRect(); const touch=e.pointerType==='touch'; return {x:(e.clientX-r.left)*W/r.width, y:(e.clientY-r.top)*H/r.height-(touch?TOUCH_LIFT:0), touch}; }
-cv.addEventListener('pointerdown',e=>{ e.preventDefault(); cv.focus({preventScroll:true}); audioInit(); if(ac&&ac.state==='suspended') ac.resume(); const p=pos(e);
+cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===false) return; if(e.pointerType==='mouse'&&e.button!==0) return; cv.focus({preventScroll:true}); audioInit(); if(ac&&ac.state==='suspended') ac.resume(); const p=pos(e);
   const rawY=p.y+(p.touch?TOUCH_LIFT:0);
   if(rawY<=13&&p.x>=240){ toggleMute(); return; } if(rawY<=13&&p.x>=226&&p.x<240){ setPaused(!G.paused); return; }
   G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; handleTap(p.x,p.y); });
-cv.addEventListener('pointermove',e=>{ const p=pos(e); G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; });
+cv.addEventListener('pointermove',e=>{ if(e.isPrimary===false) return; const p=pos(e); G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; });
 cv.addEventListener('pointerleave',()=>{ G.mouse.on=false; });
 cv.addEventListener('pointerup',()=>{ audioInit(); if(ac&&ac.state==='suspended') ac.resume(); });
 cv.addEventListener('click',()=>{ if(ac&&ac.state==='suspended') ac.resume(); });
 cv.addEventListener('contextmenu',e=>e.preventDefault());
-window.addEventListener('keydown',e=>{ const k=e.key; if(document.activeElement===codeInput) return; if(k.length===1&&/[a-z]/i.test(k)) feedKey(k.toLowerCase()); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
+if(!window.PointerEvent){ const fake=(ev,type,touch)=>{ const t=touch?ev.changedTouches[0]:ev; cv.dispatchEvent(Object.assign(new Event(type,{bubbles:true,cancelable:true}),{clientX:t.clientX,clientY:t.clientY,pointerType:touch?'touch':'mouse',button:0,isPrimary:true})); };
+  cv.addEventListener('touchstart',e=>{ e.preventDefault(); fake(e,'pointerdown',true); },{passive:false}); cv.addEventListener('touchend',e=>{ fake(e,'pointerup',true); });
+  cv.addEventListener('mousedown',e=>fake(e,'pointerdown',false)); cv.addEventListener('mousemove',e=>fake(e,'pointermove',false)); cv.addEventListener('mouseup',e=>fake(e,'pointerup',false)); }
+window.addEventListener('keydown',e=>{ const k=e.key; if(e.repeat) return; if(document.activeElement===codeInput) return; if(k.length===1&&/[a-z]/i.test(k)) feedKey(k.toLowerCase()); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
   if(G.state==='title'&&(k==='1'||k==='2'||k==='3')){ setDiff(DIFF_ORDER[+k-1]); SFX.blip(); return; }
   if(G.state==='title'&&(k==='ArrowLeft'||k==='ArrowRight')){ const i=DIFF_ORDER.indexOf(G.diff); setDiff(DIFF_ORDER[clamp(i+(k==='ArrowRight'?1:-1),0,2)]); SFX.blip(); e.preventDefault(); return; }
   if(k==='m'||k==='M') toggleMute();
