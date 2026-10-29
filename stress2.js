@@ -156,7 +156,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
         else if (G.state === 'fly') {
           seen.maxBirds = Math.max(seen.maxBirds, G.birds.length);
           if (G.birds.filter(b => !b.bad).length >= 2 && G.flightT < 3) seen.doubles++;
-          const bad = G.birds.find(b => b.bad && b.st === 'fly'); if (bad && G.flightT === 1) seen.halluc++;
+          const bad = G.birds.find(b => b.bad && b.st === 'fly'); if (bad && seen.lastBadWave !== G.wavesStarted) { seen.lastBadWave = G.wavesStarted; seen.halluc++; }
           const b = G.birds.find(b => b.st === 'fly' && !b.bad);
           if (b && G.shots > 0 && G.flightT > 10 && (G.flightT - (seen.lastShot || 0)) > 14) { seen.lastShot = G.flightT; if (b.tier === 'hi') seen.hi++; tap(b.x + 12 + b.vx * 2, b.y + 10 + b.vy * 2); }
           else if (bad && G.shots > 0 && Math.random() < 0.01) { tap(bad.x + 12, bad.y + 10); seen.hallucServed++; }

@@ -232,10 +232,11 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       const n2 = (await spoken(page)).length; const rp = await page.evaluate(() => { const G = window.__th; if (!G.recInit) return 'none'; window.__replay({ init: G.recInit, rec: G.rec.slice(), frames: G.frame }, { headless: true, toFrame: 2000 }); return 'ok'; });
       const n3 = (await spoken(page)).length; ok(rp === 'ok' && n3 === n2, `E2: replays are silent (${n2} -> ${n3})`);
       // entrance: peek, 3 px dip, ~4 px overshoot, settle; exit eases in
-      const ys = await page.evaluate(() => { window.__th.fox.line = 'OK.'; return Array.from({ length: 79 }, (_, t) => window.__criticY(t, false)); }); // short line: v2.9 dwell = 60 f
+      const ys = await page.evaluate(() => { window.__th.fox.line = 'OK.'; return Array.from({ length: 160 }, (_, t) => window.__criticY(t, false)); });
       const top = 200 - 44, minY = Math.min(...ys.slice(10, 24)), dip = ys[10] - ys[6];
-      ok(Math.abs(dip - 3) < 0.01 && top - minY > 3 && top - minY < 5 && ys.slice(24, 60).every(y => y === top) && (ys[77] - ys[76]) > (ys[62] - ys[61]) && ys[78] >= 199.9,
-        `E2: entrance dips ${dip.toFixed(1)} px, overshoots ${(top - minY).toFixed(1)} px, settles at ${top}; exit accelerates (${(ys[62] - ys[61]).toFixed(2)} -> ${(ys[77] - ys[76]).toFixed(2)} px/f)`);
+      let L = 24; while (L < 140 && ys[L] === top) L++; // the dwell scales with the line (v2.9b: typed at 2 chars/frame, then hold >= 40 f)
+      ok(Math.abs(dip - 3) < 0.01 && top - minY > 3 && top - minY < 5 && L >= 50 && L < 140 && (ys[L + 16] - ys[L + 15]) > (ys[L + 2] - ys[L + 1]) && ys[L + 18] >= 199.9,
+        `E2: entrance dips ${dip.toFixed(1)} px, overshoots ${(top - minY).toFixed(1)} px, settles at ${top} until f${L}; exit accelerates (${(ys[L + 2] - ys[L + 1]).toFixed(2)} -> ${(ys[L + 16] - ys[L + 15]).toFixed(2)} px/f)`);
       // faces: talking frame + the game-over roast face
       await foxAt(page, 18, 'CERTAINLY! HERE IS YOUR ANSWER.'); await page.evaluate(() => { window.__th.birds = []; }); await sleep(120);
       await page.screenshot({ path: path.resolve(__dirname, 'shots', 'e2_talk.png') });
