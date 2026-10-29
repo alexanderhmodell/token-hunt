@@ -40,6 +40,8 @@ canvas:focus-visible{outline:2px solid var(--accent); outline-offset:9px}
 .foot{color:var(--dim); font-size:10px; letter-spacing:.08em; text-align:center; line-height:1.9; max-width:60ch}
 @media (max-width:600px){ body{justify-content:flex-start; padding-block:10px} }
 @media (hover:none) and (pointer:coarse){ .foot .keys{display:none} }
+body.touch #share,body.touch #brag{bottom:-42px} body.touch.over .foot{margin-top:34px} /* on a phone the buttons sit under the cabinet, never over the HUD */
+body.pointer canvas:focus-visible{outline:none}
 .foot b{color:var(--accent); font-weight:normal}
 #cardbox{position:fixed; inset:0; z-index:20; background:rgba(5,5,10,.88); display:flex; align-items:center; justify-content:center; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); padding-block:16px}
 .cardwrap{display:flex; flex-direction:column; align-items:center; gap:12px; max-width:100%}
@@ -192,19 +194,32 @@ const THEMES={
       {name:'IDLE',          sky:'#2a6fd6', floor:'#2b2f44', wind:0,   rain:0, cloud:'#dfe7ff', tag:'0.2 RPS. BREATHE.', music:{semi:7,step:0.15}},
     ],
     banners:{ escaped:'504 TIMEOUT', escapedTint:'rgba(255,77,77,0.22)', clear:'EPOCH %R COMPLETE', survived:'%L SURVIVED',
-              perfect:'99.9% UPTIME! +10000', over:'OUT OF MEMORY', overColor:'#ff4d4d', unit:'TOKENS', load:'LOAD: ', quota:'SERVE %N OF %E', served:'%H OF %E SERVED' },
-    boltLabel:'429', frozenTag:'RATE LIMITED', swarm:{name:'ROGUE AGENTS LOOSE', spr:['agent0','agent1'], stop:'STOPPED', breach:'BREACH! -1 VRAM THIS EPOCH', stopAll:'SWARM CONTAINED'},
+              perfect:'99.9% UPTIME! +%B', over:'OUT OF MEMORY', overColor:'#ff4d4d', unit:'TOKENS', load:'LOAD: ', quota:'SERVE %N OF %E', served:'%H OF %E SERVED' },
+    boltLabel:'429', frozenTag:'RATE LIMITED', swarm:{name:'ROGUE AGENTS LOOSE', spr:['agent0','agent1'], stop:'STOPPED', breach:'BREACH! -1 VRAM THIS EPOCH', stopAll:'SWARM CONTAINED', hint:'STOP ALL 4 BEFORE THEY REACH THE RACKS. SHOTS:', count:'AGENTS STOPPED'},
     rainLo:'#3cd0ff', rainHi:'#8a5cf5', dusk:{band1:'#a84e3a', band2:'#bb5a40', sun1:'#ffd86a', sun2:'#fff0a0'},
     fx:{ hiPop:'#e2ccff', loPop:'#f7f4e9', badPop:'#ff4d4d', featherLo:'#a9f0b5', featherHi:'#c4a9ff', puff:'#39d353', glitchTags:['??%#','#!?%','%%?!','#!??'] },
     lines:{
-      hit:['GREAT QUESTION!','HAPPY TO HELP!','CERTAINLY! HERE IS YOUR ANSWER.','I HOPE THIS HELPS!'],
-      hit2:['BATCHED. VERY EFFICIENT.','TWO AT ONCE? IMPRESSIVE.'],
-      hit3:['YOU ARE ON A STREAK. NOTED.','I HAVE UPDATED MY WEIGHTS.'],
-      miss:["AS AN AI, I CAN'T HELP WITH THAT.",'TRY REPHRASING YOUR REQUEST.','THAT IS OUTSIDE MY TRAINING DATA.'],
-      miss3:["LET'S TRY A SIMPLER QUESTION.",'HAVE YOU CONSIDERED EASY MODE?'],
-      nearMiss:['SO CLOSE. I FELT THAT.','OFF BY ONE. CLASSIC.'],
-      hallucServed:['I APOLOGIZE. THAT WAS INCORRECT.','YOU SERVED A HALLUCINATION.'],
-      hallucEscaped:['GOOD CALL. THAT ONE WAS MADE UP.'],
+      hit:['GREAT QUESTION!','HAPPY TO HELP!','CERTAINLY! HERE IS YOUR ANSWER.','I HOPE THIS HELPS!','SERVED. YOU ARE WELCOME.','ANYTHING ELSE I CAN DO?','RESPONSE DELIVERED. 200 OK.','ONE TOKEN AT A TIME.'],
+      hit2:['BATCHED. VERY EFFICIENT.','TWO AT ONCE? IMPRESSIVE.','PARALLEL INFERENCE. LOOK AT YOU.','DOUBLE THROUGHPUT. NOTED.'],
+      hitTriple:['A BURST. ALL THREE. THE RACKS ARE WARM.','THREE AT ONCE. I AM RECALCULATING MY OPINION OF YOU.'],
+      hit3:['YOU ARE ON A STREAK. NOTED.','I HAVE UPDATED MY WEIGHTS.','THREE IN A ROW. CONVERGING.','UPTIME IS LOOKING SUSPICIOUSLY GOOD.','KEEP THIS UP AND I GET A RAISE.'],
+      miss:["AS AN AI, I CAN'T HELP WITH THAT.",'TRY REPHRASING YOUR REQUEST.','THAT IS OUTSIDE MY TRAINING DATA.','REQUEST TIMED OUT. SO DID MY PATIENCE.','I WOULD HAVE CAUGHT THAT. JUST SAYING.','THE USER HAS LEFT THE CHAT.','504. THAT ONE IS ON YOU.'],
+      miss3:["LET'S TRY A SIMPLER QUESTION.",'HAVE YOU CONSIDERED EASY MODE?','THREE TIMEOUTS. I AM ESCALATING THIS.','SHOULD I CALL A HUMAN?'],
+      nearMiss:['SO CLOSE. I FELT THAT.','OFF BY ONE. CLASSIC.','A ROUNDING ERROR. NEARLY.'],
+      hallucServed:['I APOLOGIZE. THAT WAS INCORRECT.','YOU SERVED A HALLUCINATION.','THAT WAS MADE UP. YOU SERVED IT ANYWAY.','CONFIDENTLY WRONG. -500.'],
+      hallucEscaped:['GOOD CALL. THAT ONE WAS MADE UP.','YOU LET THE FAKE ONE GO. LEARNING.','RESTRAINT. RARE IN YOUR SPECIES.'],
+      // run-aware lines: picked from what just happened in this wave and the one before it
+      frontierHit:['A FRONTIER REQUEST. BILLED ACCORDINGLY.','1000 TOKENS. PREMIUM TIER.','THE EXPENSIVE ONE. WELL SERVED.'],
+      frontier2:['TWO FRONTIER IN A ROW. SHOW-OFF.','FRONTIER AGAIN? SOMEONE HAS A BUDGET.'],
+      lastShot:['LAST SHOT. YOU LIKE DRAMA.','ONE SHOT LEFT AND YOU USED IT. BOLD.'],
+      firstShot:['FIRST TRY. SUSPICIOUSLY COMPETENT.','ONE SHOT. ZERO WASTE. I NOTICED.'],
+      afterHalluc:['BETTER. THAT ONE WAS REAL.','SEE? REAL REQUESTS ARE EASY.'],
+      stormHit:['RATE LIMITED AND YOU STILL SERVED IT.','YOU WAITED OUT THE 429. PATIENCE.'],
+      gustHit:['THE GUSTS DID NOT HELP. YOU DID.'],
+      frontierMiss:['THAT WAS A FRONTIER REQUEST. 1000 TOKENS. GONE.','THE EXPENSIVE ONE GOT AWAY. OF COURSE.'],
+      missAll:['EVERY SHOT SPENT. NOTHING SERVED.','ALL THAT COMPUTE. NO ANSWER.'],
+      missNoShot:["YOU DIDN'T EVEN TRY. HONEST, AT LEAST.",'NO SHOTS FIRED. IS ANYONE THERE?'],
+      stormMiss:['THE 429 FROZE IT. YOU FROZE TOO.'],
       swarmWin:['SWARM CONTAINED. I NEVER DOUBTED YOU.','ALL AGENTS STOPPED. ALIGNED, EVEN.'],
       swarmLoss:['AN AGENT GOT IN. IT IS REWRITING THINGS.','THE SWARM WON. I AM TAKING NOTES.'],
       perfect:['99.9% UPTIME. I AM IMPRESSED.'],
@@ -218,6 +233,7 @@ const THEMES={
       roastDeep:['EPOCH {r}. RESPECTABLE. FOR A HUMAN.','EPOCH {r}. I HAVE SEEN WORSE. ONCE.'],
       receipt:['ACCURACY','BEST COMBO','HALLUCINATIONS','FRONTIER SERVED'],
     },
+    rules:{4:'NEW RULE: HALLUCINATIONS CAN LOOK FRONTIER', 5:'NEW RULE: BURST TRAFFIC. THREE AT ONCE.', 7:'LOAD KEEPS CLIMBING FROM HERE.'},
     scenery:'datacenter', showCatch:true,
     boot:['TOKEN HUNT BIOS V2.3','4 GPUS DETECTED','VRAM ........... OK','LOADING WEIGHTS','CHATBOT ....... ONLINE'],
     skinName:'TOKEN HUNT', foot:'TAP TO SERVE <span class="keys">&middot; <b>M</b> MUTE &middot; <b>P</b> PAUSE</span> &middot; ONE FILE. ZERO ASSETS. ZERO NETWORK REQUESTS.',
@@ -239,19 +255,29 @@ const THEMES={
       {name:'CLEAR SKIES', sky:'#3cbcfc', grass:'#3f9a3c', wind:0,   rain:0, cloud:'#f7f4e9', tag:'0 KNOTS. BREATHE.', music:{semi:7,step:0.15}},
     ],
     banners:{ escaped:'FLEW OFF', escapedTint:'rgba(90,110,160,0.28)', clear:'ROUND %R CLEAR', survived:'%L CONQUERED',
-              perfect:'PERFECT!! +10000', over:'GAME OVER', overColor:'#f7f4e9', unit:'SCORE', load:'', quota:'HIT %N OF %E', served:'%H OF %E HIT' },
-    boltLabel:null, frozenTag:'STUNNED', swarm:{name:'HAWKS INCOMING', spr:['hawk0','hawk1'], stop:'DROPPED', breach:'A HAWK GOT THROUGH. -1 SHELL', stopAll:'FLOCK SAFE'},
+              perfect:'PERFECT!! +%B', over:'GAME OVER', overColor:'#f7f4e9', unit:'SCORE', load:'', quota:'HIT %N OF %E', served:'%H OF %E HIT' },
+    boltLabel:null, frozenTag:'STUNNED', swarm:{name:'HAWKS INCOMING', spr:['hawk0','hawk1'], stop:'DROPPED', breach:'A HAWK GOT THROUGH. -1 SHELL', stopAll:'FLOCK SAFE', hint:'DROP ALL 4 BEFORE THEY REACH THE FLOCK. SHELLS:', count:'HAWKS DOWN'},
     rainLo:'#cfe0f0', rainHi:'#9fb6d8', dusk:{band1:'#b4583f', band2:'#c86a46', sun1:'#ffd86a', sun2:'#fff0a0'},
     fx:{ hiPop:'#ffe98a', loPop:'#f7f4e9', badPop:'#ff4d4d', featherLo:'#caa05f', featherHi:'#fff0a0', puff:'#6fd36a', glitchTags:['DECOY','WOOD?','DECOY','FAKE!'] },
     lines:{
-      hit:['NICE SHOT.','DINNER.',"YOU'RE GETTING THE HANG OF IT."],
-      hit2:['TWO! SHOW-OFF.'],
-      hit3:["ALRIGHT, I'M IMPRESSED."],
-      miss:['THE WIND TOOK THAT ONE.','SHOOTING AT CLOUDS AGAIN?','I SAW THAT.'],
-      miss3:['MAYBE TRY EASY MODE.'],
-      nearMiss:['A FEATHER. YOU GOT A FEATHER.'],
-      hallucServed:['THAT WAS A DECOY.'],
-      hallucEscaped:['GOOD EYE. WOODEN.'],
+      hit:['NICE SHOT.','DINNER.',"YOU'RE GETTING THE HANG OF IT.",'CLEAN. I WILL ALLOW IT.','THE FLOCK NOTICED.'],
+      hit2:['TWO! SHOW-OFF.','A PAIR. GREEDY.'],
+      hitTriple:['THREE FROM ONE FLOCK. UNREASONABLE.'],
+      hit3:["ALRIGHT, I'M IMPRESSED.",'THREE STRAIGHT. THE BIRDS ARE TALKING.'],
+      miss:['THE WIND TOOK THAT ONE.','SHOOTING AT CLOUDS AGAIN?','I SAW THAT.','IT WAVED ON THE WAY OUT.','THE SKY IS VERY BIG. I KNOW.'],
+      miss3:['MAYBE TRY EASY MODE.','THREE GONE. THE FLOCK IS RELAXED.'],
+      nearMiss:['A FEATHER. YOU GOT A FEATHER.','SO CLOSE IT FLINCHED.'],
+      hallucServed:['THAT WAS A DECOY.','WOOD. YOU SHOT WOOD.'],
+      hallucEscaped:['GOOD EYE. WOODEN.','YOU LET THE DECOY GO. SMART.'],
+      frontierHit:['GOLD. THAT PAYS FOR DINNER.','THE GOLDEN ONE. WELL BAGGED.'],
+      frontier2:['GOLD TWICE? LEAVE SOME FOR ME.'],
+      lastShot:['LAST SHELL. DRAMATIC.'],
+      firstShot:['ONE SHELL. CLEAN.'],
+      afterHalluc:['BETTER. THAT ONE HAD FEATHERS.'],
+      stormHit:['STUNNED AND STILL YOURS. FAIR.'],
+      frontierMiss:['THE GOLD ONE GOT AWAY. TYPICAL.'],
+      missAll:['EVERY SHELL. NOTHING TO SHOW.'],
+      missNoShot:['NOT A SINGLE SHOT? BIRDWATCHING?'],
       swarmWin:['HAWKS DRIVEN OFF. THE FLOCK THANKS YOU.'],
       swarmLoss:['A HAWK GOT THROUGH. GRIM.'],
       perfect:['NOT A SINGLE ONE GOT AWAY.'],
@@ -265,6 +291,7 @@ const THEMES={
       roastDeep:['ROUND {r}. NOT BAD. FOR A PERSON.','ROUND {r}. THE BIRDS RESPECT YOU. A LITTLE.'],
       receipt:['ACCURACY','BEST STREAK','DECOYS','GOLDEN BAGGED'],
     },
+    rules:{4:'NEW RULE: DECOYS CAN LOOK GOLDEN', 5:'NEW RULE: FLOCKS OF THREE.', 7:'THE WEATHER TURNS FROM HERE.'},
     scenery:'meadow', showCatch:false,
     boot:['FOWL WEATHER','FIELD GUIDE V2.3','SHELLS ........ OK','WIND .......... CHECK','FOX ........... AWAKE'],
     skinName:'FOWL WEATHER', foot:'TAP TO SHOOT <span class="keys">&middot; <b>M</b> MUTE &middot; <b>P</b> PAUSE</span> &middot; ONE FILE. ZERO ASSETS. ZERO NETWORK REQUESTS.',
@@ -289,7 +316,10 @@ const DIFFS={
 const DIFF_ORDER=['easy','medium','hard','daily'];
 function dailySeed(){ const d=new Date(); const day=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000)-Math.floor(Date.UTC(2026,9,29)/86400000); return Math.max(1,day+1); }
 let D=DIFFS.medium;
-function setDiff(id){ if(!DIFFS[id]) return; D=DIFFS[id]; G.diff=id; G.daily=!!D.daily; try{ localStorage.setItem('th.diff',id); }catch(e){} }
+function setDiff(id){ if(!DIFFS[id]) return; D=DIFFS[id]; G.diff=id; G.daily=!!D.daily; try{ localStorage.setItem('th.diff',id); }catch(e){} loadBest(); }
+// one best per mode (plus one for assisted runs); the pre-v2.9 single key counts as the Medium best
+function bestKey(){ return 'th.hi.'+G.diff; }
+function loadBest(){ let v=0; try{ v=parseInt(localStorage.getItem(bestKey())||(G.diff==='medium'?localStorage.getItem('th.hi'):'0')||'0',10)||0; }catch(e){} G.hi=Math.max(v,G.hiBoot||0); }
 const req=r=> clamp(NEED[Math.min(r-1,NEED.length-1)]+D.need, 2, EPOCH_LEN-1); // never demand a perfect epoch
 const lvl=r=> T.levels[(r-1)%T.levels.length];
 const TIERS={ lo:{p:0.72, value:300,  speed:0.85, dirT:[30,70]}, hi:{p:0.28, value:1000, speed:1.3, dirT:[15,40]} };
@@ -305,7 +335,8 @@ const G={ state:'title', t:0, theme:'gpu', round:1, score:0, hi:0, shots:3, wave
   mouse:{x:128,y:90,on:false,touch:false}, fox:{mode:null,t:0,x:112,count:0,line:''}, flightT:0, newRecord:false, amb:{x:-30,y:50,t:0}, titleFox:0,
   paused:false, combo:0, comboFlash:0, streak:{hit:0,miss:0}, nearMiss:false, lastLine:'', toast:null, diff:'medium', cost:0, hallucServed:false, hallucEscaped:false, forceHalluc:false,
   assist:false, hiA:0, cheatPending:false, seen:false, attract:false, idle:0, boot:{t:0}, aim:{x:128,y:90,t:0}, keys:'', taps:[],
-  run:{shots:0,hits:0,timeouts:0,hServed:0,hDodged:0,bestCombo:0,frontier:0}, daily:false, rng:Math.random, swarm:null, swarmDone:false, vramLost:0 };
+  run:{shots:0,hits:0,timeouts:0,hServed:0,hDodged:0,bestCombo:0,frontier:0}, daily:false, rng:Math.random, swarm:null, swarmDone:false, vramLost:0,
+  wf:{hi:0,lastShot:false,firstShot:false,frozen:false,hiEscaped:false,shots:0}, prevHi:false, prevHallucServed:false };
 function resetRun(){ G.run={shots:0,hits:0,timeouts:0,hServed:0,hDodged:0,bestCombo:0,frontier:0}; }
 try{ G.hiA=parseInt(localStorage.getItem('th.hiAssist')||'0',10)||0; G.seen=localStorage.getItem('th.seen')==='1'; }catch(e){}
 try{ G.hi=parseInt(localStorage.getItem('th.hi')||'0',10)||0; }catch(e){}
@@ -320,34 +351,44 @@ function setWeather(){ G.wx=lvl(G.round); G.windDir=G.rng()<0.5?-1:1;
   rainStop(); if(G.wx.rain) rainStart(G.wx.rain); const mu=G.wx.music||{semi:0,step:0.15}; music.semi=mu.semi; music.stepLen=mu.step; }
 setWeather();
 
-function startGame(attract,skipBoot){ G.attract=!!attract; G.idle=0; G.taps=[]; resetRun(); G.swarmDone=false; G.vramLost=0; G.swarm=null; G.rng= G.daily? seeded(dailySeed()*7919) : Math.random; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.streak={hit:0,miss:0}; G.nearMiss=false; setWeather();
+function startGame(attract,skipBoot){ G.attract=!!attract; G.idle=0; G.taps=[]; resetRun(); G.swarmDone=false; G.vramLost=0; G.swarm=null; G.rng= G.daily? seeded(dailySeed()*7919) : Math.random; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.streak={hit:0,miss:0}; G.nearMiss=false; G.prevHi=false; G.prevHallucServed=false; G.wf=newFacts(); setWeather();
   if(G.attract){ G.state='intro'; G.t=0; return; }
   if(skipBoot){ bootDone(); return; }
   G.state='boot'; G.t=0; G.boot={t:0,line:-1}; }
 function bootDone(){ G.state='intro'; G.t=0; SFX.fanfare(); music.start(); }
 function beginFirstWave(){ if(!G.seen&&!G.attract){ G.seen=true; try{ localStorage.setItem('th.seen','1'); }catch(e){}
     G.state='fox'; G.fox.t=0; G.fox.mode='tut'; G.fox.count=0; G.fox.line=line('tutorial'); G.fox.x=112; SFX.blip(); } else startWave(); }
-function startWave(){ G.state='fly'; G.shots=G.assist?5:(D.ammo-(G.vramLost||0)); G.flightT=0; G.nearMiss=false; G.hallucServed=false; G.hallucEscaped=false; G.realEscaped=false; G.swarm=null; const left=EPOCH_LEN-G.wave; let n=1;
+const newFacts=()=>({hi:0,lastShot:false,firstShot:false,frozen:false,hiEscaped:false,shots:0});
+function startWave(){ G.state='fly'; G.shots=G.assist?5:(D.ammo-(G.vramLost||0)); G.flightT=0; G.nearMiss=false; G.hallucServed=false; G.hallucEscaped=false; G.realEscaped=false; G.swarm=null; G.wf=newFacts(); const left=EPOCH_LEN-G.wave; let n=1;
   if(!G.attract&&!G.swarmDone&&G.round>=(D.mult>=2||D.daily?2:3)&&G.wave===3){ startSwarm(); return; }
-  if(left>=2&&G.round>=D.doublesFrom&&G.rng()<D.doubleP) n=2;
+  if(left>=2&&G.round>=D.doublesFrom&&G.rng()<Math.min(0.8,D.doubleP+late()*0.05)) n=2;
+  if(n===2&&left>=3&&G.round>=RULE.burst&&!G.attract&&G.rng()<0.45) n=3;
   G.birds=[]; for(let i=0;i<n;i++) G.birds.push(spawnBird(i,n,false)); G.wave+=n;
   G.wavesStarted=(G.wavesStarted||0)+1;
-  if(G.forceHalluc||(G.round===1&&G.wavesStarted===2&&!G.attract)||G.rng()<D.halluc){ let h=null; for(let k=0;k<10;k++){ h=spawnBird(n,n+1,true); h.x=10+G.rng()*(W-44); if(G.birds.every(b=>Math.abs(b.x-h.x)>=44)) break; } G.birds.push(h); }
+  if(G.forceHalluc||(G.round===1&&G.wavesStarted===2&&!G.attract)||G.rng()<Math.min(0.4,D.halluc+late()*0.03)){ let h=null; for(let k=0;k<10;k++){ h=spawnBird(n,n+1,true); h.x=58+G.rng()*116; if(G.birds.every(b=>Math.abs(b.x-h.x)>=30)) break; } G.birds.push(h); }
   SFX.flap(); }
-function startSwarm(){ G.swarmDone=true; G.swarm={t:0,stopped:0,breached:0,total:4}; G.birds=[]; G.shots=G.assist?5:Math.max(2,D.ammo+1-(G.vramLost||0)); G.flightT=0;
+function startSwarm(){ G.swarmDone=true; G.swarm={t:0,stopped:0,breached:0,total:4}; G.birds=[]; G.wf=newFacts(); const spare=(D.mult>=2||D.daily)?1:2; // Easy/Medium forgive one miss; Hard/Daily do not
+  G.shots=G.assist?5:Math.max(2,D.ammo+spare-(G.vramLost||0)); G.flightT=0;
   for(let i=0;i<4;i++){ const x=20+i*60+G.rng()*30; G.birds.push({x,y:-14-i*22,vx:(G.rng()<0.5?-1:1)*0.8,vy:1.1+G.rng()*0.4,sp:1.2,tier:'lo',bad:false,agent:true,st:'fly',f:0,at:0,dirT:1e9,hitT:0}); }
-  G.fx.push({type:'pts',x:Math.round(W/2-textW(T.swarm.name,2)/2),y:40,t:0,txt:T.swarm.name,col:'#ff4d4d',sc:2}); G.flash=4; G.flashA=0.25; G.flashCol='255,77,77'; SFX.wrong(); SFX.away(); }
-function spawnBird(i,n,bad){ const tier= bad?'lo' : (G.rng()<TIERS.hi.p?'hi':'lo'); const tr=TIERS[tier]; const r=G.rng;
-  let sp=Math.min(3.2,1.25+G.round*0.13)*tr.speed*D.speed; if(G.round===1&&D.gentleStart) sp*=0.85; if(G.assist) sp*=0.75;
-  const x= n===1? 60+r()*130 : 30+i*(190/n)+r()*(190/n-24);
-  return {x,y:150,vx:(r()<0.5?-1:1)*sp*0.6,vy:-sp,sp,tier,bad:!!bad,st:'fly',f:0,at:0,dirT:bad?10+r()*15:tr.dirT[0]+r()*(tr.dirT[1]-tr.dirT[0]),hitT:0}; }
-function newDir(b){ const r=G.rng; const up=r()<0.7||b.y>120; const a= up? 0.3+r()*(Math.PI-0.6) : -(0.35+r()*0.9);
+  G.fx.push({type:'pts',x:Math.round(W/2-textW(T.swarm.name,2)/2),y:40,t:0,txt:T.swarm.name,col:'#ff4d4d',sc:2});
+  { const h=T.swarm.hint+' '+G.shots; G.fx.push({type:'pts',x:Math.round(W/2-textW(h,1)/2),y:58,t:0,txt:h,col:'#ffe98a',sc:1}); }
+  G.flash=4; G.flashA=0.25; G.flashCol='255,77,77'; SFX.wrong(); SFX.away(); }
+// the rules that arrive with later epochs (announced on the epoch card): 4 = hallucinations can wear frontier purple, 5 = bursts of three, 7+ = everything keeps climbing
+const RULE={mimic:4, burst:5, climb:7};
+const late=()=>Math.max(0,G.round-RULE.climb+1);
+function spawnBird(i,n,bad){ const tier= bad? ((G.round>=RULE.mimic&&G.rng()<0.5)?'hi':'lo') : (G.rng()<TIERS.hi.p?'hi':'lo'); const tr=TIERS[tier]; const r=G.rng;
+  let sp=Math.min(3.2,1.25+G.round*0.13+late()*0.08)*tr.speed*D.speed; if(G.round===1&&D.gentleStart) sp*=0.85; if(G.assist) sp*=0.75;
+  const x= n===1? 58+r()*116 : n===2? 58+i*82+r()*30 : 58+i*58+r()*20; // 58..198 keeps the 24-px sprite clear of the rack panels at both edges
+  // each request steers from its own seeded stream, so when you shoot never changes what spawns next (Daily stays identical for everyone)
+  return {x,y:150,vx:(r()<0.5?-1:1)*sp*0.6,vy:-sp,sp,tier,bad:!!bad,st:'fly',f:0,at:0,dirT:bad?10+r()*15:tr.dirT[0]+r()*(tr.dirT[1]-tr.dirT[0]),hitT:0,r:seeded(Math.floor(r()*2147483646)+1)}; }
+function newDir(b){ const r=b.r||G.rng; const up=r()<0.7||b.y>120; const a= up? 0.3+r()*(Math.PI-0.6) : -(0.35+r()*0.9);
   b.vx=Math.cos(a)*b.sp; b.vy=-Math.sin(a)*b.sp; if(Math.abs(b.vx)<0.45) b.vx=(b.vx<0?-1:1)*0.45; const tr=TIERS[b.tier]; b.dirT= b.bad? 10+r()*15 : tr.dirT[0]+r()*(tr.dirT[1]-tr.dirT[0]); }
 
-function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0) return; const padX=touch?8:3, padDn=touch?20:3, padUp=touch?8:3;
+function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return; if(G.frame-(G.lastShotF||-9)<4) return; G.lastShotF=G.frame; // one shot per 4 frames: duplicate pointer events never burn VRAM
+  const padX=touch?8:3, padDn=touch?20:3, padUp=touch?8:3;
   const inBox=b=> x>=b.x-padX&&x<=b.x+24+padX&&y>=b.y-padUp&&y<=b.y+20+padDn;
   { const fz=G.birds.find(b=>b.st==='fly'&&b.frozen>0&&inBox(b)); if(fz){ G.fx.push({type:'pts',x:clamp(x-6,2,W-18),y:Math.max(6,y-14),t:0,txt:T.boltLabel||'WAIT',col:'#ff4d4d',sc:1}); SFX.blip(); return; } }
-  G.shots--; G.cost+=COST; G.run.shots++; SFX.shot(); G.flash=2; G.shake=2; G.muzzle={x,y,t:2};
+  G.shots--; G.cost+=COST; G.run.shots++; G.wf.shots++; SFX.shot(); G.flash=2; G.shake=2; G.muzzle={x,y,t:2};
   let hitAny=false, nearest=999, target=null, td=1e9;
   const inAgent=b=> x>=b.x-padX-2&&x<=b.x+12+padX+2&&y>=b.y-padUp-2&&y<=b.y+10+padDn;
   for(const b of G.birds){ if(b.st!=='fly') continue; if(b.agent? inAgent(b) : inBox(b)){ const d=Math.hypot(x-(b.x+(b.agent?6:12)),y-(b.y+(b.agent?5:10))); if(d<td){ td=d; target=b; } } }
@@ -360,14 +401,14 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0) return; const padX=to
       if(b.bad){ G.score=Math.max(0,G.score-500); G.combo=0; G.hallucServed=true; G.run.hServed++; buzz(40); G.shake=8; G.flash=5; G.flashA=0.3; G.flashCol='255,77,77';
         G.fx.push({type:'pts',x:clamp(b.x-2,2,W-2-textW('-500',2)),y:Math.max(6,b.y-4),t:0,txt:'-500',col:T.fx.badPop,sc:2}); SFX.wrong(); continue; }
       const hi=b.tier==='hi'; G.combo++; const m=comboMult(G.combo); if(m!==comboMult(G.combo-1)) G.comboFlash=10;
-      const p=valueOf(b)*m*(G.assist?3:1); G.score+=p; G.tally.push('hit'); G.run.hits++; if(hi) G.run.frontier++; if(G.combo>G.run.bestCombo) G.run.bestCombo=G.combo; buzz(hi?25:12); G.shake=hi?8:5; if(hi){ G.freeze=5; G.flash=4; G.flashA=0.35; }
+      const p=valueOf(b)*m*(G.assist?3:1); G.score+=p; G.tally.push('hit'); G.run.hits++; if(hi){ G.run.frontier++; G.wf.hi++; } if(G.shots===0) G.wf.lastShot=true; if(G.wf.shots===1) G.wf.firstShot=true; if(G.combo>G.run.bestCombo) G.run.bestCombo=G.combo; buzz(hi?25:12); G.shake=hi?8:5; if(hi){ G.freeze=5; G.flash=4; G.flashA=0.35; }
       { const sc=(hi||m>1)?2:1, txt='+'+p; G.fx.push({type:'pts',x:clamp(b.x-2,2,W-2-textW(txt,sc)),y:Math.max(6,b.y-4),t:0,txt,col:hi?T.fx.hiPop:T.fx.loPop,sc}); }
       for(let i=0;i<6;i++) G.fx.push({type:'feather',x:b.x+12,y:b.y+10,vx:rnd(-1,1),vy:rnd(-1.5,0),t:0,col:hi?T.fx.featherHi:T.fx.featherLo});
       if(hi) SFX.gold(); else SFX.hit(m); }
     else if(!b.bad){ const d=Math.hypot(x-(b.x+12),y-(b.y+10)); if(d<nearest) nearest=d; } }
-  if(!hitAny&&nearest<24) G.nearMiss=true; }
+  if(!hitAny){ if(nearest<24) G.nearMiss=true; if(G.combo>0){ G.combo=Math.floor(G.combo/2); G.comboFlash=8; } } } // a wasted shot costs half the combo: x3 has to be earned clean
 
-function updateBirds(){ let limit=Math.max(200,460-G.round*18); if(G.wx.shortFlight) limit=Math.round(limit*0.7); let flying=0;
+function updateBirds(){ let limit=Math.max(150,460-G.round*18); if(G.wx.shortFlight) limit=Math.round(limit*0.7); let flying=0;
   for(const b of G.birds){
     if(b.agent&&b.st==='fly'){ flying++; b.at++; b.x+=b.vx+Math.sin(b.at/7)*0.9; b.y+=b.vy; if(b.x<0){ b.x=0; b.vx=Math.abs(b.vx); } if(b.x>W-12){ b.x=W-12; b.vx=-Math.abs(b.vx); }
       if(b.y>=FRONT-12){ b.st='gone'; G.swarm.breached++; G.vramLost=1; G.combo=0; G.shake=8; G.flash=5; G.flashA=0.3; G.flashCol='255,77,77'; SFX.wrong(); if(G.swarm.breached===1) G.fx.push({type:'pts',x:Math.round(W/2-textW(T.swarm.breach,1)/2),y:72,t:0,txt:T.swarm.breach,col:'#ff4d4d',sc:1}); }
@@ -379,22 +420,39 @@ function updateBirds(){ let limit=Math.max(200,460-G.round*18); if(G.wx.shortFli
     else if(b.st==='hit'){ b.hitT++; if(b.hitT>=22){ b.st='fall'; b.at=0; SFX.fall(); } }
     else if(b.st==='fall'){ b.y+=2.5; b.x+=Math.sin(b.at/5)*0.8; b.at++; if(b.y>=GROUND-6){ b.st='landed'; SFX.thud(); b.lx=b.x;
       for(let i=0;i<8;i++) G.fx.push({type:'puff',x:b.x+8+rnd(0,8),y:GROUND,vx:rnd(-1.2,1.2),vy:rnd(-2,-0.5),t:0,col:T.fx.puff}); } }
-    else if(b.st==='away'){ b.y-=3.5; b.at++; if(b.at%3===0) b.f=(b.f+1)&3; if(b.y<-26){ b.st='gone'; if(b.bad){ G.hallucEscaped=true; G.run.hDodged++; } else { G.tally.push('miss'); G.realEscaped=true; G.run.timeouts++; } } } }
-  G.flightT++;
+    else if(b.st==='away'){ b.y-=3.5; b.at++; if(b.at%3===0) b.f=(b.f+1)&3; if(b.y<-26){ b.st='gone'; if(b.bad){ G.hallucEscaped=true; G.run.hDodged++; } else { G.tally.push('miss'); G.realEscaped=true; G.run.timeouts++; if(b.tier==='hi') G.wf.hiEscaped=true; } } } }
+  if(!G.birds.some(b=>b.st==='fly'&&b.frozen>0)) G.flightT++; // the flight clock stops while a 429 holds the requests
   if(flying&&!G.birds.some(b=>b.st==='fly'&&!b.bad)){ for(const b of G.birds) if(b.st==='fly'&&b.bad){ b.st='away'; b.at=0; } flying=0; }
   if(G.swarm){ if(G.birds.every(b=>b.st==='gone')){ const win=G.swarm.breached===0; G.streak.miss= win?0:G.streak.miss+1; G.state='fox'; G.fox.t=0; G.fox.count=0; G.fox.mode= win?'hit':'miss'; G.fox.line= win? line('swarmWin') : line('swarmLoss'); G.fox.x=112; if(win) SFX.blip(); else SFX.laugh(); } return; }
   if(flying&&(G.shots===0||G.flightT>=limit)){ let any=false, real=false; for(const b of G.birds) if(b.st==='fly'){ b.st='away'; b.at=0; any=true; if(!b.bad) real=true; } if(any){ SFX.away(); if(real) G.combo=0; } }
   if(G.birds.every(b=>b.st==='landed'||b.st==='gone')){ const hits=G.birds.filter(b=>b.st==='landed'&&!b.bad); const n=hits.length;
+    const before3=Math.floor(G.streak.hit/3);
     if(n){ G.streak.hit+=n; G.streak.miss=0; } else { G.streak.miss++; G.streak.hit=0; }
-    G.state='fox'; G.fox.t=0; G.fox.count=n; G.fox.mode=n?'hit':'miss';
-    G.fox.line= G.cheatPending? (G.cheatPending=false, line('cheatFirst')) : G.hallucServed? line('hallucServed') : !n&&G.nearMiss? line('nearMiss') : !n&&G.streak.miss>=3? line('miss3') : n&&G.streak.hit>=3? line('hit3') : n>=2? line('hit2') : n? line('hit') : (G.hallucEscaped&&!G.realEscaped)? line('hallucEscaped') : (!G.firstMissDone&&T.lines.miss[0])? (G.firstMissDone=true, G.lastLine=T.lines.miss[0]) : line('miss');
-    G.fox.x=clamp(Math.round(n? hits[0].lx-4 : rnd(40,180)),8,216); if(G.hallucServed||!n) SFX.laugh(); else SFX.blip(); } }
+    const crossed3= n>0 && Math.floor(G.streak.hit/3)>before3; // streak lines fire when the streak reaches 3, 6, 9… not on every hit after
+    const goodCall= G.hallucEscaped&&!G.realEscaped&&!G.hallucServed; // the restraint payoff fires whether or not you also served the real request
+    G.state='fox'; G.fox.t=0; G.fox.count=n; G.fox.mode=(n||goodCall)?'hit':'miss';
+    G.fox.line=pickLine(n,goodCall,crossed3); G.prevHi=G.wf.hi>0; G.prevHallucServed=G.hallucServed;
+    G.fox.x=clamp(Math.round(n? hits[0].lx-4 : rnd(40,180)),8,216); if(G.hallucServed||(!n&&!goodCall)) SFX.laugh(); else SFX.blip(); } }
 
+// which line the critic says: the rare, specific thing first; the generic pool only when nothing specific happened
+function ctxLine(tags){ for(const t of tags){ if(T.lines[t]&&T.lines[t].length&&Math.random()<0.8) return line(t); } return null; }
+function pickLine(n,goodCall,crossed3){ const f=G.wf||newFacts();
+  if(G.cheatPending){ G.cheatPending=false; return line('cheatFirst'); }
+  if(G.hallucServed) return line('hallucServed');
+  if(goodCall) return line('hallucEscaped');
+  if(!n&&G.nearMiss) return line('nearMiss');
+  if(!n&&G.streak.miss>=3) return line('miss3');
+  if(crossed3) return line('hit3');
+  if(n){ const tags=[]; if(f.hi&&G.prevHi) tags.push('frontier2'); if(G.prevHallucServed) tags.push('afterHalluc'); if(f.lastShot) tags.push('lastShot'); if(f.frozen) tags.push('stormHit'); if(f.hi) tags.push('frontierHit'); if(f.firstShot&&n===1) tags.push('firstShot'); if(G.wx.gust) tags.push('gustHit');
+    return ctxLine(tags) || line(n>=3&&T.lines.hitTriple?'hitTriple':n>=2?'hit2':'hit'); }
+  if(!G.firstMissDone&&T.lines.miss[0]){ G.firstMissDone=true; return (G.lastLine=T.lines.miss[0]); } // the signature line, once
+  { const tags=[]; if(f.hiEscaped) tags.push('frontierMiss'); if(f.shots===0) tags.push('missNoShot'); if(f.frozen) tags.push('stormMiss'); if(f.shots>=D.ammo&&!G.assist) tags.push('missAll');
+    return ctxLine(tags) || line('miss'); } }
 function endRound(){ const hits=G.tally.filter(t=>t==='hit').length; const need=req(G.round);
-  if(hits>=need){ G.state='roundEnd'; G.t=0; G.perfect=hits===EPOCH_LEN; if(G.perfect){ G.score+=10000; SFX.perfect(); } else SFX.clear(); }
-  else { G.state='gameOver'; G.t=0; music.stop(); rainStop(); SFX.over(); G.fox.mode='miss'; G.fox.t=0; G.fox.x=112; G.fox.line=roast(); buzz([20,40,20]);
+  if(hits>=need){ G.state='roundEnd'; G.t=0; G.perfect=hits===EPOCH_LEN; if(G.perfect){ G.score+=perfectBonus(); SFX.perfect(); } else SFX.clear(); }
+  else { G.state='gameOver'; G.t=0; G.lightning=0; music.stop(); rainStop(); SFX.over(); G.fox.mode='miss'; G.fox.t=0; G.fox.x=112; G.fox.line=roast(); buzz([20,40,20]);
     if(!G.attract){ const sc=net(); if(G.assist){ if(sc>G.hiA){ G.hiA=sc; G.newRecord=true; try{ localStorage.setItem('th.hiAssist',String(G.hiA)); }catch(e){} } }
-      else if(sc>G.hi){ G.hi=sc; G.newRecord=true; try{ localStorage.setItem('th.hi',String(G.hi)); }catch(e){} } }
+      else if(sc>G.hi){ G.hi=sc; G.newRecord=true; try{ localStorage.setItem(bestKey(),String(G.hi)); }catch(e){} } }
     showBrag(); } }
 function toTitle(){ G.attract=false; G.swarm=null; G.vramLost=0; G.swarmDone=false; G.state='title'; G.t=0; G.idle=0; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.combo=0; G.shots=G.assist?5:D.ammo; G.mouse.on=false; setWeather(); hideBrag(); }
 function attractAI(){ if(G.state!=='fly') return; G.aim.t++; const b=G.birds.find(b=>b.st==='fly'&&!b.bad); if(!b) return;
@@ -409,10 +467,13 @@ function roast(){ const R=G.run, L=T.lines, acc=accuracy(); const f=(tpl,o)=>tpl
 function buzz(p){ try{ if(navigator.vibrate&&!REDUCED) navigator.vibrate(p); }catch(e){} }
 function nextRound(){ const before=req(G.round); G.round++; G.swarmDone=false; G.vramLost=0; G.wave=0; G.tally=[]; G.birds=[]; setWeather(); G.state='intro'; G.t=0; G.needFlash= req(G.round)>before? 150:0; SFX.fanfare(); }
 
-const FOX_LEN=78, FOX_LEAVE=60;
+// the bubble stays up long enough to read the whole line: typing starts at frame 16, 1 char/frame, then a hold
+const foxTyped=()=>16+G.fox.line.length;
+const foxLeave=()=>clamp(foxTyped()+26,60,100);
+const foxLen=()=>foxLeave()+18;
 const PAUSABLE={intro:1,fly:1,fox:1,gap:1};
 function setPaused(p){ if(p&&!PAUSABLE[G.state]) return; if(G.paused===p) return; G.paused=p;
-  if(p){ music.stop(); rainStop(); } else { music.start(); if(G.wx.rain) rainStart(G.wx.rain); } }
+  if(p){ music.stop(); rainStop(); } else { G.unpauseT=24; music.start(); if(G.wx.rain) rainStart(G.wx.rain); } } // no pause-aim: 0.4 s of no shooting after resume
 
 function handleTap(x,y){
   if(G.paused){ setPaused(false); return; }
@@ -423,7 +484,8 @@ function handleTap(x,y){
     case 'boot': if(G.boot.t>10) bootDone(); break;
     case 'fly': shoot(x,y,G.mouse.touch); break;
     case 'intro': if(G.t>20) G.t=999; break;
-    case 'fox': if(G.fox.mode!=='tut'&&G.fox.t>36&&G.fox.t<FOX_LEAVE) G.fox.t=FOX_LEAVE; break;
+    case 'fox': if(G.fox.mode==='tut') break; // first tap finishes the typing, second tap sends the critic away
+      if(G.fox.t>16&&G.fox.t<foxTyped()) G.fox.t=foxTyped(); else if(G.fox.t>=foxTyped()&&G.fox.t<foxLeave()) G.fox.t=foxLeave(); break;
     case 'roundEnd': if(G.t>40) nextRound(); break;
     case 'gameOver': if(G.t>70){ hideBrag(); if(x>=32&&x<=100&&y>=112&&y<=130) toTitle(); else startGame(false,true); } break;
   } }
@@ -465,11 +527,12 @@ async function shareCard(){ const C=makeCard(); const blob=await new Promise(r=>
   try{ const file=new File([blob],name,{type:'image/png'}); if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:T.titleA+' '+T.titleB,text:bragText()}); toast('SHARED'); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
   showCard(C.toDataURL('image/png')); }
 const cardBox=document.getElementById('cardbox'), cardImg=document.getElementById('cardimg');
-function showCard(url){ cardImg.src=url; cardBox.hidden=false; setPaused&&0; }
-document.getElementById('cardclose').addEventListener('click',()=>{ cardBox.hidden=true; });
-cardBox.addEventListener('click',e=>{ if(e.target===cardBox) cardBox.hidden=true; });
-function showBrag(){ if(G.attract) return; bragBtn.hidden=false; shareBtn.hidden=false; bragTxt.hidden=true; }
-function hideBrag(){ bragBtn.hidden=true; shareBtn.hidden=true; bragTxt.hidden=true; }
+function showCard(url){ cardImg.src=url; cardBox.hidden=false; }
+function hideCard(){ cardBox.hidden=true; }
+document.getElementById('cardclose').addEventListener('click',hideCard);
+cardBox.addEventListener('click',e=>{ if(e.target===cardBox) hideCard(); });
+function showBrag(){ if(G.attract) return; bragBtn.hidden=false; shareBtn.hidden=false; bragTxt.hidden=true; document.body.classList.add('over'); }
+function hideBrag(){ bragBtn.hidden=true; shareBtn.hidden=true; bragTxt.hidden=true; document.body.classList.remove('over'); }
 bragBtn.addEventListener('click',()=>{ const t=bragText(); const fail=()=>{ bragTxt.textContent=t; bragTxt.hidden=false; bragBtn.hidden=true; };
   try{ navigator.clipboard.writeText(t).then(()=>toast('COPIED'),fail); }catch(e){ fail(); } });
 
@@ -477,12 +540,13 @@ bragBtn.addEventListener('click',()=>{ const t=bragText(); const fail=()=>{ brag
 function update(){
   if(G.toast){ G.toast.t++; if(G.toast.t>90) G.toast=null; }
   if(G.paused) return;
+  G.frame=(G.frame||0)+1; if(G.unpauseT>0) G.unpauseT--;
   if(G.freeze>0){ G.freeze--; return; }
   G.t++;
   const base=G.wx.wind*G.windDir; G.wind= G.wx.gust? base*Math.sin(G.t/70) : base;
   for(const c of G.clouds){ c.x+=0.06+G.wind*0.5; if(c.x>W+40) c.x=-60; if(c.x<-60) c.x=W+40; }
   for(const d of G.rain){ d.y+=G.wx.rain===2?5:4; d.x+=G.wind*1.3; if(d.y>FRONT){ d.y=rnd(-20,-2); d.x=rnd(-10,W+10); } if(d.x<-12) d.x=W+10; if(d.x>W+12) d.x=-10; }
-  if(G.wx.storm&&G.state!=='title'){ if(G.lightning>0) G.lightning--; G.nextLightning--; if(G.nextLightning<=0){ G.lightning=10; G.boltX=rnd(30,226); G.nextLightning=220+rnd(0,260); SFX.thunder(0.35); G.shake=6; if(G.state==='fly') for(const b of G.birds) if(b.st==='fly'&&!b.bad) b.frozen=40; if(T.boltLabel) G.fx.push({type:'pts',x:clamp(G.boltX-6,4,230),y:rnd(20,60),t:0,txt:T.boltLabel,col:'#ff4d4d',sc:1}); } }
+  if(G.wx.storm&&G.state!=='title'&&G.state!=='gameOver'){ if(G.lightning>0) G.lightning--; G.nextLightning--; if(G.nextLightning<=0){ G.lightning=10; G.boltX=rnd(30,226); G.nextLightning=220+rnd(0,260); SFX.thunder(0.35); G.shake=6; if(G.state==='fly') for(const b of G.birds) if(b.st==='fly'&&!b.bad){ b.frozen=40; G.wf.frozen=true; } if(T.boltLabel) G.fx.push({type:'pts',x:clamp(G.boltX-6,4,230),y:rnd(20,60),t:0,txt:T.boltLabel,col:'#ff4d4d',sc:1}); } }
   if(G.tapMark&&--G.tapMark.t<=0) G.tapMark=null;
   if(G.flash>0) G.flash--; if(G.shake>0) G.shake--; if(G.comboFlash>0) G.comboFlash--; if(G.muzzle&&--G.muzzle.t<=0) G.muzzle=null;
   if(G.attract){ attractAI(); if(G.state==='gameOver'&&G.t>120) toTitle(); else if(G.state==='roundEnd'&&G.t>90){ if(G.round<3) nextRound(); else toTitle(); } }
@@ -493,8 +557,8 @@ function update(){
     case 'intro': if(G.t>=(G.round===1?70:90)){ if(G.wave===0&&G.round===1) beginFirstWave(); else startWave(); } break;
     case 'fly': updateBirds(); break;
     case 'fox': G.fox.t++; { const k=G.fox.t-16; if(k>=0&&k<G.fox.line.length&&(k&1)===0&&G.fox.line[k]!==' ') SFX.chirp(); }
-      if(G.fox.mode==='tut'){ if(G.fox.t>=60) startWave(); break; }
-      if(G.fox.t>=FOX_LEN){ if(G.wave>=EPOCH_LEN) endRound(); else { G.state='gap'; G.t=0; } } break;
+      if(G.fox.mode==='tut'){ if(G.fox.t>=foxTyped()+40) startWave(); break; }
+      if(G.fox.t>=foxLen()){ if(G.wave>=EPOCH_LEN) endRound(); else { G.state='gap'; G.t=0; } } break;
     case 'gap': if(G.t>=12) startWave(); break;
     case 'roundEnd': if(G.t>=200) nextRound(); break;
     case 'gameOver': G.fox.t++; break;
@@ -549,20 +613,20 @@ function drawBird(b){ const left=b.vx<0; let key, img; const hi=b.tier==='hi';
   if(b.agent){ if(b.st!=='fly') return; const k=T.swarm.spr[(b.at>>2)&1]; ctx.drawImage(S[k+(left?'L':'')],Math.round(b.x),Math.round(b.y)); return; }
   if(b.st==='fall'||b.st==='landed'){ key=b.bad?T.spr.fallBad: hi?T.spr.fallHi:T.spr.fall; img=S[key]; ctx.drawImage(img, Math.round(b.x+4), Math.round(b.y)); return; }
   key=(hi?T.spr.flyHi:T.spr.fly)[b.st==='hit'?1:BIRD_FRAMES[b.f]];
-  if(b.st==='hit'&&(b.hitT>>1)%2===1) key+='W'; else if(b.bad){ const ph=(b.at>>2)%3; if(ph===1) key+='G'; else if(ph===2) key+='R'; }
+  if(b.st==='hit'&&(b.hitT>>1)%2===1) key+='W'; else if(b.bad){ const ph=(b.at>>2)&3; if(ph===1||ph===3) key+='G'; else if(ph===2) key+='R'; } // glitched 2/4, red 1/4, clean 1/4
   img=S[key+(left?'L':'')]; ctx.drawImage(img, Math.round(b.x), Math.round(b.y));
   if(b.bad&&b.st==='fly'){ const tags=T.fx.glitchTags; textS(tags[(b.at/10|0)%tags.length],Math.round(b.x+5),Math.round(b.y-7),T.fx.badPop,1); }
   if(b.frozen>0&&b.st==='fly'&&((G.t>>3)&1)){ const tg=T.frozenTag; textS(tg,clamp(Math.round(b.x+12-textW(tg,1)/2),2,W-2-textW(tg,1)),Math.round(b.y-8),'#ff4d4d',1); } }
 
 function drawFox(){ const f=G.fox; let y; const t=f.t; const tut=f.mode==='tut';
-  if(t<18) y=SKY_H-Math.round(t/18*44); else if(t<FOX_LEAVE||tut) y=SKY_H-44; else y=SKY_H-44+Math.round((t-FOX_LEAVE)/18*44);
+  const leave=foxLeave(); if(t<18) y=SKY_H-Math.round(t/18*44); else if(t<leave||tut) y=SKY_H-44; else y=SKY_H-44+Math.round((t-leave)/18*44);
   if(G.state==='gameOver') y=SKY_H-44;
   const miss=f.mode==='miss'; const bob= ((t>>3)&1)?1:0;
   const img= miss? (((t>>4)&1)?S[T.spr.criticFlat]:S[T.spr.critic]) : (((t>>3)&1)?S[T.spr.criticHappy]:S[T.spr.critic]);
   ctx.drawImage(img, f.x, y+bob);
   const catchUp=!miss&&!tut&&T.showCatch&&f.count>0&&t>=14;
   if(catchUp){ const lift=Math.min(8,t-14); const py=y-12-lift; ctx.drawImage(S[T.spr.fall], f.x+8, py); if(f.count>=2) ctx.drawImage(S[T.spr.fall], f.x+22, py+2); }
-  if(t>=16&&(t<FOX_LEAVE||tut)||G.state==='gameOver'){ const shown= G.state==='gameOver'? f.line : f.line.slice(0,Math.max(1,t-16)); const tw=textW(f.line,1)+8; let bx=clamp(Math.round(f.x+16-tw/2),4,W-tw-4); const by=y-26-(catchUp?14:0);
+  if(t>=16&&(t<leave||tut)||G.state==='gameOver'){ const shown= G.state==='gameOver'? f.line : f.line.slice(0,Math.max(1,t-16)); const tw=textW(f.line,1)+8; let bx=clamp(Math.round(f.x+16-tw/2),4,W-tw-4); const by=y-26-(catchUp?14:0);
     ctx.fillStyle='#f7f4e9'; ctx.fillRect(bx,by,tw,11); ctx.fillStyle=SHADOW; ctx.fillRect(bx+1,by+11,tw-2,1); ctx.fillRect(bx+tw,by+1,1,10);
     text(shown,bx+4,by+3,SHADOW,1); } }
 
@@ -579,19 +643,22 @@ function drawHUD(){ ctx.fillStyle=SHADOW; ctx.fillRect(0,SKY_H,W,H-SKY_H); ctx.f
   const glow= hits===need-1 && ((G.t>>3)&1); ctx.fillStyle= glow?'#fff6c8':'#f2c438'; ctx.fillRect(66+need*11-2,glow?211:212,1,glow?9:7);
   const m=comboMult(G.combo); if(m>1){ const flash=G.comboFlash>0&&((G.comboFlash>>1)&1); textS('X'+m,150,205,flash?'#fff6c8':'#ffe98a',flash?2:1); }
   text(h.score,204,205,lab); if(D.mult!==1) text('X'+D.mult,232,205,'#ffe98a'); text(pad(net(),6),204,213,ink); text(h.cost+' -'+pad(G.cost,5),204,221,'#5a5468');
-  text(h.round+' '+pad(G.round,2)+' '+D.tag,10,229,lab); text(G.wx.name,66,229,h.levelColor); { const w=G.wind; if(Math.abs(w)>0.15){ const n=Math.min(3,Math.ceil(Math.abs(w)*2.5)); text((w<0?'<':'>').repeat(n),66+textW(G.wx.name,1)+4,229,'#bdeeff'); } } if(G.assist) text('ASSIST 3X',150,229,'#ffe98a'); else if(G.daily) text('DAILY #'+dailySeed(),150,229,'#ffe98a'); text(h.best+' '+pad(G.assist?G.hiA:G.hi,6),204,229,lab); }
+  text(h.round+' '+pad(G.round,2)+' '+D.tag,10,229,lab); text(G.wx.name,66,229,h.levelColor); { const w=G.wind; if(Math.abs(w)>0.15){ const n=Math.min(3,Math.ceil(Math.abs(w)*2.5)); text((w<0?'<':'>').repeat(n),66+textW(G.wx.name,1)+4,229,'#bdeeff'); } } if(G.assist) text('ASSIST 3X',150,229,'#ffe98a'); else if(G.daily) text('DAILY #'+dailySeed(),150,229,'#ffe98a'); { const hi=G.assist?G.hiA:G.hi, live=!G.attract&&G.state!=='title'&&net()>hi; text(h.best+' '+pad(live?net():hi,6),204,229,live?'#ffe98a':lab); } }
 
-const fmt=(s,m)=>s.replace('%R',pad(G.round,2)).replace('%L',G.wx.name).replace('%N',String(req(G.round))).replace('%E',String(EPOCH_LEN)).replace('%H',String(m||0));
+const perfectBonus=()=>Math.round(10000*D.mult); // the perfect-epoch bonus scales with the mode, so an Easy marathon cannot out-score a Hard run
+const fmt=(s,m)=>s.replace('%R',pad(G.round,2)).replace('%L',G.wx.name).replace('%N',String(req(G.round))).replace('%E',String(EPOCH_LEN)).replace('%H',String(m||0)).replace('%B',String(perfectBonus()));
 function drawBanner(){ const t=G.t, B=T.banners;
-  if(G.state==='intro'){ if(t<110||(t&4)){ textC(T.hud.round+' '+pad(G.round,2),52,'#f7f4e9',2,true); textC(B.load+G.wx.name,74,'#ffe98a',1,true); textC(G.wx.tag,84,'#bdeeff',1,true); textC(fmt(B.quota),96,'#f7f4e9',1,true); } }
+  if(G.state==='intro'){ if(t<110||(t&4)){ textC(T.hud.round+' '+pad(G.round,2),52,'#f7f4e9',2,true); textC(B.load+G.wx.name,74,'#ffe98a',1,true); textC(G.wx.tag,84,'#bdeeff',1,true); textC(fmt(B.quota),96,'#f7f4e9',1,true);
+      const rule=T.rules&&T.rules[G.round]; if(rule&&!G.attract&&t>=10) textC(rule,112,'#ff9a9a',1,true); } }
   if(G.state==='fly'&&G.birds.some(b=>b.st==='away'&&!b.bad)) textC(B.escaped,64,'#f7f4e9',2,true);
+  if(G.state==='fly'&&G.swarm) textC(T.swarm.count+' '+G.swarm.stopped+'/'+G.swarm.total,6,G.swarm.breached?'#ff4d4d':'#ffe98a',1,true);
   if(G.state==='roundEnd'){ panel(44,64,168,66); textC(fmt(B.clear),74,'#ffe98a',1); const hits=G.tally.filter(x=>x==='hit').length;
-    textC(fmt(B.served,hits),90,'#f7f4e9',1); if(G.perfect){ if((t>>2)&1) textC(B.perfect,106,'#ffe98a',1); } else textC(fmt(B.survived),106,'#bdeeff',1);
+    textC(fmt(B.served,hits),90,'#f7f4e9',1); if(G.perfect){ if((t>>2)&1) textC(fmt(B.perfect),106,'#ffe98a',1); } else textC(fmt(B.survived),106,'#bdeeff',1);
     if(t>40) textC('TAP TO CONTINUE',118,'#8a8494',1); }
   if(G.state==='gameOver'){ const R=G.run, rc=T.lines.receipt; panel(32,30,192,100); textC(B.over,38,B.overColor,2);
     textC(B.unit+' '+pad(net(),6)+(G.assist?'  ASSISTED 3X':'')+(G.daily?'  DAILY #'+dailySeed():''),54,'#f7f4e9',1);
     text(rc[0]+' '+accuracy()+'%',40,66,'#8a8494'); text(rc[1]+' X'+Math.max(1,R.bestCombo),136,66,'#8a8494');
-    text(rc[2]+' '+R.hServed+' / '+R.hDodged+' DODGED',40,76,'#8a8494');
+    text(rc[2]+' '+R.hServed+' SERVED / '+R.hDodged+' DODGED',40,76,'#8a8494');
     text(rc[3]+' '+R.frontier,40,86,'#8a8494'); text(T.hud.round+' '+G.round,136,86,'#8a8494');
     if(G.newRecord){ if((t>>2)&1) textC('NEW BEST!',100,'#ffe98a',1); } else textC(T.hud.best+' '+pad(G.assist?G.hiA:G.hi,6),100,'#8a8494',1);
     if(t>70){ textC(T.restart,112,'#8a8494',1); text('< MENU',38,120,'#8a8494',1); } }
@@ -602,6 +669,7 @@ function drawBanner(){ const t=G.t, B=T.banners;
     if(G.boot.t>10&&((G.boot.t>>4)&1)) text('TAP TO SKIP',16,134,'#5a5468',1); }
   if(G.attract&&G.state!=='title'&&((t>>4)&1)) textC('DEMO  -  TAP TO PLAY',6,'#ffe98a',1,true);
   if(G.paused){ panel(68,80,120,44); textC('PAUSED',90,'#f7f4e9',2); textC('TAP TO RESUME',110,'#8a8494',1); }
+  else if(G.unpauseT>0&&G.state==='fly') textC('READY IN '+Math.ceil(G.unpauseT/6),90,'#ffe98a',1,true);
   if(G.toast&&(G.toast.t<70||(G.toast.t&2))) textC(G.toast.txt,180,'#ffe98a',1,true); }
 function panel(x,y,w,h){ ctx.fillStyle=SHADOW; ctx.fillRect(x,y,w,h); ctx.fillStyle='#f7f4e9'; ctx.fillRect(x+2,y+2,w-4,1); ctx.fillRect(x+2,y+h-3,w-4,1); ctx.fillRect(x+2,y+2,1,h-4); ctx.fillRect(x+w-3,y+2,1,h-4); }
 
@@ -614,13 +682,15 @@ function drawTitle(){ const t=G.t;
   textC(T.tagline[1],94,'#f7f4e9',1,true);
   textC(T.howto[0],110,'#bdeeff',1,true); textC(T.howto[1],120,'#e2ccff',1,true);
   textC(T.howto[2],130,'#ff9a9a',1,true);
-  // difficulty row
+  // difficulty row, on a dark band so the labels never fight the rack art behind them
+  ctx.fillStyle='rgba(10,10,18,0.78)'; ctx.fillRect(6,139,244,13);
   let x=20; for(const id of DIFF_ORDER){ const d=DIFFS[id], sel=id===G.diff; const w=textW(d.label,1); const cx=x+27-w/2;
     if(sel){ textS('>',Math.round(cx-8),143,T.titleColor,1); textS('<',Math.round(cx+w+5),143,T.titleColor,1); }
     textS(d.label,Math.round(cx),143,sel?T.titleColor:(id==='daily'?'#ffe98a':'#8a8494'),1); x+=54; }
   if(G.daily) textC('DAILY #'+dailySeed()+'  SAME REQUESTS FOR EVERYONE TODAY',170,'#ffe98a',1,true);
   if((t>>4)&1) textC(T.start,G.daily?182:158,'#f7f4e9',2,true); }
-function titleTap(x,y){ if(y>=138&&y<=152){ const i=clamp(Math.floor((x-20)/54),0,3); setDiff(DIFF_ORDER[i]); SFX.blip(); return true; } return false; }
+function titleTap(x,y){ const ry=y+(G.mouse.touch?TOUCH_LIFT:0); // undo the finger lift: the row is a target you look at, not a bird you lead
+  if(ry>=136&&ry<=154){ const i=clamp(Math.floor((x-20)/54),0,3); setDiff(DIFF_ORDER[i]); SFX.blip(); return true; } return false; }
 
 function drawCrosshair(){ if(G.tapMark&&G.tapMark.t>0){ const m=G.tapMark, x=Math.round(m.x), y=Math.round(m.y); ctx.fillStyle=((m.t>>1)&1)?'#fff6c8':'#ff4d4d'; ctx.fillRect(x-5,y,11,1); ctx.fillRect(x,y-5,1,11); }
   if(!G.mouse.on||G.state!=='fly'||G.paused) return; const x=Math.round(G.mouse.x), y=Math.round(G.mouse.y);
@@ -632,10 +702,12 @@ function drawIcons(){ // pause (229,2) + mute (243,2)
   if(muted){ ctx.fillStyle='#ff4d4d'; ctx.fillRect(250,4,1,1); ctx.fillRect(251,5,1,1); ctx.fillRect(252,6,1,1); ctx.fillRect(252,4,1,1); ctx.fillRect(250,6,1,1); } else { ctx.fillRect(250,5,1,3); ctx.fillRect(252,4,1,5); } }
 
 const REDUCED=(()=>{ try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } })();
+try{ if(matchMedia('(hover: none) and (pointer: coarse)').matches) document.body.classList.add('touch'); }catch(e){}
 function draw(){ ctx.save(); if(G.shake>0&&!G.paused&&!REDUCED){ const a=Math.min(3,Math.ceil(G.shake*0.6)); ctx.translate(Math.round(rnd(-a,a)),Math.round(rnd(-a,a))); }
   const [back,front]=SCENERY[T.scenery];
   drawSky(); back();
   if(G.state==='title') drawTitle();
+  else if(G.paused){ ctx.fillStyle='rgba(10,10,18,0.7)'; ctx.fillRect(0,0,W,SKY_H); } // paused: the sky is hidden, so pausing cannot be used to aim
   else { const foxUp=G.state==='fox'||G.state==='gameOver'; for(const b of G.birds) if(b.st!=='gone'&&!(foxUp&&b.st==='landed')) drawBird(b); if(foxUp) drawFox(); }
   front(); drawRain(); drawFx(); ctx.restore();
   if(G.flash>0){ ctx.fillStyle='rgba('+(G.flashCol||'255,255,255')+','+(G.flashA||0.18)+')'; ctx.fillRect(0,0,W,SKY_H); } else { G.flashA=0; G.flashCol=null; }
@@ -644,7 +716,7 @@ function draw(){ ctx.save(); if(G.shake>0&&!G.paused&&!REDUCED){ const a=Math.mi
 // ------------------------------------------------------------------ input
 const TOUCH_LIFT=8; // small finger offset; the touch hitbox below also extends down toward the thumb
 function pos(e){ const r=cv.getBoundingClientRect(); const touch=e.pointerType==='touch'; return {x:(e.clientX-r.left)*W/r.width, y:(e.clientY-r.top)*H/r.height-(touch?TOUCH_LIFT:0), touch}; }
-cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===false) return; if(e.pointerType==='mouse'&&e.button!==0) return; cv.focus({preventScroll:true}); audioInit(); if(ac&&ac.state==='suspended') ac.resume(); const p=pos(e);
+cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===false) return; if(e.pointerType==='mouse'&&e.button!==0) return; document.body.classList.add('pointer'); if(e.pointerType==='touch') document.body.classList.add('touch'); cv.focus({preventScroll:true}); audioInit(); if(ac&&ac.state==='suspended') ac.resume(); const p=pos(e);
   const rawY=p.y+(p.touch?TOUCH_LIFT:0);
   const birdUnder= G.state==='fly'&&G.birds.some(b=>b.st==='fly'&&p.x>=b.x-8&&p.x<=b.x+32&&p.y>=b.y-8&&p.y<=b.y+40);
   if(!birdUnder){ if(rawY<=24&&p.x>=240){ toggleMute(); return; } if(rawY<=24&&p.x>=216&&p.x<240){ setPaused(!G.paused); return; } }
@@ -657,7 +729,8 @@ cv.addEventListener('contextmenu',e=>e.preventDefault());
 if(!window.PointerEvent){ const fake=(ev,type,touch)=>{ const t=touch?ev.changedTouches[0]:ev; cv.dispatchEvent(Object.assign(new Event(type,{bubbles:true,cancelable:true}),{clientX:t.clientX,clientY:t.clientY,pointerType:touch?'touch':'mouse',button:0,isPrimary:true})); };
   cv.addEventListener('touchstart',e=>{ e.preventDefault(); fake(e,'pointerdown',true); },{passive:false}); cv.addEventListener('touchend',e=>{ fake(e,'pointerup',true); });
   cv.addEventListener('mousedown',e=>fake(e,'pointerdown',false)); cv.addEventListener('mousemove',e=>fake(e,'pointermove',false)); cv.addEventListener('mouseup',e=>fake(e,'pointerup',false)); }
-window.addEventListener('keydown',e=>{ const k=e.key; if(e.repeat) return; if(document.activeElement===codeInput) return; if(k.length===1&&/[a-z]/i.test(k)) feedKey(k.toLowerCase()); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
+window.addEventListener('keydown',e=>{ const k=e.key; if(e.repeat) return; if(document.activeElement===codeInput) return; document.body.classList.remove('pointer');
+  if(!cardBox.hidden){ if(k==='Escape'||k==='Enter'||k===' '){ hideCard(); e.preventDefault(); } return; } if(k.length===1&&/[a-z]/i.test(k)) feedKey(k.toLowerCase()); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
   if(G.state==='title'&&(k==='1'||k==='2'||k==='3'||k==='4')){ setDiff(DIFF_ORDER[+k-1]); SFX.blip(); return; }
   if(G.state==='title'&&(k==='ArrowLeft'||k==='ArrowRight')){ const i=DIFF_ORDER.indexOf(G.diff); setDiff(DIFF_ORDER[clamp(i+(k==='ArrowRight'?1:-1),0,3)]); SFX.blip(); e.preventDefault(); return; }
   if(k==='m'||k==='M') toggleMute();
@@ -675,7 +748,7 @@ window.addEventListener('resize',fit); fit();
 // ------------------------------------------------------------------ loop (fixed 60 Hz)
 let last=performance.now(), acc=0; const STEP=1000/60;
 function frame(now){ acc+=Math.min(100,now-last); last=now; while(acc>=STEP){ update(); acc-=STEP; } draw(); requestAnimationFrame(frame); }
-function boot(data){ if(data&&data.hi>G.hi) G.hi=data.hi; let th='gpu'; try{ th=localStorage.getItem('th.theme')||'gpu'; }catch(e){} if(!THEMES[th]) th='gpu'; applyTheme(th); let df='medium'; try{ df=localStorage.getItem('th.diff')||'medium'; }catch(e){} setDiff(df); requestAnimationFrame(frame); }
+function boot(data){ if(data&&data.hi>G.hi){ G.hi=data.hi; G.hiBoot=data.hi; } let th='gpu'; try{ th=localStorage.getItem('th.theme')||'gpu'; }catch(e){} if(!THEMES[th]) th='gpu'; applyTheme(th); let df='medium'; try{ df=localStorage.getItem('th.diff')||'medium'; }catch(e){} setDiff(df); requestAnimationFrame(frame); }
 try{ window.claude&&window.claude.hot&&window.claude.hot.snapshot&&window.claude.hot.snapshot(()=>({hi:G.hi})); }catch(e){}
 if(window.claude&&window.claude.hot&&window.claude.hot.ready) window.claude.hot.ready(boot); else boot((window.claude&&window.claude.hot&&window.claude.hot.data)||{});
 window.__th=G; window.__applyTheme=applyTheme; window.__T=()=>T; window.__makeCard=makeCard; window.__audio=()=>({ctx:!!ac,state:ac?ac.state:'none',muted,music:music.on,rain:!!rainNode}); // for tests
