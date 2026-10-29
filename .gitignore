@@ -2,3 +2,5 @@ shots/*.png
 !shots/sheet.png
 sprites_preview.png
 video_tmp/
+.claude/
+__pycache__/
