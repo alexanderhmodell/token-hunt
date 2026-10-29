@@ -125,6 +125,13 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
         await sleep(7000); const a = await p2.evaluate(() => window.__crt()); const r = await raf(p2, 240); const w = await p2.evaluate(() => window.__perf(120));
         console.log(`  auto after 7 s: tier ${a.tier} (active ${a.active}), governor steps ${a.governed}, raf ${r.toFixed(2)} ms, work ${w.avg.toFixed(2)} ms`);
         ok(r <= 18, `E1: auto quality holds ~60 fps headless (raf ${r.toFixed(2)} ms at tier ${a.tier}${a.active ? '' : ' = CSS fallback'})`); await p2.close(); }
+      // governor: feed synthetic frame intervals (tier forced to full first)
+      const gv = await page.evaluate(() => { const rep = (a, n) => Array.from({ length: n }, (_, i) => a[i % a.length]); const r = {};
+        window.__crtTier(2); r.smooth = window.__crtGovern(rep([16.7], 270));
+        r.dropped30 = window.__crtGovern(rep([16.7, 16.7, 33.3], 180));
+        r.slow = window.__crtGovern(rep([33.3], 180));
+        r.spikes = (window.__crtTier(2), window.__crtGovern(rep([...Array(29).fill(16.7), 400], 270))); window.__crtTier(2); return r; });
+      ok(gv.smooth === 2 && gv.dropped30 === 1 && gv.slow === 0 && gv.spikes === 2, `E1: governor keeps full at 60 Hz, steps down on 1-in-3 dropped frames then on 30 Hz, ignores rare spikes (${JSON.stringify(gv)})`);
       // input stays aligned with the curved image: click where a sprite is DISPLAYED (inverse barrel) near the corners
       await page.evaluate(() => window.__crtTier(2)); await sleep(150);
       const box = await clipOf(page);
@@ -243,6 +250,60 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       ok(!v.ok && v.said === 0 && v.open > 0 && errs.length === 0, `E2: without speechSynthesis the typewriter drives the mouth (${v.open} open frames), zero errors`);
       await ctx.close();
     }
+  }
+
+  // ---------------------------------------------------------------- E3 mixed, adaptive audio
+  if (want('E3')) {
+    const { ctx, page, errs } = await newPage(browser);
+    await page.addInitScript(() => { const ss = { getVoices: () => [{ name: 'Samantha', lang: 'en-US', localService: true }], addEventListener() {}, cancel() {}, speak(u) { if (u.text.trim()) setTimeout(() => { u.onstart && u.onstart(); window.__spokeAt = performance.now(); }, 10); } };
+      Object.defineProperty(window, 'speechSynthesis', { value: ss, configurable: true }); window.SpeechSynthesisUtterance = function (t) { this.text = t; }; });
+    await page.goto(url); await sleep(500);
+    await page.evaluate(() => window.__tap(128, 100)); await sleep(200); await page.evaluate(() => window.__tap(128, 100)); await sleep(300); // gesture + boot skip -> music on
+    const m0 = await page.evaluate(() => window.__mix());
+    ok(m0 && m0.state === 'running' && m0.on && m0.comp.threshold === -18 && m0.comp.ratio === 4, `E3: master -> compressor (-18 dB, 4:1) graph is live (${m0 && m0.state}, music ${m0 && m0.on})`);
+    ok(m0 && m0.buses.music > 0 && m0.buses.sfx > 0 && m0.buses.voice > 0 && m0.layers.base === 1 && m0.layers.arp === 0 && m0.layers.drums === 0 && m0.layers.storm === 0, `E3: music/sfx/voice buses + 4 music layers, only base audible at rest (${JSON.stringify(m0 && m0.layers)})`);
+    // stereo position follows screen x
+    const pan = await page.evaluate(async () => { const G = window.__th, out = [];
+      for (const bx of [8, 220]) { G.state = 'fly'; G.paused = false; G.shots = 3; G.flightT = 30; G.birds = [{ x: bx, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; window.__tap(bx + 12, 70); await new Promise(r => setTimeout(r, 30)); out.push(window.__mix().lastPan); }
+      return out; });
+    ok(pan[0] < -0.5 && pan[1] > 0.5, `E3: SFX pan by screen x (left hit ${pan[0].toFixed(2)}, right hit ${pan[1].toFixed(2)})`);
+    // sidechain: a hit ducks the music bus -8 dB for ~180 ms, then it recovers
+    const duck = await page.evaluate(async () => { const G = window.__th; G.state = 'fly'; G.shots = 3; G.flightT = 30; G.birds = [{ x: 110, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }];
+      await new Promise(r => setTimeout(r, 400)); const before = window.__mix().duck, n0 = window.__mix().ducks; window.__tap(122, 70); await new Promise(r => setTimeout(r, 70)); const during = window.__mix().duck; await new Promise(r => setTimeout(r, 450)); return { before, during, after: window.__mix().duck, n: window.__mix().ducks - n0 }; });
+    ok(duck.n === 1 && duck.before > 0.99 && Math.abs(20 * Math.log10(duck.during) + 8) < 0.6 && duck.after > 0.99, `E3: hit ducks music ${(20 * Math.log10(duck.during)).toFixed(1)} dB, recovers to ${duck.after.toFixed(2)}`);
+    // vertical layering, quantized to the bar: combo >= 3 -> arpeggio, >= 6 -> drums, storm load -> sub-bass layer
+    await page.evaluate(() => { const G = window.__th; G.state = 'intro'; G.t = -1e6; G.birds = []; G.wx = window.__T().levels[0]; G.combo = 0; });
+    const waitLayer = (cond, ms) => page.evaluate(async ([cond, ms]) => { const t0 = performance.now(); let m; while (performance.now() - t0 < ms) { m = window.__mix(); if (eval(cond)) return { ok: true, t: performance.now() - t0, m }; await new Promise(r => setTimeout(r, 50)); } return { ok: false, m }; }, [cond, ms]);
+    await page.evaluate(() => { window.__th.combo = 3; });
+    const mid = await waitLayer('m.layers.arp > 0.05 && m.layers.arp < 0.95', 6000);
+    const a3 = await waitLayer('m.layers.arp > 0.99', 6000);
+    ok(mid.ok && a3.ok && a3.m.layers.drums === 0, `E3: combo 3 fades the arpeggio in over a bar (seen at ${mid.m && mid.m.layers.arp.toFixed(2)} mid-fade, full after ${(a3.t / 1000).toFixed(1)} s), drums stay out`);
+    await page.evaluate(() => { window.__th.combo = 6; });
+    const d6 = await waitLayer('m.layers.drums > 0.99', 6500);
+    ok(d6.ok && d6.m.layers.arp > 0.99, `E3: combo 6 adds the drum layer (${(d6.t / 1000).toFixed(1)} s to full)`);
+    await page.evaluate(() => { const G = window.__th; G.wx = window.__T().levels[1]; });
+    const st = await waitLayer('m.layers.storm > 0.99', 6500);
+    ok(st.ok, 'E3: storm load adds the sub-bass + fast-hat layer');
+    await page.evaluate(() => { const G = window.__th; G.combo = 0; G.wx = window.__T().levels[0]; });
+    const off = await waitLayer('m.layers.arp < 0.01 && m.layers.drums < 0.01 && m.layers.storm < 0.01', 6500);
+    ok(off.ok && off.m.layers.base === 1, `E3: combo break + calm load fade every layer back out (${JSON.stringify(off.m && off.m.layers)})`);
+    // levels: meter the compressor output and the buses with every layer on and hits landing
+    await page.evaluate(() => { const G = window.__th; G.state = 'intro'; G.t = -1e6; G.combo = 6; G.wx = window.__T().levels[1]; });
+    await waitLayer('m.layers.drums > 0.99 && m.layers.storm > 0.99', 7000);
+    const lv = await page.evaluate(async () => { const N = window.__audioNodes(), ac = N.ac; const meter = (node) => { const a = ac.createAnalyser(); a.fftSize = 2048; node.connect(a); const buf = new Float32Array(a.fftSize); let peak = 0, ss = 0, n = 0; return { a, read() { a.getFloatTimeDomainData(buf); for (const v of buf) { peak = Math.max(peak, Math.abs(v)); ss += v * v; n++; } }, get() { return { peak, rms: Math.sqrt(ss / Math.max(1, n)) }; } }; };
+      const M = { out: meter(N.comp), music: meter(N.music), sfx: meter(N.sfx) }; const G = window.__th; const t0 = performance.now(); let k = 0;
+      while (performance.now() - t0 < 3000) { await new Promise(r => setTimeout(r, 20)); for (const m of Object.values(M)) m.read();
+        if (++k % 15 === 0) { G.state = 'fly'; G.shots = 3; G.flightT = 30; G.birds = [{ x: 40 + (k % 4) * 50, y: 60, vx: 0, vy: 0, sp: 0, tier: k % 2 ? 'hi' : 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; window.__tap(52 + (k % 4) * 50, 70); G.state = 'intro'; G.t = -1e6; G.combo = 6; } }
+      const db = v => +(20 * Math.log10(Math.max(1e-6, v))).toFixed(1); const o = {}; for (const k2 in M) { const g = M[k2].get(); o[k2] = { peakDb: db(g.peak), rmsDb: db(g.rms) }; } return o; });
+    console.log('  levels (dBFS): ' + JSON.stringify(lv));
+    ok(lv.out.peakDb < 0 && lv.out.rmsDb > -40 && lv.music.rmsDb > -45 && lv.sfx.peakDb > -30, `E3: full mix never clips at the output (peak ${lv.out.peakDb} dBFS, rms ${lv.out.rmsDb}) and music + sfx are both audible`);
+    await page.evaluate(() => { const G = window.__th; G.combo = 0; G.wx = window.__T().levels[0]; });
+    // the bot starting to speak also ducks the music
+    const sd = await page.evaluate(async () => { const G = window.__th; const n0 = window.__mix().ducks; G.state = 'fox'; G.wave = 1; G.fox = { mode: 'hit', t: 14, x: 112, count: 0, line: 'HAPPY TO HELP!' };
+      await new Promise(r => setTimeout(r, 120)); return { n: window.__mix().ducks - n0, duck: window.__mix().duck, spoke: !!window.__spokeAt }; });
+    ok(sd.spoke && sd.n === 1 && sd.duck < 0.6, `E3: speech start ducks the music (${sd.n} duck, gain ${sd.duck.toFixed(2)})`);
+    ok(errs.length === 0, 'E3: zero page errors' + (errs.length ? ' ' + errs[0] : ''));
+    await ctx.close();
   }
 
   await browser.close();
