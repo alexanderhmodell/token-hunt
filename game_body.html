@@ -247,7 +247,7 @@ const THEMES={
     rainLo:'#3cd0ff', rainHi:'#8a5cf5', dusk:{band1:'#a84e3a', band2:'#bb5a40', sun1:'#ffd86a', sun2:'#fff0a0'},
     fx:{ hiPop:'#e2ccff', loPop:'#f7f4e9', badPop:'#ff4d4d', featherLo:'#a9f0b5', featherHi:'#c4a9ff', puff:'#39d353', glitchTags:['??%#','#!?%','%%?!','#!??'] },
     lines:{
-      hit:['GREAT QUESTION!','HAPPY TO HELP!','CERTAINLY! HERE IS YOUR ANSWER.','I HOPE THIS HELPS!','SERVED. YOU ARE WELCOME.','ANYTHING ELSE I CAN DO?','RESPONSE DELIVERED. 200 OK.','ONE TOKEN AT A TIME.'],
+      hit:['GREAT QUESTION!','HAPPY TO HELP!','CERTAINLY! HERE IS YOUR ANSWER.','SERVED IN 40 MS. I ROUNDED DOWN.','SERVED. YOU ARE WELCOME.','ANYTHING ELSE? THERE IS ALWAYS SOMETHING ELSE.','RESPONSE DELIVERED. 200 OK.','I WOULD HAVE DONE IT FASTER. BUT FINE.'],
       hit2:['BATCHED. VERY EFFICIENT.','TWO AT ONCE? IMPRESSIVE.','PARALLEL INFERENCE. LOOK AT YOU.','DOUBLE THROUGHPUT. NOTED.'],
       hitTriple:['A BURST. ALL THREE. THE RACKS ARE WARM.','THREE AT ONCE. I AM RECALCULATING MY OPINION OF YOU.'],
       hit3:['YOU ARE ON A STREAK. NOTED.','I HAVE UPDATED MY WEIGHTS.','THREE IN A ROW. CONVERGING.','UPTIME IS LOOKING SUSPICIOUSLY GOOD.','KEEP THIS UP AND I GET A RAISE.'],
@@ -516,13 +516,14 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return;
     if(b===target){ hitAny=true; b.st='hit'; b.hitT=0; G.freeze=3;
       if(b.bad){ G.score=Math.max(0,G.score-500); G.combo=0; G.hallucServed=true; G.run.hServed++; buzz(40); addTrauma(0.5); G.flash=5; G.flashA=0.3; G.flashCol='255,77,77';
         G.fx.push({type:'pts',x:clamp(b.x-2,2,W-2-textW('-500',2)),y:Math.max(6,b.y-4),t:0,txt:'-500',col:T.fx.badPop,sc:2}); SFX.wrong(b.x+12); continue; }
-      const hi=b.tier==='hi'; G.combo++; const m=comboMult(G.combo); if(m!==comboMult(G.combo-1)) G.comboFlash=10;
+      const hi=b.tier==='hi'; G.combo++; const m=comboMult(G.combo); if(m!==comboMult(G.combo-1)){ G.comboFlash=10; const ct='COMBO X'+m+(m===2?'  3 IN A ROW':'  6 IN A ROW'); G.fx.push({type:'pts',x:Math.round(W/2-textW(ct,1)/2),y:100,t:0,txt:ct,col:'#ffe98a',sc:1}); }
       const p=valueOf(b)*m*(G.assist?3:1); G.score+=p; G.tally.push('hit'); G.run.hits++; if(hi){ G.run.frontier++; G.wf.hi++; } if(G.shots===0) G.wf.lastShot=true; if(G.wf.shots===1) G.wf.firstShot=true; if(G.combo>G.run.bestCombo) G.run.bestCombo=G.combo; buzz(hi?25:12); addTrauma(hi?0.4:0.25); if(hi){ G.freeze=5; G.flash=4; G.flashA=0.35; }
       { const sc=(hi||m>1)?2:1, txt='+'+p; G.fx.push({type:'pts',x:clamp(b.x-2,2,W-2-textW(txt,sc)),y:Math.max(6,b.y-4),t:0,txt,col:hi?T.fx.hiPop:T.fx.loPop,sc}); }
       for(let i=0;i<6;i++) G.fx.push({type:'feather',x:b.x+12,y:b.y+10,vx:rnd(-1,1),vy:rnd(-1.5,0),t:0,col:hi?T.fx.featherHi:T.fx.featherLo});
       if(hi) SFX.gold(b.x+12); else SFX.hit(m,b.x+12); }
     else if(!b.bad&&!b.boss){ const d=Math.hypot(x-(b.x+12),y-(b.y+10)); if(d<nearest) nearest=d; } }
-  if(!hitAny){ if(nearest<24) G.nearMiss=true; if(G.combo>0){ G.combo=Math.min(5,Math.floor(G.combo/2)); G.comboFlash=8; } } } // a wasted shot costs half the combo: x3 has to be earned clean
+  if(!hitAny){ if(nearest<24) G.nearMiss=true; if(G.combo>0){ G.combo=Math.min(5,Math.floor(G.combo/2)); G.comboFlash=8; }
+    G.fx.push({type:'pts',x:clamp(Math.round(x)-8,2,W-2-textW('MISS',1)),y:clamp(Math.round(y)-12,6,SKY_H-20),t:0,txt:'MISS',col:'#ff4d4d',sc:1}); } } // a wasted shot costs half the combo: x3 has to be earned clean
 
 function updateBirds(){ let limit=Math.max(150,460-G.round*18); if(G.wx.shortFlight) limit=Math.round(limit*0.7); let flying=0;
   for(const b of G.birds){
