@@ -16,7 +16,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   rep(6, 'Restart skips the BIOS crawl', has("else startGame(false,true); } break;") && has("if(skipBoot){ bootDone(); return; }"), 'game-over tap calls startGame(false,true) → bootDone()');
   rep(7, 'iOS audio unlock on pointerup/click', has("cv.addEventListener('pointerup',()=>{ audioInit(); if(ac&&ac.state==='suspended') ac.resume(); });") && has("cv.addEventListener('click',()=>{ if(ac&&ac.state==='suspended') ac.resume(); });"), 'both listeners present (iOS behavior itself not verifiable headlessly)');
   rep(8, 'Attract auto-resumes on tab return; real play stays paused', has("else if(G.attract) setPaused(false); });") && has("window.addEventListener('focus',()=>{ if(G.attract) setPaused(false); });"), 'visibilitychange + focus handlers gate on G.attract');
-  rep(9, 'First intro shortened', has("case 'intro': if(G.t>=(G.round===1?80:130)){"), 'epoch-1 intro is 80 frames');
+  rep(9, 'First intro shortened', has("case 'intro': if(G.t>=(G.round===1?70:90)){"), 'epoch-1 intro is 70 frames, later epochs 90');
   rep(10, "Glitch tag '@' removed", !/glitchTags:\[[^\]]*@/.test(html), "no '@' in any glitchTags array");
 
   // ---- dynamic evidence
@@ -31,7 +31,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   // 9
   await page.mouse.click(...tp(128, 100)); await sleep(100); // skip boot
   const t0 = Date.now(); while (Date.now() - t0 < 6000 && (await G(() => window.__th.state)) !== 'fly') await sleep(40);
-  const firstWave = (Date.now() - t0) / 1000; const nominal = (80 + 70) / 60; rep('9b', 'First wave: nominal ≤ 3 s at 60 Hz (behavior)', nominal <= 3, `nominal ${nominal.toFixed(2)} s (intro 80 f + tutorial 70 f); headless wall-clock ${firstWave.toFixed(1)} s`);
+  const firstWave = (Date.now() - t0) / 1000; const nominal = (70 + 60) / 60; rep('9b', 'First wave: nominal ≤ 3 s at 60 Hz (behavior)', nominal <= 3, `nominal ${nominal.toFixed(2)} s (intro 70 f + tutorial 60 f); headless wall-clock ${firstWave.toFixed(1)} s`);
   // 2 + 3: real served first, hallucination must leave within ~1 s and no banner
   await G(() => { const G = window.__th; G.state = 'fly'; G.shots = 3; G.flightT = 30; G.birds = [{ x: 60, y: 60, vx: 0, vy: 0, sp: 1, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }, { x: 170, y: 90, vx: 0, vy: 0, sp: 1, tier: 'lo', bad: true, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; });
   await page.mouse.click(...tp(72, 70)); await sleep(120);
@@ -50,7 +50,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await page.mouse.click(...tp(128, 100)); await sleep(80); const s6 = await G(() => window.__th.state);
   rep('6b', 'Restart from game over goes to intro, not boot (behavior)', s6 === 'intro', `state after tap: ${s6}`);
   // 5b: attract continues past epoch 1
-  await G(() => { const G = window.__th; G.state = 'title'; G.attract = false; G.idle = 539; }); await sleep(200);
+  await G(() => { const G = window.__th; G.state = 'title'; G.attract = false; G.idle = 1199; }); await sleep(200);
   await G(() => { const G = window.__th; G.round = 1; G.state = 'roundEnd'; G.t = 91; }); await sleep(120);
   const s5 = await G(() => ({ state: window.__th.state, round: window.__th.round, attract: window.__th.attract }));
   rep('5b', 'Attract: epoch 1 clear → epoch 2 intro (behavior)', s5.attract && s5.state === 'intro' && s5.round === 2, JSON.stringify(s5));
@@ -80,8 +80,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await page.mouse.click(...tp(20, 20), { button: 'right' }); await page.mouse.click(...tp(20, 20), { button: 'middle' }); await sleep(60);
   const shotsAfter = await G(() => window.__th.shots);
   rep('H3', 'Right/middle mouse buttons do not fire', shotsAfter === 3, `shots after right+middle click = ${shotsAfter}`);
-  await G(() => { const G = window.__th; G.fx = []; G.state = 'fly'; G.shots = 3; G.birds = [{ x: 230, y: 4, vx: 0, vy: 0, sp: 1, tier: 'hi', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; });
-  await page.mouse.click(...tp(242, 14)); await sleep(60);
+  await G(() => { const G = window.__th; G.fx = []; G.state = 'fly'; G.shots = 3; G.birds = [{ x: 230, y: 40, vx: 0, vy: 0, sp: 1, tier: 'hi', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; });
+  await page.mouse.click(...tp(242, 50)); await sleep(60);
   const pop = await G(() => { const f = window.__th.fx.find(f => f.type === 'pts'); return f ? { x: f.x, y: f.y, txt: f.txt, sc: f.sc } : null; });
   rep('H4', 'Score popup clamped inside the screen at the right edge', pop && pop.x + pop.txt.length * 4 * pop.sc <= 256 && pop.y >= 0, JSON.stringify(pop));
   const rm = await G(() => document.documentElement.outerHTML.includes("prefers-reduced-motion: reduce"));

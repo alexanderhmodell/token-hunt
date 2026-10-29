@@ -67,17 +67,17 @@ const path = require('path');
 
   // jump to storm round to check weather rendering, then force round end + game over screens
   await page.evaluate(() => { const G = window.__th; G.round = 5; G.state = 'intro'; G.t = 0; });
-  await page.evaluate(() => { const G = window.__th; G.wx = window.__T().levels[2]; G.rain = []; for (let i = 0; i < 130; i++) G.rain.push({ x: Math.random() * 256, y: Math.random() * 188, l: 3 }); G.lightning = 3; });
+  await page.evaluate(() => { const G = window.__th; G.wx = window.__T().levels[1]; G.rain = []; for (let i = 0; i < 130; i++) G.rain.push({ x: Math.random() * 256, y: Math.random() * 188, l: 3 }); G.lightning = 3; });
   await page.waitForTimeout(80);
   await shot('09_storm_intro');
-  await page.evaluate(() => { const G = window.__th; G.state = 'roundEnd'; G.t = 0; G.tally = ['hit','hit','miss','hit','hit','hit']; G.perfect = false; });
+  await page.evaluate(() => { const G = window.__th; G.state = 'roundEnd'; G.t = 0; G.tally = ['hit','hit','miss','hit','hit','hit']; G.perfect = false; G.round = 2; });
   await page.waitForTimeout(100);
   await shot('10_round_clear');
   await page.evaluate(() => { const G = window.__th; G.state = 'gameOver'; G.t = 100; G.newRecord = true; G.fox = { mode: 'miss', t: 30, x: 112, count: 0, line: 'HAVE YOU TRIED TURNING IT OFF AND ON?' }; });
   await page.waitForTimeout(100);
   await shot('11_game_over');
   // dusk + rain look
-  await page.evaluate(() => { const G = window.__th; G.state = 'fly'; G.wx = window.__T().levels[5]; G.rain = []; G.birds = [{ x: 80, y: 60, vx: 1, vy: -1, sp: 1.5, gold: true, st: 'fly', f: 0, at: 0, dirT: 999, hitT: 0 }, { x: 160, y: 100, vx: -1, vy: -1, sp: 1.5, gold: false, st: 'fly', f: 2, at: 0, dirT: 999, hitT: 0 }]; G.shots = 2; G.flightT = 0; G.round = 6; });
+  await page.evaluate(() => { const G = window.__th; G.state = 'fly'; G.wx = window.__T().levels[4]; G.rain = []; G.birds = [{ x: 80, y: 60, vx: 1, vy: -1, sp: 1.5, gold: true, st: 'fly', f: 0, at: 0, dirT: 999, hitT: 0 }, { x: 160, y: 100, vx: -1, vy: -1, sp: 1.5, gold: false, st: 'fly', f: 2, at: 0, dirT: 999, hitT: 0 }]; G.shots = 2; G.flightT = 0; G.round = 6; });
   await page.waitForTimeout(100);
   await shot('12_dusk_two_birds');
 
@@ -89,7 +89,7 @@ const path = require('path');
   console.log('pause holds t:', t1 === t2, '| paused =', await page.evaluate(() => window.__th.paused));
   await page.keyboard.press('p'); await page.waitForTimeout(200);
   console.log('resume advances t:', (await page.evaluate(() => window.__th.t)) > t2);
-  const combo = await page.evaluate(() => { const G = window.__th; G.combo = 3; return [G.combo, window.__T().levels[2].name, typeof window.__applyTheme]; });
+  const combo = await page.evaluate(() => { const G = window.__th; G.combo = 3; return [G.combo, window.__T().levels[1].name, typeof window.__applyTheme]; });
   console.log('combo=3 →', combo);
   await page.evaluate(() => { window.__th.combo = 0; });
   // CP2 checks: difficulty, tiers, cost, hallucination
@@ -121,7 +121,7 @@ const path = require('path');
   await page.keyboard.type('duck'); await page.waitForTimeout(150);
   console.log('duck code → theme:', await page.evaluate(() => window.__th.theme));
   await shot('16_duck_title');
-  await page.evaluate(() => { const G = window.__th; G.round = 3; G.state = 'fly'; G.wx = window.__T().levels[2]; G.rain = []; for (let i = 0; i < 130; i++) G.rain.push({ x: Math.random() * 256, y: Math.random() * 188, l: 3 }); G.lightning = 3; G.birds = [{ x: 80, y: 60, vx: 1, vy: -1, sp: 1.5, tier: 'hi', bad: false, st: 'fly', f: 0, at: 0, dirT: 999, hitT: 0 }, { x: 150, y: 100, vx: -1, vy: -1, sp: 1.5, tier: 'lo', bad: true, st: 'fly', f: 2, at: 5, dirT: 999, hitT: 0 }]; G.shots = 3; G.flightT = 0; });
+  await page.evaluate(() => { const G = window.__th; G.round = 3; G.state = 'fly'; G.wx = window.__T().levels[1]; G.rain = []; for (let i = 0; i < 130; i++) G.rain.push({ x: Math.random() * 256, y: Math.random() * 188, l: 3 }); G.lightning = 3; G.birds = [{ x: 80, y: 60, vx: 1, vy: -1, sp: 1.5, tier: 'hi', bad: false, st: 'fly', f: 0, at: 0, dirT: 999, hitT: 0 }, { x: 150, y: 100, vx: -1, vy: -1, sp: 1.5, tier: 'lo', bad: true, st: 'fly', f: 2, at: 5, dirT: 999, hitT: 0 }]; G.shots = 3; G.flightT = 0; });
   await page.waitForTimeout(80); await shot('17_duck_storm');
   await page.evaluate(() => { const G = window.__th; G.state = 'fox'; G.fox = { mode: 'miss', t: 60, x: 112, count: 0, line: 'THE WIND TOOK THAT ONE.' }; });
   await page.waitForTimeout(60); await shot('18_duck_fox');
@@ -131,7 +131,7 @@ const path = require('path');
   console.log('finn → assist:', await page.evaluate(() => window.__th.assist));
   await page.keyboard.type('vcc'); await page.waitForTimeout(100);
   console.log('vcc toggles off:', await page.evaluate(() => window.__th.assist === false));
-  await page.evaluate(() => { const G = window.__th; G.state = 'title'; G.t = 0; G.idle = 539; });
+  await page.evaluate(() => { const G = window.__th; G.state = 'title'; G.t = 0; G.idle = 1199; });
   await page.waitForTimeout(400);
   console.log('attract started:', await page.evaluate(() => ({ attract: window.__th.attract, state: window.__th.state })));
   await waitState('fly'); await page.waitForTimeout(1500); await shot('19_attract');

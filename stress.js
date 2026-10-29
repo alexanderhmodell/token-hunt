@@ -57,7 +57,7 @@ const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? 'PAS
   ok(!over, 'no horizontal overflow after resize storm');
   await page.setViewportSize({ width: 1000, height: 900 }); box = await cv.boundingBox();
   // ---- 7. Long autoplay: attract mode AI for ~60 s wall clock, check it cycles and never errors
-  await G(() => { const G = window.__th; G.state = 'title'; G.t = 0; G.attract = false; G.idle = 539; });
+  await G(() => { const G = window.__th; G.state = 'title'; G.t = 0; G.attract = false; G.idle = 1199; });
   const t0 = Date.now(); let maxRound = 0, cycles = 0, lastState = '';
   while (Date.now() - t0 < 60000) { const s = await G(() => ({ st: window.__th.state, r: window.__th.round, a: window.__th.attract })); if (s.r > maxRound) maxRound = s.r; if (s.st === 'title' && lastState !== 'title') cycles++; lastState = s.st; await page.waitForTimeout(250); }
   ok(cycles >= 1, `attract loop cycled back to title ${cycles}x in 60 s (max round ${maxRound})`);

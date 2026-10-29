@@ -42,7 +42,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await shootLive(true, 0, 0);
   await sleep(3200);
   // jump to the storm
-  await G(() => { const G = window.__th; G.round = 2; G.wave = 6; G.tally = ['hit','hit','hit','hit','hit','miss']; G.state = 'fox'; G.fox.t = 109; G.fox.mode = 'hit'; G.fox.line = 'HAPPY TO HELP!'; G.birds = []; });
+  await G(() => { const G = window.__th; G.round = 1; G.wave = 6; G.tally = ['hit','hit','hit','hit','hit','miss']; G.state = 'fox'; G.fox.t = 109; G.fox.mode = 'hit'; G.fox.line = 'HAPPY TO HELP!'; G.birds = []; });
   await sleep(1500); await page.mouse.click(...tp(128, 100)); // skip round-clear panel
   await waitState('intro', 5000); await sleep(2300); await waitState('fly', 8000);
   for (let i = 0; i < 4; i++) { const b = await liveBird(); if (b) await shootAt(b); await sleep(2500); await waitState('fly', 8000); }
