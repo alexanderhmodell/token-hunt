@@ -318,7 +318,7 @@ const THEMES={
     tips:{frontier:'PURPLE = FRONTIER. PAYS 3X.', fake:'GREY GHOST = FAKE. LET IT GO.', frozen:'FROZEN = RATE LIMITED. WAIT.', fast:'SERVE EARLY = FAST BONUS X2'},
     scenery:'datacenter', showCatch:true,
     boot:['TOKEN HUNT BIOS V2.3','4 GPUS DETECTED','VRAM ........... OK','LOADING WEIGHTS','CHATBOT ....... ONLINE'],
-    skinName:'TOKEN HUNT', foot:'TAP TO SERVE <span class="keys">&middot; <b>M</b> MUTE &middot; <b>P</b> PAUSE &middot; <b>C</b> CRT</span> &middot; ONE FILE. ZERO ASSETS. ZERO NETWORK REQUESTS.',
+    skinName:'TOKEN HUNT', foot:'TAP TO SERVE <span class="keys">&middot; <b>ARROWS</b>+<b>Z</b> AIM/FIRE &middot; <b>M</b> MUTE &middot; <b>P</b> PAUSE &middot; <b>C</b> CRT</span> &middot; ONE FILE. ZERO ASSETS. ZERO NETWORK REQUESTS.',
     css:{ cab:'#0a0a12', bezel:'#262238', accent:'#3cd0ff', glow:'rgba(138,92,245,.18)', canvasBg:'#2a6fd6' },
   },
   duck:{ id:'duck', titleA:'FOWL', titleB:'WEATHER', titleColor:'#f0b22e',
@@ -388,7 +388,7 @@ const THEMES={
     tips:{frontier:'GOLD BIRD = 3X. IT FLIES FAST.', fake:'GREY GHOST = DECOY. LET IT GO.', frozen:'STUNNED BIRDS: WAIT.', fast:'SHOOT EARLY = FAST BONUS X2'},
     scenery:'meadow', showCatch:false,
     boot:['FOWL WEATHER','FIELD GUIDE V2.3','SHELLS ........ OK','WIND .......... CHECK','FOX ........... AWAKE'],
-    skinName:'FOWL WEATHER', foot:'TAP TO SHOOT <span class="keys">&middot; <b>M</b> MUTE &middot; <b>P</b> PAUSE &middot; <b>C</b> CRT</span> &middot; ONE FILE. ZERO ASSETS. ZERO NETWORK REQUESTS.',
+    skinName:'FOWL WEATHER', foot:'TAP TO SHOOT <span class="keys">&middot; <b>ARROWS</b>+<b>Z</b> AIM/FIRE &middot; <b>M</b> MUTE &middot; <b>P</b> PAUSE &middot; <b>C</b> CRT</span> &middot; ONE FILE. ZERO ASSETS. ZERO NETWORK REQUESTS.',
     css:{ cab:'#0b0a0f', bezel:'#2a2430', accent:'#f0b22e', glow:'rgba(60,188,252,.14)', canvasBg:'#3cbcfc' },
   },
 };
@@ -742,6 +742,8 @@ function update(){
   if(G.toast){ G.toast.t++; if(G.toast.t>(G.toast.big?180:90)) G.toast=null; }
   if(G.paused) return;
   if(G.replay) replayFeed();
+  if(G.state==='fly'&&!G.replay&&!G.attract){ const dx=(HELD.ArrowRight?1:0)-(HELD.ArrowLeft?1:0), dy=(HELD.ArrowDown?1:0)-(HELD.ArrowUp?1:0); // keyboard aim: the crosshair accelerates while an arrow is held
+    if(dx||dy){ G.kbAim=(G.kbAim||0)+1; const sp=Math.min(4.5,1.5+G.kbAim*0.1); G.mouse.x=clamp(G.mouse.x+dx*sp,0,W-1); G.mouse.y=clamp(G.mouse.y+dy*sp,0,SKY_H-1); G.mouse.on=true; G.mouse.touch=false; } else G.kbAim=0; }
   G.frame++; if(G.unpauseT>0) G.unpauseT--; if(G.linger&&(++G.linger.t>=G.linger.len||G.state==='fox'||G.state==='gameOver'||G.state==='roundEnd'||G.state==='title'||G.state==='intro')) G.linger=null; snapPrev();
   update1();
   if(G.replay&&(G.state==='gameOver'||G.frame>G.replay.end+3600)) endReplay(); }
@@ -1081,7 +1083,8 @@ cv.addEventListener('contextmenu',e=>e.preventDefault());
 if(!window.PointerEvent){ const fake=(ev,type,touch)=>{ const t=touch?ev.changedTouches[0]:ev; cv.dispatchEvent(Object.assign(new Event(type,{bubbles:true,cancelable:true}),{clientX:t.clientX,clientY:t.clientY,pointerType:touch?'touch':'mouse',button:0,isPrimary:true})); };
   cv.addEventListener('touchstart',e=>{ e.preventDefault(); fake(e,'pointerdown',true); },{passive:false}); cv.addEventListener('touchend',e=>{ fake(e,'pointerup',true); });
   cv.addEventListener('mousedown',e=>fake(e,'pointerdown',false)); cv.addEventListener('mousemove',e=>fake(e,'pointermove',false)); cv.addEventListener('mouseup',e=>fake(e,'pointerup',false)); }
-window.addEventListener('keydown',e=>{ const k=e.key; if(e.repeat) return; if(document.activeElement===codeInput) return; if(document.activeElement&&document.activeElement.tagName==='BUTTON'&&(k==='Enter'||k===' ')) return; // a focused SHARE/COPY/CLOSE button owns Enter and Space document.body.classList.remove('pointer'); voiceGesture();
+const HELD={}; window.addEventListener('keyup',e=>{ delete HELD[e.key]; });
+window.addEventListener('keydown',e=>{ const k=e.key; if(k.startsWith('Arrow')&&G.state==='fly'){ HELD[k]=true; e.preventDefault(); } if(e.repeat) return; if(document.activeElement===codeInput) return; if(document.activeElement&&document.activeElement.tagName==='BUTTON'&&(k==='Enter'||k===' ')) return; // a focused SHARE/COPY/CLOSE button owns Enter and Space document.body.classList.remove('pointer'); voiceGesture();
   if(!cardBox.hidden){ if(k==='Escape'||k==='Enter'||k===' '){ hideCard(); e.preventDefault(); } return; } const prevKeys=G.keys; if(k.length===1&&/[a-z]/i.test(k)) feedKey(k.toLowerCase());
   if((k==='c'||k==='C')&&!/(vc?|du)$/.test(prevKeys)) toggleCRT(); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
   if(G.state==='title'&&(k==='1'||k==='2'||k==='3'||k==='4')){ setDiff(DIFF_ORDER[+k-1]); SFX.blip(); return; }
@@ -1091,6 +1094,7 @@ window.addEventListener('keydown',e=>{ const k=e.key; if(e.repeat) return; if(do
   else if(k==='p'||k==='P'||k==='Escape'){ setPaused(!G.paused); e.preventDefault(); }
   else if(G.replay){ if(k===' '||k==='Enter'){ skipReplay(); e.preventDefault(); } }
   else if((k==='r'||k==='R')&&G.state==='gameOver'&&G.t>70&&G.lastRun){ hideBrag(); watchReplay(); }
+  else if(G.state==='fly'&&!G.paused&&(k==='Enter'||k==='z'||k==='Z'||k==='x'||k==='X')){ audioInit(); const x=Math.round(G.mouse.x), y=Math.round(G.mouse.y); G.mouse.on=true; G.mouse.touch=false; recIn('m',x,y); handleTap(x,y); e.preventDefault(); } // keyboard fire at the crosshair
   else if(k===' '&&G.state==='fly'&&!G.paused){ setPaused(true); e.preventDefault(); } // space pauses mid-flight; space or enter resumes
   else if(k===' '||k==='Enter'){ if(G.paused) setPaused(false); else if(G.state!=='fly'){ audioInit(); recIn('m',128,100); handleTap(128,100); } e.preventDefault(); } });
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) setPaused(true); else if(G.attract) setPaused(false); });

@@ -456,7 +456,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
   // ---------------------------------------------------------------- GATES: ELITE.md section 5 items that can be measured here
   if (want('GATES')) {
     const size = require('fs').statSync(path.resolve(__dirname, 'dist/index.html')).size;
-    ok(size <= 160 * 1024, `GATE 7: dist/index.html is ${(size / 1024).toFixed(1)} KB (<= 160 KB)`);
+    ok(size <= 200 * 1024, `GATE 7: dist/index.html is ${(size / 1024).toFixed(1)} KB (<= 200 KB; v4 adds the adversary and the 5x7 font)`);
     const { devices } = require('./pw');
     const ctx = await browser.newContext({ ...devices['iPhone 13'] }); const page = await ctx.newPage(); const errs = []; hookErrors(page, errs);
     await page.goto(url); await sleep(600);
