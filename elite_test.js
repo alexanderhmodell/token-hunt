@@ -29,6 +29,7 @@ const HELPERS = () => {
     else if (G.state === 'gap') mem.last = 0;
     else if (G.state === 'gameOver' && G.t > 75 && mem.restart) tap(128, 100);
     if (G.state === 'fly' && Math.random() < 0.004) window.dispatchEvent(new KeyboardEvent('keydown', { key: 'x' })); // recorded key input
+    if (G.state === 'fly' && mode !== 'miss' && Math.random() < 0.006) { window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p' })); window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p' })); mem.unpauses = (mem.unpauses || 0) + 1; } // pause + resume: the READY lockout is sim state
   };
 };
 const newPage = async (browser, opts) => { const ctx = await browser.newContext({ viewport: { width: 1000, height: 900 }, ...(opts || {}) }); const page = await ctx.newPage(); const errs = []; hookErrors(page, errs); await page.addInitScript(HELPERS); return { ctx, page, errs }; };
@@ -47,10 +48,10 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       for (let i = 0; i < 100 && !window.__th.recOn; i++) await new Promise(r => setTimeout(r, 50));
       const G = window.__th; const live = window.__simStats(); const run = { init: G.recInit, rec: G.rec.map(e => e.slice()), frames: G.frame };
       const reps = [0, 1, 2].map(() => window.__replay(run, { headless: true, toFrame: live.frame }));
-      return { live, reps, inputs: run.rec.length, keys: run.rec.filter(e => e[1] === 'k').length, touches: run.rec.filter(e => e[1] === 't').length, seed: run.init.seed };
+      return { live, reps, inputs: run.rec.length, keys: run.rec.filter(e => e[1] === 'k').length, touches: run.rec.filter(e => e[1] === 't').length, unpauses: run.rec.filter(e => e[1] === 'u').length, seed: run.init.seed };
     });
     const L = JSON.stringify(r.live);
-    console.log(`  live @frame ${r.live.frame}: seed ${r.seed}, ${r.inputs} inputs (${r.touches} touch, ${r.keys} keys), round ${r.live.round}, score ${r.live.score}, state ${r.live.state}, run ${JSON.stringify(r.live.run)}`);
+    console.log(`  live @frame ${r.live.frame}: seed ${r.seed}, ${r.inputs} inputs (${r.touches} touch, ${r.keys} keys, ${r.unpauses} unpauses), round ${r.live.round}, score ${r.live.score}, state ${r.live.state}, run ${JSON.stringify(r.live.run)}`);
     ok(r.live.frame > 2500 && r.inputs > 50, `E0: recorded a real run (${r.live.frame} frames, ${r.inputs} inputs)`);
     r.reps.forEach((s, i) => { const same = JSON.stringify(s) === L; ok(same, `E0: replay ${i + 1}/3 identical (score ${s.score}, tally ${s.tally.map(t => t[0]).join('')}, round ${s.round}, run stats, birds, rng state)` + (same ? '' : '\n    live ' + L + '\n    rep  ' + JSON.stringify(s))); });
     // a recording replayed with one input removed must diverge (the test can tell runs apart)
@@ -93,7 +94,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       return r; }, [a.toString('base64'), b ? b.toString('base64') : null]);
     const raf = (page, n = 180) => page.evaluate((n) => new Promise(res => { let k = 0, s = performance.now(); const tk = () => { if (++k >= n) return res((performance.now() - s) / n); requestAnimationFrame(tk); }; requestAnimationFrame(tk); }), n);
     const clipOf = async (page) => { const b = await (await page.$('#g')).boundingBox(); return { x: b.x, y: b.y, width: b.width, height: b.height }; };
-    const freeze = (page) => page.evaluate(() => { const G = window.__th; G.state = 'fly'; G.paused = false; G.attract = false; G.round = 2; G.wx = window.__T().levels[0]; G.rain = []; G.shots = 3; G.flightT = 30; G.mouse.on = false;
+    const freeze = (page) => page.evaluate(() => { const G = window.__th; G.state = 'fly'; G.paused = false; G.attract = false; G.round = 2; G.wx = window.__T().levels[0]; G.rain = []; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = 30; G.mouse.on = false;
       G.birds = [{ x: 60, y: 50, vx: 0, vy: 0, sp: 0, tier: 'hi', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }, { x: 150, y: 90, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 2, at: 0, dirT: 1e9, hitT: 0 }]; G.flightT = -1e9; });
     {
       const { ctx, page, errs } = await newPage(browser);
@@ -138,7 +139,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       const inv = (x, y) => { const K = 0.08, N = 1 + K * 0.25; const t = [x / 256, y / 240]; let u = t.slice(); for (let i = 0; i < 20; i++) { const cx = u[0] - .5, cy = u[1] - .5, k = (1 + K * (cx * cx + cy * cy)) / N; u = [.5 + (t[0] - .5) / k, .5 + (t[1] - .5) / k]; } return [box.x + u[0] * box.width, box.y + u[1] * box.height]; };
       let hits = 0; const spots = [[4, 30], [228, 30], [4, 140], [228, 140], [110, 8], [110, 145], [30, 90], [210, 70]];
       for (const [bx, by] of spots) {
-        await page.evaluate(([bx, by]) => { const G = window.__th; G.state = 'fly'; G.paused = false; G.shots = 3; G.flightT = 30; G.tally = []; G.birds = [{ x: bx, y: by, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; }, [bx, by]);
+        await page.evaluate(([bx, by]) => { const G = window.__th; G.state = 'fly'; G.paused = false; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = 30; G.tally = []; G.birds = [{ x: bx, y: by, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; }, [bx, by]);
         await page.mouse.click(...inv(bx + 12, by + 10)); await sleep(60);
         if (await page.evaluate(() => window.__th.tally.includes('hit') || window.__th.birds[0].st !== 'fly')) hits++;
       }
@@ -229,7 +230,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       const n2 = (await spoken(page)).length; const rp = await page.evaluate(() => { const G = window.__th; if (!G.recInit) return 'none'; window.__replay({ init: G.recInit, rec: G.rec.slice(), frames: G.frame }, { headless: true, toFrame: 2000 }); return 'ok'; });
       const n3 = (await spoken(page)).length; ok(rp === 'ok' && n3 === n2, `E2: replays are silent (${n2} -> ${n3})`);
       // entrance: peek, 3 px dip, ~4 px overshoot, settle; exit eases in
-      const ys = await page.evaluate(() => Array.from({ length: 79 }, (_, t) => window.__criticY(t, false)));
+      const ys = await page.evaluate(() => { window.__th.fox.line = 'OK.'; return Array.from({ length: 79 }, (_, t) => window.__criticY(t, false)); }); // short line: v2.9 dwell = 60 f
       const top = 200 - 44, minY = Math.min(...ys.slice(10, 24)), dip = ys[10] - ys[6];
       ok(Math.abs(dip - 3) < 0.01 && top - minY > 3 && top - minY < 5 && ys.slice(24, 60).every(y => y === top) && (ys[77] - ys[76]) > (ys[62] - ys[61]) && ys[78] >= 199.9,
         `E2: entrance dips ${dip.toFixed(1)} px, overshoots ${(top - minY).toFixed(1)} px, settles at ${top}; exit accelerates (${(ys[62] - ys[61]).toFixed(2)} -> ${(ys[77] - ys[76]).toFixed(2)} px/f)`);
@@ -264,11 +265,11 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     ok(m0 && m0.buses.music > 0 && m0.buses.sfx > 0 && m0.buses.voice > 0 && m0.layers.base === 1 && m0.layers.arp === 0 && m0.layers.drums === 0 && m0.layers.storm === 0, `E3: music/sfx/voice buses + 4 music layers, only base audible at rest (${JSON.stringify(m0 && m0.layers)})`);
     // stereo position follows screen x
     const pan = await page.evaluate(async () => { const G = window.__th, out = [];
-      for (const bx of [8, 220]) { G.state = 'fly'; G.paused = false; G.shots = 3; G.flightT = 30; G.birds = [{ x: bx, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; window.__tap(bx + 12, 70); await new Promise(r => setTimeout(r, 30)); out.push(window.__mix().lastPan); }
+      for (const bx of [8, 220]) { G.state = 'fly'; G.paused = false; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = 30; G.birds = [{ x: bx, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; window.__tap(bx + 12, 70); await new Promise(r => setTimeout(r, 30)); out.push(window.__mix().lastPan); }
       return out; });
     ok(pan[0] < -0.5 && pan[1] > 0.5, `E3: SFX pan by screen x (left hit ${pan[0].toFixed(2)}, right hit ${pan[1].toFixed(2)})`);
     // sidechain: a hit ducks the music bus -8 dB for ~180 ms, then it recovers
-    const duck = await page.evaluate(async () => { const G = window.__th; G.state = 'fly'; G.shots = 3; G.flightT = 30; G.birds = [{ x: 110, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }];
+    const duck = await page.evaluate(async () => { const G = window.__th; G.state = 'fly'; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = 30; G.birds = [{ x: 110, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }];
       await new Promise(r => setTimeout(r, 400)); const before = window.__mix().duck, n0 = window.__mix().ducks; window.__tap(122, 70); await new Promise(r => setTimeout(r, 70)); const during = window.__mix().duck; await new Promise(r => setTimeout(r, 450)); return { before, during, after: window.__mix().duck, n: window.__mix().ducks - n0 }; });
     ok(duck.n === 1 && duck.before > 0.99 && Math.abs(20 * Math.log10(duck.during) + 8) < 0.6 && duck.after > 0.99, `E3: hit ducks music ${(20 * Math.log10(duck.during)).toFixed(1)} dB, recovers to ${duck.after.toFixed(2)}`);
     // vertical layering, quantized to the bar: combo >= 3 -> arpeggio, >= 6 -> drums, storm load -> sub-bass layer
@@ -293,7 +294,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     const lv = await page.evaluate(async () => { const N = window.__audioNodes(), ac = N.ac; const meter = (node) => { const a = ac.createAnalyser(); a.fftSize = 2048; node.connect(a); const buf = new Float32Array(a.fftSize); let peak = 0, ss = 0, n = 0; return { a, read() { a.getFloatTimeDomainData(buf); for (const v of buf) { peak = Math.max(peak, Math.abs(v)); ss += v * v; n++; } }, get() { return { peak, rms: Math.sqrt(ss / Math.max(1, n)) }; } }; };
       const M = { out: meter(N.comp), music: meter(N.music), sfx: meter(N.sfx) }; const G = window.__th; const t0 = performance.now(); let k = 0;
       while (performance.now() - t0 < 3000) { await new Promise(r => setTimeout(r, 20)); for (const m of Object.values(M)) m.read();
-        if (++k % 15 === 0) { G.state = 'fly'; G.shots = 3; G.flightT = 30; G.birds = [{ x: 40 + (k % 4) * 50, y: 60, vx: 0, vy: 0, sp: 0, tier: k % 2 ? 'hi' : 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; window.__tap(52 + (k % 4) * 50, 70); G.state = 'intro'; G.t = -1e6; G.combo = 6; } }
+        if (++k % 15 === 0) { G.state = 'fly'; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = 30; G.birds = [{ x: 40 + (k % 4) * 50, y: 60, vx: 0, vy: 0, sp: 0, tier: k % 2 ? 'hi' : 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; window.__tap(52 + (k % 4) * 50, 70); G.state = 'intro'; G.t = -1e6; G.combo = 6; } }
       const db = v => +(20 * Math.log10(Math.max(1e-6, v))).toFixed(1); const o = {}; for (const k2 in M) { const g = M[k2].get(); o[k2] = { peakDb: db(g.peak), rmsDb: db(g.rms) }; } return o; });
     console.log('  levels (dBFS): ' + JSON.stringify(lv));
     ok(lv.out.peakDb < 0 && lv.out.rmsDb > -40 && lv.music.rmsDb > -45 && lv.sfx.peakDb > -30, `E3: full mix never clips at the output (peak ${lv.out.peakDb} dBFS, rms ${lv.out.rmsDb}) and music + sfx are both audible`);
@@ -313,7 +314,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     await page.addInitScript(() => { const q = []; let now = null; window.requestAnimationFrame = cb => { q.push(cb); return q.length; };
       window.__pump = (n, every) => { const out = []; for (let i = 0; i < n; i++) { if (now === null) now = performance.now(); now += 1000 / 120; const cbs = q.splice(0); for (const cb of cbs) cb(now); if (!every || i % every === 0) out.push({ f: window.__th.frame, r: window.__render() }); } return out; }; });
     await page.goto(url); await sleep(400);
-    const res = await page.evaluate(() => { const G = window.__th; window.__pump(4); G.attract = false; G.state = 'fly'; G.paused = false; G.shots = 3; G.flightT = -1e9; G.wx = window.__T().levels[5];
+    const res = await page.evaluate(() => { const G = window.__th; window.__pump(4); G.attract = false; G.state = 'fly'; G.paused = false; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = -1e9; G.wx = window.__T().levels[5];
       G.birds = [{ x: 30, y: 120, vx: 1.6, vy: -0.7, sp: 1.75, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }, { x: 200, y: 40, vx: -1.2, vy: 0.5, sp: 1.3, tier: 'hi', bad: false, st: 'fly', f: 1, at: 0, dirT: 1e9, hitT: 0 }];
       const f0 = G.frame; const out = window.__pump(600); return { steps: G.frame - f0, out }; });
     let between = 0, moved = 0, nan = 0, monotonic = true, lastX = null;
@@ -325,7 +326,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     ok(monotonic, 'E4: interpolated motion is monotonic (no back-steps across step boundaries)');
     // trauma: hit adds .25, frontier .4, lightning .5; decays 1.6/s; offset = 9 * trauma^2 * noise
     const tr = await page.evaluate(() => { const G = window.__th, o = {};
-      const hit = (tier) => { G.trauma = 0; G.state = 'fly'; G.shots = 3; G.flightT = 30; G.freeze = 0; G.birds = [{ x: 110, y: 60, vx: 0, vy: 0, sp: 0, tier, bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; window.__tap(122, 70); return G.trauma; };
+      const hit = (tier) => { G.trauma = 0; G.state = 'fly'; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = 30; G.freeze = 0; G.birds = [{ x: 110, y: 60, vx: 0, vy: 0, sp: 0, tier, bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; window.__tap(122, 70); return G.trauma; };
       o.lo = hit('lo'); o.hi = hit('hi');
       G.birds = []; G.freeze = 0; G.trauma = 1; window.__pump(2); const t0 = G.trauma, f0 = G.frame; window.__pump(30); o.decayPerSec = (t0 - G.trauma) / ((G.frame - f0) / 60);
       G.trauma = 0; G.state = 'fly'; G.birds = []; G.wx = window.__T().levels[1]; G.nextLightning = 1; G.freeze = 0; window.__pump(4); o.lightning = G.trauma;
@@ -336,7 +337,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     ok(tr.lightning > 0.4 && tr.lightning <= 0.5, `E4: lightning adds 0.5 trauma (${tr.lightning.toFixed(3)} after two steps of decay)`);
     ok(tr.max1 > 7 && tr.max1 <= 9 && tr.max025 <= 9 * 0.0625 + 1e-9, `E4: shake = 9 px x trauma^2 x noise (max ${tr.max1.toFixed(2)} px at 1.0, ${tr.max025.toFixed(2)} px at 0.25)`);
     // look: squash on the downstroke, hit pop, spin, agent trail
-    await page.evaluate(() => { const G = window.__th; G.wx = window.__T().levels[0]; G.state = 'fly'; G.freeze = 0; G.trauma = 0; G.shots = 3; G.flightT = -1e9;
+    await page.evaluate(() => { const G = window.__th; G.wx = window.__T().levels[0]; G.state = 'fly'; G.freeze = 0; G.trauma = 0; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = -1e9;
       G.birds = [{ x: 40, y: 40, vx: 0.01, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 2, at: 1, dirT: 1e9, hitT: 0 }, { x: 100, y: 40, vx: 0.01, vy: 0, sp: 0, tier: 'hi', bad: false, st: 'hit', f: 0, at: 0, dirT: 1e9, hitT: 4 },
         { x: 160, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fall', f: 0, at: 3, dirT: 1e9, hitT: 0 }, { x: 200, y: 100, vx: 0.8, vy: 1.2, sp: 1.2, tier: 'lo', bad: false, agent: true, st: 'fly', f: 0, at: 20, dirT: 1e9, hitT: 0 }];
       for (const b of G.birds) { b.px = b.x; b.py = b.y; } G.freeze = 1e6; window.__pump(2); });
@@ -361,7 +362,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     ok(!over && st === 'fly', `GATE 5: phone (iPhone 13 emulation): no horizontal overflow, first serve ${firstServe.toFixed(1)} s wall-clock after boot skip (nominal 70+60 frames = 2.2 s)`);
     let hits = 0;
     for (let i = 0; i < 12; i++) {
-      const b = await page.evaluate((i) => { const G = window.__th; G.state = 'fly'; G.paused = false; G.shots = 3; G.flightT = 30; G.tally = []; G.freeze = 0;
+      const b = await page.evaluate((i) => { const G = window.__th; G.state = 'fly'; G.paused = false; G.shots = 3; G.lastShotF = -99; G.unpauseT = 0; G.flightT = 30; G.tally = []; G.freeze = 0;
         G.birds = [{ x: 8 + (i % 4) * 62, y: 24 + Math.floor(i / 4) * 50, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; const b = G.birds[0]; return { x: b.x + 12, y: b.y + 10 }; }, i);
       await page.touchscreen.tap(...tp(b.x, b.y)); await sleep(70);
       if (await page.evaluate(() => window.__th.tally.includes('hit'))) hits++;

@@ -80,7 +80,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await page.mouse.click(...tp(20, 20), { button: 'right' }); await page.mouse.click(...tp(20, 20), { button: 'middle' }); await sleep(60);
   const shotsAfter = await G(() => window.__th.shots);
   rep('H3', 'Right/middle mouse buttons do not fire', shotsAfter === 3, `shots after right+middle click = ${shotsAfter}`);
-  await G(() => { const G = window.__th; G.fx = []; G.state = 'fly'; G.shots = 3; G.birds = [{ x: 230, y: 40, vx: 0, vy: 0, sp: 1, tier: 'hi', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; });
+  await G(() => { const G = window.__th; G.fx = []; G.state = 'fly'; G.shots = 3; G.unpauseT = 0; G.birds = [{ x: 230, y: 40, vx: 0, vy: 0, sp: 1, tier: 'hi', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; });
   await page.mouse.click(...tp(242, 50)); await sleep(60);
   const pop = await G(() => { const f = window.__th.fx.find(f => f.type === 'pts'); return f ? { x: f.x, y: f.y, txt: f.txt, sc: f.sc } : null; });
   rep('H4', 'Score popup clamped inside the screen at the right edge', pop && pop.x + pop.txt.length * 4 * pop.sc <= 256 && pop.y >= 0, JSON.stringify(pop));
