@@ -281,6 +281,38 @@ SPRITES["goldFall"] = _F.SPRITES["goldFall"]
 SPRITES["decoyFall"] = recolor(_F.SPRITES["fall"], {"G": "T", "g": "T", "B": "b", "W": "L", "O": "T"})
 SPRITES["fox"] = _F.SPRITES["fox"]
 SPRITES["foxLaugh"] = _F.SPRITES["foxLaugh"]
+
+# ---- rogue agent (12x10): a red diamond drone with one eye; two frames
+AGENT0 = [
+    ".....KK.....",
+    "....KRRK....",
+    "...KRRRRK...",
+    "..KRRWWRRK..",
+    ".KRRRWDWRRRK",
+    "..KRRWWRRK..",
+    "...KRRRRK...",
+    "....KRRK....",
+    ".....KK.....",
+    "....K..K....",
+]
+AGENT1 = [
+    ".....KK.....",
+    "....KRRK....",
+    "...KRRRRK...",
+    "..KRRWWRRK..",
+    ".KRRRWDWRRRK",
+    "..KRRWWRRK..",
+    "...KRRRRK...",
+    "....KRRK....",
+    ".....KK.....",
+    "...K.KK.K...",
+]
+SPRITES["agent0"] = AGENT0
+SPRITES["agent1"] = AGENT1
+# duck skin: a hawk (brown diamond) — same silhouette, earth palette
+SPRITES["hawk0"] = recolor(AGENT0, {"R": "T", "W": "b", "D": "K"})
+SPRITES["hawk1"] = recolor(AGENT1, {"R": "T", "W": "b", "D": "K"})
+
 ICONS = {"vram": VRAM, "shell": _F.ICONS["shell"]}
 
 

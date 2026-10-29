@@ -55,7 +55,7 @@ const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? 'PAS
   for (let i = 0; i < 30; i++) { const w = 320 + Math.floor(Math.random() * 1600), h = 400 + Math.floor(Math.random() * 1000); await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(15); }
   const over = await G(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   ok(!over, 'no horizontal overflow after resize storm');
-  await page.setViewportSize({ width: 1000, height: 900 }); box = await cv.boundingBox();
+  await page.setViewportSize({ width: 1000, height: 900 }); await page.waitForTimeout(250); box = await cv.boundingBox();
   // ---- 7. Long autoplay: attract mode AI for ~60 s wall clock, check it cycles and never errors
   await G(() => { const G = window.__th; G.state = 'title'; G.t = 0; G.attract = false; G.idle = 1199; });
   const t0 = Date.now(); let maxRound = 0, cycles = 0, lastState = '';
@@ -81,7 +81,8 @@ const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? 'PAS
   }
   // ---- 9. 500 shots as fast as possible during fly; cost accounting exact
   await G(() => { const G = window.__th; G.attract = false; G.paused = false; G.state = 'fly'; G.shots = 5; G.assist = true; G.cost = 0; G.flightT = 0; G.birds = [{ x: 200, y: 20, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; });
-  let fired = 0; for (let i = 0; i < 500; i++) { const before = await G(() => window.__th.shots); await page.mouse.click(...toPage(10, 10)); const after = await G(() => window.__th.shots); if (after < before) fired++; if (after === 0) break; }
+  box = await cv.boundingBox();
+  let fired = 0; for (let i = 0; i < 500; i++) { const before = await G(() => window.__th.shots); await page.mouse.click(...toPage(10, 10)); const after = await G(() => window.__th.shots); if (i === 0 && after === before) console.log('DEBUG step9 no fire:', JSON.stringify(await G(() => { const G = window.__th; return { state: G.state, shots: G.shots, paused: G.paused, attract: G.attract, birds: G.birds.length }; })), 'box', JSON.stringify(box)); if (after < before) fired++; if (after === 0) break; }
   const cost = await G(() => window.__th.cost); ok(cost === fired * 100 && fired === 5, `cost accounting exact: fired ${fired}, cost ${cost}`);
   await G(() => { window.__th.assist = false; });
   // ---- 10. Storage-less mode: block localStorage and reload
