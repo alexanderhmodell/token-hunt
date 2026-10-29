@@ -412,10 +412,18 @@ function addTrauma(v){ G.trauma=Math.min(1,(G.trauma||0)+v); }
 function vnoise(x){ const i=Math.floor(x), f=x-i, u=f*f*(3-2*f), h=n=>{ const v=Math.sin(n*127.1+311.7)*43758.5453; return (v-Math.floor(v))*2-1; }; return h(i)*(1-u)+h(i+1)*u; }
 function shakeOffset(now){ const tr=G.trauma||0; if(tr<=0||G.paused||REDUCED) return [0,0]; const a=MAX_SHAKE*tr*tr, k=now/1000*24; return [a*vnoise(k), a*vnoise(k+57.3)]; }
 // every transient that the simulation reads, reset so a run depends only on (seed, settings snapshot, inputs)
-function resetRunState(){ resetRun(); G.bossDone=false; G.swarmDone=false; G.vramLost=0; G.swarm=null; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.comboFlash=0; G.streak={hit:0,miss:0}; G.nearMiss=false;
+function resetRunState(){ resetRun(); G.flow={speed:1,halluc:0,hist:[]}; G.bossDone=false; G.swarmDone=false; G.vramLost=0; G.swarm=null; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.comboFlash=0; G.streak={hit:0,miss:0}; G.nearMiss=false;
   G.freeze=0; G.flash=0; G.flashA=0; G.flashCol=null; G.trauma=0; G.muzzle=null; G.tapMark=null; G.flightT=0; G.hallucServed=false; G.hallucEscaped=false; G.realEscaped=false; G.perfect=false; G.needFlash=0; G.paused=false;
   G.shots=G.assist?5:D.ammo; G.fox={mode:null,t:0,x:112,count:0,line:''};
   G.prevHi=false; G.prevHallucServed=false; G.wf=newFacts(); G.unpauseT=0; G.lastShotF=-99; }
+// E6 flow channel (Easy/Medium only; Hard, Daily, assisted and demo runs stay fixed so they remain fair and comparable): a wave
+// succeeds when every real request in it is served; over the last 8 waves, above 75% nudges speed +6% and hallucinations +1/20,
+// below 65% nudges them back down. Pure sim state, so replays and the seed stay deterministic.
+const flowOn=()=> (G.diff==='easy'||G.diff==='medium')&&!G.assist&&!G.attract&&!G.daily;
+function flowNote(win){ const F=G.flow||(G.flow={speed:1,halluc:0,hist:[]}); F.hist.push(win?1:0); if(F.hist.length>8) F.hist.shift(); if(!flowOn()||F.hist.length<8) return;
+  const r=F.hist.reduce((a,b)=>a+b,0)/F.hist.length;
+  if(r>0.75){ F.speed=Math.min(1.3,F.speed*1.06); F.halluc=Math.min(0.15,F.halluc+1/20); } else if(r<0.65){ F.speed=Math.max(0.75,F.speed/1.06); F.halluc=Math.max(-0.1,F.halluc-1/20); } }
+const flowSpeed=()=> flowOn()&&G.flow? G.flow.speed : 1, flowHalluc=()=> flowOn()&&G.flow? G.flow.halluc : 0;
 function seedRun(seed){ G.seed=seed>>>0; G.rng=makeRng(G.seed); G.rng2=makeRng(G.seed^0x5bd1e995); }
 function startGame(attract,skipBoot){ G.attract=!!attract; G.idle=0; G.taps=[]; G.recOn=false; seedRun(G.daily? dailySeed()*7919 : Math.random()*4294967296); resetRunState(); setWeather();
   if(G.attract){ G.state='intro'; G.t=0; return; }
@@ -452,7 +460,7 @@ function startWave(){ G.state='fly'; G.shots=G.assist?5:(D.ammo-(G.vramLost||0))
   if(n===2&&left>=3&&G.round>=RULE.burst&&!G.attract&&G.rng()<0.45) n=3;
   G.birds=[]; for(let i=0;i<n;i++) G.birds.push(spawnBird(i,n,false)); G.wave+=n;
   G.wavesStarted=(G.wavesStarted||0)+1;
-  if(G.forceHalluc||(G.round===1&&G.wavesStarted===2&&!G.attract)||G.rng()<Math.min(0.4,D.halluc+late()*0.03)){ let h=null; for(let k=0;k<10;k++){ h=spawnBird(n,n+1,true); h.x=58+G.rng()*116; if(G.birds.every(b=>Math.abs(b.x-h.x)>=30)) break; } G.birds.push(h); }
+  if(G.forceHalluc||(G.round===1&&G.wavesStarted===2&&!G.attract)||G.rng()<Math.min(0.4,D.halluc+late()*0.03+flowHalluc())){ let h=null; for(let k=0;k<10;k++){ h=spawnBird(n,n+1,true); h.x=58+G.rng()*116; if(G.birds.every(b=>Math.abs(b.x-h.x)>=30)) break; } G.birds.push(h); }
   SFX.flap(); }
 // E5 boss: a 48x40 DDoS crosses slowly; 6 hits; every 2nd hit splits off two rogue agents; escaping costs 1 VRAM for the epoch
 function startBoss(){ G.state='fly'; G.swarm={t:0,stopped:0,breached:0,total:0,boss:true,killed:false,escaped:false}; G.wf=newFacts(); G.flightT=0; G.nearMiss=false; G.hallucServed=false; G.hallucEscaped=false; G.realEscaped=false;
@@ -474,7 +482,7 @@ function startSwarm(){ G.swarmDone=true; G.swarm={t:0,stopped:0,breached:0,total
 const RULE={mimic:4, burst:5, climb:7};
 const late=()=>Math.max(0,G.round-RULE.climb+1);
 function spawnBird(i,n,bad){ const tier= bad? ((G.round>=RULE.mimic&&G.rng()<0.5)?'hi':'lo') : (G.rng()<TIERS.hi.p?'hi':'lo'); const tr=TIERS[tier]; const r=G.rng;
-  let sp=Math.min(3.2,1.25+G.round*0.13+late()*0.08)*tr.speed*D.speed; if(G.round===1&&D.gentleStart) sp*=0.85; if(G.assist) sp*=0.75;
+  let sp=Math.min(3.2,1.25+G.round*0.13+late()*0.08)*tr.speed*D.speed*flowSpeed(); if(G.round===1&&D.gentleStart) sp*=0.85; if(G.assist) sp*=0.75;
   const x= n===1? 58+r()*116 : n===2? 58+i*82+r()*30 : 58+i*58+r()*20; // 58..198 keeps the 24-px sprite clear of the rack panels at both edges
   // each request steers from its own seeded stream, so when you shoot never changes what spawns next (Daily stays identical for everyone)
   return {x,y:150,vx:(r()<0.5?-1:1)*sp*0.6,vy:-sp,sp,tier,bad:!!bad,st:'fly',f:0,at:0,dirT:bad?10+r()*15:tr.dirT[0]+r()*(tr.dirT[1]-tr.dirT[0]),hitT:0,r:seeded(Math.floor(r()*2147483646)+1)}; }
@@ -530,7 +538,7 @@ function updateBirds(){ let limit=Math.max(150,460-G.round*18); if(G.wx.shortFli
   if(flying&&!G.birds.some(b=>b.st==='fly'&&!b.bad)){ for(const b of G.birds) if(b.st==='fly'&&b.bad){ b.st='away'; b.at=0; } flying=0; }
   if(G.swarm){ if(G.birds.every(b=>b.st==='gone')){ const bo=G.swarm.boss, win= bo? G.swarm.killed : G.swarm.breached===0; G.streak.miss= win?0:G.streak.miss+1; G.state='fox'; G.fox.t=0; G.fox.count=0; G.fox.mode= win?'hit':'miss'; G.fox.line= bo? line(win?'bossWin':'bossLoss') : win? line('swarmWin') : line('swarmLoss'); G.fox.x=112; if(win) SFX.blip(); else SFX.laugh(); } return; }
   if(flying&&(G.shots===0||G.flightT>=limit)){ let any=false, real=false; for(const b of G.birds) if(b.st==='fly'){ b.st='away'; b.at=0; any=true; if(!b.bad) real=true; } if(any){ SFX.away(); if(real) G.combo=0; } }
-  if(G.birds.every(b=>b.st==='landed'||b.st==='gone')){ const hits=G.birds.filter(b=>b.st==='landed'&&!b.bad); const n=hits.length;
+  if(G.birds.every(b=>b.st==='landed'||b.st==='gone')){ const hits=G.birds.filter(b=>b.st==='landed'&&!b.bad); const n=hits.length; flowNote(n===G.birds.filter(b=>!b.bad).length);
     const before3=Math.floor(G.streak.hit/3);
     if(n){ G.streak.hit+=n; G.streak.miss=0; } else { G.streak.miss++; G.streak.hit=0; }
     const crossed3= n>0 && Math.floor(G.streak.hit/3)>before3; // streak lines fire when the streak reaches 3, 6, 9… not on every hit after
@@ -1014,6 +1022,7 @@ try{ window.claude&&window.claude.hot&&window.claude.hot.snapshot&&window.claude
 if(window.claude&&window.claude.hot&&window.claude.hot.ready) window.claude.hot.ready(boot); else boot((window.claude&&window.claude.hot&&window.claude.hot.data)||{});
 window.__audioNodes=()=> ac&&BUS? {ac, master, comp, music:BUS.music, sfx:BUS.sfx, voice:BUS.voice} : null; // tests only: level metering
 window.__render=()=>({alpha:RENDER.alpha, birds:RENDER.birds.map(b=>b.slice()), shake:RENDER.shake.slice(), trauma:G.trauma}); window.__shakeOffset=shakeOffset;
+window.__flowNote=flowNote; window.__flowOn=flowOn;
 window.__mix=()=> ac&&BUS? {state:ac.state, chain:['layers','duck','music','master','compressor','destination'], comp:{threshold:comp.threshold.value, ratio:comp.ratio.value}, buses:{music:BUS.music.gain.value, sfx:BUS.sfx.gain.value, voice:BUS.voice.gain.value, master:master.gain.value}, duck:BUS.duck.gain.value, ducks:BUS.ducks, pans:BUS.pans, lastPan:BUS.lastPan, layers:Object.fromEntries(LAYERS.map(k=>[k,BUS.layer[k].gain.value])), tgt:{...music.tgt}, play:{...music.play}, on:music.on, panner:!!ac.createStereoPanner} : null;
 window.__voice=()=>({ok:VOICE.ok, voice:VOICE.voice&&VOICE.voice.name, gesture:VOICE.gesture, talking:voiceLive(), said:VOICE.said, open:VOICE.open}); window.__speechText=speechText; window.__criticY=criticY;
 window.__th=G; window.__applyTheme=applyTheme; window.__T=()=>T; window.__makeCard=makeCard; window.__audio=()=>({ctx:!!ac,state:ac?ac.state:'none',muted,music:music.on,rain:!!rainNode}); // for tests

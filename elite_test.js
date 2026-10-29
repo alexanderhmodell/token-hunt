@@ -389,6 +389,35 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     await ctx.close();
   }
 
+  // ---------------------------------------------------------------- E6 flow-channel difficulty (Tier 2)
+  if (want('E6')) {
+    const { ctx, page, errs } = await newPage(browser);
+    await page.goto(url); await sleep(500);
+    await page.keyboard.press('2'); await page.evaluate(() => window.__tap(128, 100)); await sleep(150); await page.evaluate(() => window.__tap(128, 100)); await sleep(100);
+    const r = await page.evaluate(() => { const G = window.__th, o = {}; const reset = () => { G.flow = { speed: 1, halluc: 0, hist: [] }; };
+      reset(); for (let i = 0; i < 7; i++) window.__flowNote(true); o.before8 = G.flow.speed; window.__flowNote(true); o.after8 = +G.flow.speed.toFixed(4); o.h8 = +G.flow.halluc.toFixed(4);
+      for (let i = 0; i < 20; i++) window.__flowNote(true); o.cap = +G.flow.speed.toFixed(4); o.hcap = +G.flow.halluc.toFixed(4);
+      reset(); const seq = [1, 1, 0, 1, 1, 0, 1, 1]; seq.forEach(v => window.__flowNote(!!v)); o.inBand = G.flow.speed; // 6/8 = 75%: hold
+      reset(); for (let i = 0; i < 8; i++) window.__flowNote(false); o.low = +G.flow.speed.toFixed(4); o.hlow = +G.flow.halluc.toFixed(4);
+      o.diffMedium = window.__flowOn();
+      return o; });
+    ok(r.before8 === 1 && Math.abs(r.after8 - 1.06) < 1e-9 && Math.abs(r.h8 - 0.05) < 1e-9, `E6: after a full window of 8 served waves: speed x${r.after8}, hallucinations +${r.h8}`);
+    ok(r.cap === 1.3 && r.hcap === 0.15, `E6: nudges are capped (speed x${r.cap}, hallucinations +${r.hcap})`);
+    ok(r.inBand === 1, `E6: 6 of 8 (75%) is inside the 65-75% channel: no change (x${r.inBand})`);
+    ok(r.low < 1 && r.hlow < 0, `E6: 8 failed waves ease off (speed x${r.low}, hallucinations ${r.hlow})`);
+    // integration: a wave spawned with flow speed 1.2 flies exactly 1.2x faster than the same wave at 1.0 (same rng state)
+    const sp = await page.evaluate(async () => { const G = window.__th; const out = [];
+      for (const f of [1, 1.2]) { G.flow = { speed: f, halluc: 0, hist: [] }; G.rng.set(window.__r0 || (window.__r0 = G.rng.get())); G.birds = []; G.wave = 0; G.round = 2; G.swarmDone = true; G.bossDone = true; G.state = 'gap'; G.t = 11; G.paused = false;
+        await new Promise(r => setTimeout(r, 80)); out.push(G.birds.length ? G.birds[0].sp : null); }
+      return out; });
+    ok(sp[0] && sp[1] && Math.abs(sp[1] / sp[0] - 1.2) < 1e-9, `E6: spawn speed follows the flow factor (${sp[0] && sp[0].toFixed(3)} -> ${sp[1] && sp[1].toFixed(3)})`);
+    // Hard and Daily are never adjusted
+    const fixed = await page.evaluate(() => { const G = window.__th, o = {}; for (const d of ['hard', 'daily']) { G.diff = d; G.daily = d === 'daily'; G.flow = { speed: 1, halluc: 0, hist: [] }; for (let i = 0; i < 12; i++) window.__flowNote(true); o[d] = G.flow.speed; } G.diff = 'medium'; G.daily = false; return o; });
+    ok(fixed.hard === 1 && fixed.daily === 1 && r.diffMedium, `E6: Hard and Daily stay fixed (x${fixed.hard}, x${fixed.daily})`);
+    ok(errs.length === 0, 'E6: zero page errors' + (errs.length ? ' ' + errs[0] : ''));
+    await ctx.close();
+  }
+
   // ---------------------------------------------------------------- GATES: ELITE.md section 5 items that can be measured here
   if (want('GATES')) {
     const size = require('fs').statSync(path.resolve(__dirname, 'dist/index.html')).size;
