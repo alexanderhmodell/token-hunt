@@ -290,7 +290,7 @@ function setWeather(){ G.wx=lvl(G.round); G.windDir=Math.random()<0.5?-1:1;
   rainStop(); if(G.wx.rain) rainStart(G.wx.rain); const mu=G.wx.music||{semi:0,step:0.15}; music.semi=mu.semi; music.stepLen=mu.step; }
 setWeather();
 
-function startGame(attract,skipBoot){ G.attract=!!attract; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.streak={hit:0,miss:0}; G.nearMiss=false; setWeather();
+function startGame(attract,skipBoot){ G.attract=!!attract; G.idle=0; G.taps=[]; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.streak={hit:0,miss:0}; G.nearMiss=false; setWeather();
   if(G.attract){ G.state='intro'; G.t=0; return; }
   if(skipBoot){ bootDone(); return; }
   G.state='boot'; G.t=0; G.boot={t:0,line:-1}; }
@@ -554,7 +554,8 @@ const TOUCH_LIFT=8; // small finger offset; the touch hitbox below also extends 
 function pos(e){ const r=cv.getBoundingClientRect(); const touch=e.pointerType==='touch'; return {x:(e.clientX-r.left)*W/r.width, y:(e.clientY-r.top)*H/r.height-(touch?TOUCH_LIFT:0), touch}; }
 cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===false) return; if(e.pointerType==='mouse'&&e.button!==0) return; cv.focus({preventScroll:true}); audioInit(); if(ac&&ac.state==='suspended') ac.resume(); const p=pos(e);
   const rawY=p.y+(p.touch?TOUCH_LIFT:0);
-  if(rawY<=24&&p.x>=240){ toggleMute(); return; } if(rawY<=24&&p.x>=216&&p.x<240){ setPaused(!G.paused); return; }
+  const birdUnder= G.state==='fly'&&G.birds.some(b=>b.st==='fly'&&p.x>=b.x-8&&p.x<=b.x+32&&p.y>=b.y-8&&p.y<=b.y+40);
+  if(!birdUnder){ if(rawY<=24&&p.x>=240){ toggleMute(); return; } if(rawY<=24&&p.x>=216&&p.x<240){ setPaused(!G.paused); return; } }
   G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; handleTap(p.x,p.y); });
 cv.addEventListener('pointermove',e=>{ if(e.isPrimary===false) return; const p=pos(e); G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; });
 cv.addEventListener('pointerleave',()=>{ G.mouse.on=false; });

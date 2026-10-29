@@ -19,9 +19,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     ok(box.width <= 390 && box.width > 300, `touch: canvas fits phone width (${Math.round(box.width)}px of 390)`);
     const over = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1); ok(!over, 'touch: no horizontal overflow');
     // tap below the logo starts the game
-    await page.touchscreen.tap(...tp(128, 150)); await sleep(150);
+    await page.touchscreen.tap(...tp(128, 100)); await sleep(150);
     ok((await page.evaluate(() => window.__th.state)) === 'boot', 'touch: tap starts the game (boot)');
-    await sleep(900); await page.touchscreen.tap(...tp(128, 150)); await sleep(150); // skip boot
+    await sleep(900); await page.touchscreen.tap(...tp(128, 100)); await sleep(150); // skip boot
     // wait for first wave (shorter intro + tutorial)
     let t0 = Date.now(); while (Date.now() - t0 < 9000 && (await page.evaluate(() => window.__th.state)) !== 'fly') await sleep(60);
     const t1 = (Date.now() - t0) / 1000; ok(await page.evaluate(() => window.__th.state === 'fly'), `touch: first wave reached (${t1.toFixed(1)} s after boot skip)`);
@@ -145,7 +145,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     await page.goto(url); await sleep(500);
     const res = await page.evaluate(async () => {
       const G = window.__th; const cv = document.getElementById('g'); const R = () => cv.getBoundingClientRect();
-      const tap = (x, y) => { const r = R(); cv.dispatchEvent(new PointerEvent('pointerdown', { clientX: r.left + x * r.width / 256, clientY: r.top + y * r.height / 240, pointerType: 'mouse', bubbles: true, cancelable: true })); };
+      const tap = (x, y) => { const r = R(); cv.dispatchEvent(new PointerEvent('pointerdown', { clientX: r.left + x * r.width / 256, clientY: r.top + y * r.height / 240, pointerType: 'mouse', button: 0, isPrimary: true, bubbles: true, cancelable: true })); };
       const seen = { levels: new Set(), halluc: 0, hallucServed: 0, doubles: 0, hi: 0, perfect: 0, maxRound: 1, maxCombo: 0, maxBirds: 0, lines: new Set() };
       tap(128, 100); // start (y=150 is the difficulty row)
       const t0 = performance.now();
