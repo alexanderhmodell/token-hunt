@@ -25,6 +25,7 @@
   color-scheme:dark;
 }
 html,body{height:100%}
+[hidden]{display:none!important}
 body{
   margin:0; box-sizing:border-box; background:var(--cab); color:var(--ink);
   font:600 11px/1.6 var(--font-ui); letter-spacing:.08em;
@@ -51,6 +52,12 @@ canvas:focus-visible{outline:2px solid var(--accent); outline-offset:9px}
 @media (max-width:600px){ body{justify-content:flex-start; padding-block:10px} }
 @media (hover:none) and (pointer:coarse){ .foot .keys{display:none} }
 .foot b{color:var(--accent); font-weight:normal}
+#cardbox{position:fixed; inset:0; z-index:20; background:rgba(5,5,10,.88); display:flex; align-items:center; justify-content:center; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); padding-block:16px}
+.cardwrap{display:flex; flex-direction:column; align-items:center; gap:12px; max-width:100%}
+#cardimg{display:block; width:min(86vw,72vh,540px); height:auto; image-rendering:pixelated; border:3px solid var(--bezel); user-select:auto; -webkit-user-select:auto; -webkit-touch-callout:default}
+.cardhint{font:600 10px/1.6 var(--font-ui); letter-spacing:.08em; color:var(--dim); text-align:center}
+#cardclose{font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--accent); border:0; padding:9px 16px; border-radius:2px; cursor:pointer}
+#cardclose:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
 #share{position:absolute; left:50%; bottom:-14px; transform:translateX(-112%); z-index:2; font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--ink); border:0; padding:8px 12px; cursor:pointer; border-radius:2px; box-shadow:0 2px 0 #000}
 #brag{position:absolute; left:50%; bottom:-14px; transform:translateX(12%); z-index:2; font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--accent); border:0; padding:8px 12px; cursor:pointer; border-radius:2px; box-shadow:0 2px 0 #000}
 #bragtxt{position:absolute; left:50%; bottom:-40px; transform:translateX(-50%); z-index:2; width:max(90%,280px)}
@@ -68,6 +75,7 @@ canvas:focus-visible{outline:2px solid var(--accent); outline-offset:9px}
   <button id="brag" type="button" hidden>COPY TEXT</button>
   <div id="bragtxt" hidden></div>
 </div>
+<div id="cardbox" hidden role="dialog" aria-label="Share card"><div class="cardwrap"><img id="cardimg" alt="Your Token Hunt result card"><div class="cardhint">LONG-PRESS OR RIGHT-CLICK THE CARD TO SAVE IT</div><button id="cardclose" type="button">CLOSE</button></div></div>
 <input id="code" type="text" inputmode="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Enter a code" style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none">
 <div class="foot" id="foot">TAP TO SERVE <span class="keys">&middot; <b>M</b> MUTE &middot; <b>P</b> PAUSE</span> &middot; ONE FILE. ZERO ASSETS. ZERO NETWORK REQUESTS.</div>
 
@@ -468,8 +476,11 @@ function makeCard(){ const C=document.createElement('canvas'); C.width=1080; C.h
   return C; }
 async function shareCard(){ const C=makeCard(); const blob=await new Promise(r=>C.toBlob(r,'image/png')); if(!blob){ bragTxt.textContent=bragText(); bragTxt.hidden=false; return; } const name='token-hunt-'+net()+'.png';
   try{ const file=new File([blob],name,{type:'image/png'}); if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:T.titleA+' '+T.titleB,text:bragText()}); toast('SHARED'); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
-  try{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); toast('CARD SAVED'); return; }catch(e){}
-  bragTxt.textContent=bragText(); bragTxt.hidden=false; }
+  showCard(C.toDataURL('image/png')); }
+const cardBox=document.getElementById('cardbox'), cardImg=document.getElementById('cardimg');
+function showCard(url){ cardImg.src=url; cardBox.hidden=false; setPaused&&0; }
+document.getElementById('cardclose').addEventListener('click',()=>{ cardBox.hidden=true; });
+cardBox.addEventListener('click',e=>{ if(e.target===cardBox) cardBox.hidden=true; });
 function showBrag(){ if(G.attract) return; bragBtn.hidden=false; shareBtn.hidden=false; bragTxt.hidden=true; }
 function hideBrag(){ bragBtn.hidden=true; shareBtn.hidden=true; bragTxt.hidden=true; }
 bragBtn.addEventListener('click',()=>{ const t=bragText(); const fail=()=>{ bragTxt.textContent=t; bragTxt.hidden=false; bragBtn.hidden=true; };
