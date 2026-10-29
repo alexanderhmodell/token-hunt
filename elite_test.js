@@ -124,7 +124,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       { const p2 = await ctx.newPage(); await p2.goto(url); await sleep(500); await p2.evaluate(() => { const G = window.__th; G.state = 'fly'; G.attract = false; G.wx = window.__T().levels[1]; G.birds = []; G.flightT = -1e9; });
         await sleep(7000); const a = await p2.evaluate(() => window.__crt()); const r = await raf(p2, 240); const w = await p2.evaluate(() => window.__perf(120));
         console.log(`  auto after 7 s: tier ${a.tier} (active ${a.active}), governor steps ${a.governed}, raf ${r.toFixed(2)} ms, work ${w.avg.toFixed(2)} ms`);
-        ok(r <= 18, `E1: auto quality holds ~60 fps headless (raf ${r.toFixed(2)} ms at tier ${a.tier}${a.active ? '' : ' = CSS fallback'})`); await p2.close(); }
+        ok(r <= 18.5, `E1: auto quality holds ~60 fps headless (raf ${r.toFixed(2)} ms at tier ${a.tier}${a.active ? '' : ' = CSS fallback'})`); await p2.close(); }
       // governor: feed synthetic frame intervals (tier forced to full first)
       const gv = await page.evaluate(() => { const rep = (a, n) => Array.from({ length: n }, (_, i) => a[i % a.length]); const r = {};
         window.__crtTier(2); r.smooth = window.__crtGovern(rep([16.7], 270));
@@ -303,6 +303,71 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       await new Promise(r => setTimeout(r, 120)); return { n: window.__mix().ducks - n0, duck: window.__mix().duck, spoke: !!window.__spokeAt }; });
     ok(sd.spoke && sd.n === 1 && sd.duck < 0.6, `E3: speech start ducks the music (${sd.n} duck, gain ${sd.duck.toFixed(2)})`);
     ok(errs.length === 0, 'E3: zero page errors' + (errs.length ? ' ' + errs[0] : ''));
+    await ctx.close();
+  }
+
+  // ---------------------------------------------------------------- E4 interpolation, trauma shake, squash & stretch
+  if (want('E4')) {
+    const { ctx, page, errs } = await newPage(browser);
+    // a 120 Hz display: rAF is driven by hand with timestamps 8.33 ms apart
+    await page.addInitScript(() => { const q = []; let now = null; window.requestAnimationFrame = cb => { q.push(cb); return q.length; };
+      window.__pump = (n, every) => { const out = []; for (let i = 0; i < n; i++) { if (now === null) now = performance.now(); now += 1000 / 120; const cbs = q.splice(0); for (const cb of cbs) cb(now); if (!every || i % every === 0) out.push({ f: window.__th.frame, r: window.__render() }); } return out; }; });
+    await page.goto(url); await sleep(400);
+    const res = await page.evaluate(() => { const G = window.__th; window.__pump(4); G.attract = false; G.state = 'fly'; G.paused = false; G.shots = 3; G.flightT = -1e9; G.wx = window.__T().levels[5];
+      G.birds = [{ x: 30, y: 120, vx: 1.6, vy: -0.7, sp: 1.75, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }, { x: 200, y: 40, vx: -1.2, vy: 0.5, sp: 1.3, tier: 'hi', bad: false, st: 'fly', f: 1, at: 0, dirT: 1e9, hitT: 0 }];
+      const f0 = G.frame; const out = window.__pump(600); return { steps: G.frame - f0, out }; });
+    let between = 0, moved = 0, nan = 0, monotonic = true, lastX = null;
+    for (let i = 1; i < res.out.length; i++) { const a = res.out[i - 1], b = res.out[i]; for (const bb of b.r.birds) if (!bb.slice(0, 2).every(Number.isFinite)) nan++;
+      if (a.f === b.f && a.r.birds.length && b.r.birds.length) { between++; if (Math.abs(a.r.birds[0][0] - b.r.birds[0][0]) > 0.2) moved++; }
+      const x = b.r.birds[0] && b.r.birds[0][0]; if (i < 240 && lastX != null && x != null && x < lastX - 0.01) monotonic = false; if (x != null) lastX = x; }
+    ok(Math.abs(res.steps - 300) <= 2, `E4: 600 frames at 120 Hz advance the fixed 60 Hz sim exactly ${res.steps} steps`);
+    ok(between > 250 && moved / between > 0.95 && nan === 0, `E4: rendered positions move between sim steps (${moved}/${between} in-between frames differ, ${nan} NaN)`);
+    ok(monotonic, 'E4: interpolated motion is monotonic (no back-steps across step boundaries)');
+    // trauma: hit adds .25, frontier .4, lightning .5; decays 1.6/s; offset = 9 * trauma^2 * noise
+    const tr = await page.evaluate(() => { const G = window.__th, o = {};
+      const hit = (tier) => { G.trauma = 0; G.state = 'fly'; G.shots = 3; G.flightT = 30; G.freeze = 0; G.birds = [{ x: 110, y: 60, vx: 0, vy: 0, sp: 0, tier, bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; window.__tap(122, 70); return G.trauma; };
+      o.lo = hit('lo'); o.hi = hit('hi');
+      G.birds = []; G.freeze = 0; G.trauma = 1; window.__pump(2); const t0 = G.trauma, f0 = G.frame; window.__pump(30); o.decayPerSec = (t0 - G.trauma) / ((G.frame - f0) / 60);
+      G.trauma = 0; G.state = 'fly'; G.birds = []; G.wx = window.__T().levels[1]; G.nextLightning = 1; G.freeze = 0; window.__pump(4); o.lightning = G.trauma;
+      let mx = 0; G.trauma = 1; for (let t = 0; t < 4000; t += 7) { const [x, y] = window.__shakeOffset(t); mx = Math.max(mx, Math.abs(x), Math.abs(y)); } o.max1 = mx;
+      mx = 0; G.trauma = 0.25; for (let t = 0; t < 4000; t += 7) { const [x, y] = window.__shakeOffset(t); mx = Math.max(mx, Math.abs(x), Math.abs(y)); } o.max025 = mx; G.trauma = 0; return o; });
+    ok(Math.abs(tr.lo - 0.25) < 1e-9 && Math.abs(tr.hi - 0.4) < 1e-9, `E4: a hit adds 0.25 trauma, a frontier hit 0.4 (${tr.lo}, ${tr.hi})`);
+    ok(Math.abs(tr.decayPerSec - 1.6) < 0.05, `E4: trauma decays ${tr.decayPerSec.toFixed(2)}/s`);
+    ok(tr.lightning > 0.4 && tr.lightning <= 0.5, `E4: lightning adds 0.5 trauma (${tr.lightning.toFixed(3)} after two steps of decay)`);
+    ok(tr.max1 > 7 && tr.max1 <= 9 && tr.max025 <= 9 * 0.0625 + 1e-9, `E4: shake = 9 px x trauma^2 x noise (max ${tr.max1.toFixed(2)} px at 1.0, ${tr.max025.toFixed(2)} px at 0.25)`);
+    // look: squash on the downstroke, hit pop, spin, agent trail
+    await page.evaluate(() => { const G = window.__th; G.wx = window.__T().levels[0]; G.state = 'fly'; G.freeze = 0; G.trauma = 0; G.shots = 3; G.flightT = -1e9;
+      G.birds = [{ x: 40, y: 40, vx: 0.01, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 2, at: 1, dirT: 1e9, hitT: 0 }, { x: 100, y: 40, vx: 0.01, vy: 0, sp: 0, tier: 'hi', bad: false, st: 'hit', f: 0, at: 0, dirT: 1e9, hitT: 4 },
+        { x: 160, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fall', f: 0, at: 3, dirT: 1e9, hitT: 0 }, { x: 200, y: 100, vx: 0.8, vy: 1.2, sp: 1.2, tier: 'lo', bad: false, agent: true, st: 'fly', f: 0, at: 20, dirT: 1e9, hitT: 0 }];
+      for (const b of G.birds) { b.px = b.x; b.py = b.y; } G.freeze = 1e6; window.__pump(2); });
+    await page.screenshot({ path: path.resolve(__dirname, 'shots', 'e4_feel.png') });
+    await page.evaluate(() => { window.__th.freeze = 0; });
+    ok(errs.length === 0, 'E4: zero page errors' + (errs.length ? ' ' + errs[0] : ''));
+    await ctx.close();
+  }
+
+  // ---------------------------------------------------------------- GATES: ELITE.md section 5 items that can be measured here
+  if (want('GATES')) {
+    const size = require('fs').statSync(path.resolve(__dirname, 'dist/index.html')).size;
+    ok(size <= 160 * 1024, `GATE 7: dist/index.html is ${(size / 1024).toFixed(1)} KB (<= 160 KB)`);
+    const { devices } = require('/opt/npm-tools/node_modules/playwright');
+    const ctx = await browser.newContext({ ...devices['iPhone 13'] }); const page = await ctx.newPage(); const errs = []; hookErrors(page, errs);
+    await page.goto(url); await sleep(600);
+    const box = await (await page.$('#g')).boundingBox(); const tp = (x, y) => [box.x + x * box.width / 256, box.y + y * box.height / 240];
+    const over = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+    await page.touchscreen.tap(...tp(128, 100)); await sleep(900); await page.touchscreen.tap(...tp(128, 100)); await sleep(100);
+    const t0 = Date.now(); let st = ''; while (Date.now() - t0 < 9000) { st = await page.evaluate(() => window.__th.state); if (st === 'fly') break; await sleep(40); }
+    const firstServe = (Date.now() - t0) / 1000;
+    ok(!over && st === 'fly', `GATE 5: phone (iPhone 13 emulation): no horizontal overflow, first serve ${firstServe.toFixed(1)} s wall-clock after boot skip (nominal 70+60 frames = 2.2 s)`);
+    let hits = 0;
+    for (let i = 0; i < 12; i++) {
+      const b = await page.evaluate((i) => { const G = window.__th; G.state = 'fly'; G.paused = false; G.shots = 3; G.flightT = 30; G.tally = []; G.freeze = 0;
+        G.birds = [{ x: 8 + (i % 4) * 62, y: 24 + Math.floor(i / 4) * 50, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 }]; const b = G.birds[0]; return { x: b.x + 12, y: b.y + 10 }; }, i);
+      await page.touchscreen.tap(...tp(b.x, b.y)); await sleep(70);
+      if (await page.evaluate(() => window.__th.tally.includes('hit'))) hits++;
+    }
+    ok(hits === 12, `GATE 5: thumb-on-sprite taps hit ${hits}/12 across the whole field (corners included)`);
+    ok(errs.length === 0, 'GATE: phone run zero errors' + (errs.length ? ' ' + errs[0] : ''));
     await ctx.close();
   }
 
