@@ -6,21 +6,23 @@
 
 ## 1. Submission blurb (paste into the form)
 
-**Token Hunt** — an original 8-bit arcade game where you are a GPU cluster.
+**Token Hunt** — a light-gun arcade homage where the dog is a chatbot. You are a GPU cluster.
 
-Requests fly in with wings. You have three VRAM per flight to serve them before they time out. Open-weight requests are cheap and slow; frontier requests pay triple and fly fast; every shot burns compute, so the score is revenue minus cost. One in seven requests is a hallucination — glitchy, lying — and serving it costs you. From epoch 3, a rogue agent swarm dives at your GPU nodes; stop all four before they reach the racks or one gets in and eats your VRAM for the rest of the epoch. Hallucinations test restraint; the swarm tests urgency. From epoch 4 the rules keep arriving: hallucinations start wearing frontier purple, then traffic comes in bursts of three, then the load just keeps climbing. Every epoch the load changes and it changes how you aim: a traffic spike pushes requests sideways, autoscaling gusts shove them back and forth, latency makes them time out sooner, and a viral launch brings 429 strikes that freeze the requests mid-air until the rate limit clears. The music shifts key and tempo with the load. Miss, and a smug chatbot rises from the rack row: "As an AI, I can't help with that." It watches what you do — serve two frontier requests in a row, spend your last shot, wait out a 429, let a hallucination go — and says so. When you finally run out of memory it reads your receipt back to you — accuracy, best combo, hallucinations served — and roasts you with it. Then it makes you a share card.
+Requests fly in with wings. You have three VRAM per flight to serve them before they time out. Open-weight requests are cheap and slow; frontier requests pay triple and fly fast; every shot burns compute, so the score is revenue minus cost. Some requests are hallucinations — glitchy, lying — and serving one costs you. From epoch 3 a rogue agent swarm dives at your GPU nodes: stop all four before they reach the racks or one gets in and eats a VRAM. Every fourth epoch a DDoS thunderhead crosses the sky, takes six hits, and spills agents every time you wound it. The rules keep arriving — hallucinations start wearing frontier purple, traffic comes in bursts of three, the load climbs — and every epoch's load changes how you aim: a traffic spike pushes requests sideways, autoscaling gusts shove them back and forth, latency makes them time out sooner, and a viral launch brings 429 strikes that freeze the requests mid-air until the rate limit clears. The music shifts key, tempo and layers with the load.
 
-Easy, Medium, Hard, and a Daily mode where everyone gets the same requests. A BIOS boot sequence. An attract mode that plays itself if you wait. Open-weight and frontier requests, compute cost, combos, 429 freezes, and a hallucination that is guaranteed to show up in your second wave. A couple of easter eggs for people who read the source.
+Miss, and a smug chatbot rises from the rack row and says, out loud: "As an AI, I can't help with that." It watches what you do — two frontier in a row, your last shot, waiting out a 429, letting a hallucination go — and says so, then keeps heckling while the next wave is already in the air. When you finally run out of memory it reads your receipt back — accuracy, best combo, hallucinations served — roasts you with it, makes you a share card, and offers to replay your run at double speed so you can see exactly where it went wrong.
 
-Built by Claude (Anthropic) end to end — code, pixel art, and synthesized audio — designed, directed, and playtested by Alex Modell. One HTML file, no engine, zero assets, zero network requests: every sprite is hand-pixeled in code, the font is a 3×5 bitmap, and all sound (shots, chiptune loop, packet rain, thunder, the bot's voice) is synthesized live with the Web Audio API. Native 256×240, pixel-perfect scaling, CRT overlay. Mouse or touch.
+Easy, Medium, Hard, and a Daily where everyone gets the same requests. A BIOS boot, an attract mode that plays itself, a WebGL CRT (barrel, mask, bloom, phosphor — press C) that calibrates itself to your GPU and steps down on weak ones, captions when muted, a one-hand mode, and a deterministic, replayable simulation. A couple of easter eggs for people who read the source.
 
-**Controls:** click or tap to serve · tap to skip the chatter · M mute · P / Esc pause · 1/2/3/4 difficulty (4 = Daily) · Space/Enter advance.
+Built by Claude (Anthropic) end to end — code, pixel art, shaders, and synthesized audio — designed, directed, and playtested by Alex Modell. One HTML file, no engine, zero assets, zero network requests: every sprite is hand-pixeled in code, the font is a 3×5 bitmap, the CRT is a shader string, the voice is the browser's own, and every other sound is synthesized live with the Web Audio API. Native 256×240, pixel-perfect scaling. Mouse or touch.
+
+**Controls:** click or tap to serve · tap to skip the chatter · M mute · P / Esc pause · C CRT on/off · 1/2/3/4 difficulty (4 = Daily) · Space/Enter advance.
 
 ---
 
 ## 2. One-line version
 
-8-bit arcade shooter where you're a GPU cluster serving winged requests through traffic spikes, 429 storms, and hallucinations — while a chatbot mocks your misses. One file, zero assets, built in a day with Claude.
+Light-gun arcade homage where you're a GPU cluster serving winged requests through 429 storms, hallucinations and a DDoS boss — while a chatbot heckles you out loud. One file, zero assets, built in two days with Claude.
 
 ---
 

@@ -58,6 +58,20 @@ Panel #1 (v2.3, earlier in the day) averaged 6.0; this panel averaged 6.1 on v2.
 
 Different cold agents score with ±0.5 noise, so the honest read is: 6.1 → 6.1 on the first re-score, with the remaining complaints now concrete and mostly fixed in v2.9b. The structural ceiling the panel keeps naming — a light-gun core and no runtime AI — is not something a night of fixes changes.
 
+## Elite merge gate (ELITE.md §5) — v3.0
+
+| Gate | Result |
+|---|---|
+| 1 build clean, FORBIDDEN extended | pass |
+| 2 test / verify / stress / stress2 / elite_test green | pass (one harness threshold line under load; replays identical 3/3) |
+| 3 replay determinism 3/3 | pass |
+| 4 ≤16.7 ms with CRT on; 2D fallback | pass on a real GPU (M3: full tier, avg 16.67 ms, p95 18.4, none over 20); headless auto-selects the CSS fallback; stubbed WebGL falls back |
+| 5 phone: thumb hits, no overflow, first serve ≤3 s | pass (3/3, no overflow, 2.2 s) |
+| 6 fresh panel ≥ main on every judge | pass: phone 7 (6), indie 7 (6), organizer 7 (6.5) |
+| 7 ≤160 KB | pass (146 KB) |
+
+What the elite-build judges still asked for, shipped as v3.1: the critic no longer blocks the loop (bubble lingers over the next wave), dead epochs end at once, the swarm hint clears the agents' path, bursts actually happen, mid-flight icon taps need precision, and the pitch owns the homage. Still open by design: no runtime LLM (zero-network is the badge), and the light-gun core.
+
 ## Verification on v2.9
 
 `test.js`, `verify_v25.js`, `stress.js`, `stress2.js`: all pass, zero page errors. `v29_probe.js` (19 checks: touch mode row ×4, phone button placement, pause-aim lockout ×2, debounce, combo halving, perfect bonus per mode, per-mode BEST, swarm shots per mode, rule unlocks, bubble dwell, Daily determinism): 19/19.
