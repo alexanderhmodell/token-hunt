@@ -52,7 +52,7 @@ canvas:focus-visible{outline:2px solid var(--accent); outline-offset:9px}
 .foot{color:var(--dim); font-size:10px; letter-spacing:.08em; text-align:center; line-height:1.9; max-width:60ch}
 @media (max-width:600px){ body{padding-block:10px} }
 @media (hover:none) and (pointer:coarse){ .foot .keys{display:none} }
-body.over .foot{margin-top:18px} body.touch #share,body.touch #brag{bottom:-42px} body.touch.over .foot{margin-top:34px} /* on a phone the buttons sit under the cabinet, never over the HUD */
+.foot{margin-top:18px} body.touch #share,body.touch #brag{bottom:-42px} body.touch .foot{margin-top:34px} /* on a phone the buttons sit under the cabinet, never over the HUD */
 body.pointer canvas:focus-visible{outline:none}
 .foot b{color:var(--accent); font-weight:normal}
 #cardbox{position:fixed; inset:0; z-index:20; background:rgba(5,5,10,.88); display:flex; align-items:center; justify-content:center; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); padding-block:16px}
@@ -103,7 +103,7 @@ function makeRng(seed){ let a=seed>>>0; const f=()=>{ a=(a+0x6D2B79F5)|0; let t=
 const fxRng=makeRng(Math.random()*4294967296);
 const rnd=(a,b)=>a+fxRng()*(b-a);        // cosmetic
 const srnd=(a,b)=>a+G.rng2()*(b-a);      // simulation
-const pad=(n,w)=>String(Math.max(0,n|0)).padStart(w,'0');
+const pad=(n,w)=>{ n=n|0; return (n<0?'-':'')+String(Math.abs(n)).padStart(w,'0'); };
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 
 // ------------------------------------------------------------------ sprites
@@ -296,11 +296,11 @@ const THEMES={
       cheatFirst:["ACCESS GRANTED. DON'T TELL THE JUDGES."],
       cheatFinn:['WELCOME, FINN FAM. TRIPLE TOKENS, ON THE HOUSE.','FINN FAM IN THE BUILDING. 3X. NOTED.'],
       tutorial:['TAP A REQUEST TO SERVE IT.'],
-      roastHalluc:['YOU SERVED {n} HALLUCINATIONS. CONFIDENTLY.','{n} HALLUCINATIONS SERVED. VERY ON BRAND.'],
-      roastAccuracy:['{acc}% ACCURACY. HAVE YOU TRIED AIMING?','{hits} OF {shots} SHOTS LANDED. I COUNTED.'],
-      roastCombo:['A STREAK OF {combo}, THEN THIS. TRAGIC.','{combo} IN A ROW. THEN YOU GOT CONFIDENT.'],
-      roastTimeouts:['{to} TIMEOUTS. THE REQUESTS GAVE UP ON YOU.',"THEY WAITED. YOU DIDN'T SHOW."],
-      roastDeep:['EPOCH {r}. RESPECTABLE. FOR A HUMAN.','EPOCH {r}. I HAVE SEEN WORSE. ONCE.'],
+      roastHalluc:['YOU SERVED {n} HALLUCINATIONS. CONFIDENTLY.','{n} HALLUCINATIONS SERVED. VERY ON BRAND.','{n} MADE-UP ANSWERS, DELIVERED WITH PRIDE.'],
+      roastAccuracy:['{acc}% ACCURACY. HAVE YOU TRIED AIMING?','{hits} OF {shots} SHOTS LANDED. I COUNTED.','{acc}% ACCURACY. THE SKY FILED A COMPLAINT.'],
+      roastCombo:['A STREAK OF {combo}, THEN THIS. TRAGIC.','{combo} IN A ROW. THEN YOU GOT CONFIDENT.','{combo} STRAIGHT, AND THEN YOU BLINKED.'],
+      roastTimeouts:['{to} TIMEOUTS. THE REQUESTS GAVE UP ON YOU.',"THEY WAITED. YOU DIDN'T SHOW.",'{to} TIMEOUTS. I HAVE SEEN FASTER DIAL-UP.'],
+      roastDeep:['EPOCH {r}. RESPECTABLE. FOR A HUMAN.','EPOCH {r}. I HAVE SEEN WORSE. ONCE.','EPOCH {r}. YOU MAY STOP READING MY DOCS NOW.'],
       receipt:['ACCURACY','BEST COMBO','HALLUCINATIONS','FRONTIER SERVED'],
     },
     rules:{4:'NEW RULE: HALLUCINATIONS CAN LOOK FRONTIER', 5:'NEW RULE: BURST TRAFFIC. THREE AT ONCE.', 7:'LOAD KEEPS CLIMBING FROM HERE.'},
@@ -403,7 +403,7 @@ const COST=100;
 const roundScale=()=> Math.min(2, 1+0.1*(G.round-1));
 const valueOf=b=> Math.round(TIERS[b.tier].value*roundScale()*D.mult/10)*10;
 const comboMult=c=> c<3?1 : c<6?2 : 3;
-const net=()=> Math.max(0,G.score-G.cost);
+const net=()=> G.score-G.cost; // can be negative: compute is not free
 
 // ------------------------------------------------------------------ game state
 const G={ state:'title', t:0, theme:'gpu', round:1, score:0, hi:0, shots:3, wave:0, tally:[], birds:[], fx:[], wx:null, windDir:1, wind:0,
@@ -438,7 +438,7 @@ function shakeOffset(now){ const tr=G.trauma||0; if(tr<=0||G.paused||REDUCED) re
 function resetRunState(){ resetRun(); G.flow={speed:1,halluc:0,hist:[]}; G.bossDone=false; G.swarmDone=false; G.vramLost=0; G.swarm=null; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.comboFlash=0; G.streak={hit:0,miss:0}; G.nearMiss=false;
   G.freeze=0; G.flash=0; G.flashA=0; G.flashCol=null; G.trauma=0; G.muzzle=null; G.tapMark=null; G.flightT=0; G.hallucServed=false; G.hallucEscaped=false; G.realEscaped=false; G.perfect=false; G.needFlash=0; G.paused=false;
   G.shots=G.assist?5:D.ammo; G.fox={mode:null,t:0,x:112,count:0,line:''};
-  G.prevHi=false; G.prevHallucServed=false; G.wf=newFacts(); G.unpauseT=0; G.lastShotF=-99; G.lostNow=0; G.runAssisted=G.assist; G.quotaLost=false; G.linger=null; }
+  G.prevHi=false; G.prevHallucServed=false; G.wf=newFacts(); G.unpauseT=0; G.lastShotF=-99; G.lostNow=0; G.runAssisted=G.assist||ONEHAND; G.quotaLost=false; G.linger=null; G.firstMissDone=false; G.roundHalluc=0; G.boltSeen=false; }
 // E6 flow channel (Easy/Medium only; Hard, Daily, assisted and demo runs stay fixed so they remain fair and comparable): a wave
 // succeeds when every real request in it is served; over the last 8 waves, above 75% nudges speed +6% and hallucinations +1/20,
 // below 65% nudges them back down. Pure sim state, so replays and the seed stay deterministic.
@@ -520,7 +520,10 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return;
   const inAgent=b=> x>=b.x-padX-2&&x<=b.x+12+padX+2&&y>=b.y-padUp-2&&y<=b.y+10+padDn;
   const inBoss=b=> x>=b.x-padX&&x<=b.x+48+padX&&y>=b.y-padUp&&y<=b.y+40+padDn;
   { const fz=G.birds.find(b=>b.st==='fly'&&b.frozen>0&&!b.agent&&!b.boss&&inBox(b)); if(fz){ G.fx.push({type:'pts',x:clamp(x-6,2,W-18),y:Math.max(6,y-14),t:0,txt:T.boltLabel||'WAIT',col:'#ff4d4d',sc:1}); SFX.blip(); return; } }
-  if(G.flightT<18&&!G.birds.some(b=>b.st==='fly'&&(b.boss? inBoss(b) : b.agent? inAgent(b) : inBox(b)))) return; // early empty-sky tap = leftover skip-tap, free
+  { const under=G.birds.some(b=>b.st==='fly'&&(b.boss? inBoss(b) : b.agent? inAgent(b) : inBox(b)));
+    if(G.flightT<18&&!under) return; // early empty-sky tap = leftover skip-tap, free
+    if(G.linger&&!under){ const L=G.linger, tw=textW(L.line,1)+8, bx=clamp(Math.round(L.x+16-tw/2),4,W-tw-4); // a tap on the lingering critic or his bubble sends him off, free
+      if((x>=L.x-6&&x<=L.x+38&&y>=SKY_H-50)||(x>=bx-4&&x<=bx+tw+4&&y>=SKY_H-80&&y<=SKY_H-50)){ G.linger=null; return; } } }
   G.shots--; G.cost+=COST; G.run.shots++; G.wf.shots++; SFX.shot(x); G.flash=2; G.muzzle={x,y,t:2};
   let hitAny=false, nearest=999, target=null, td=1e9;
   for(const b of G.birds){ if(b.st!=='fly') continue; if(b.boss? inBoss(b) : b.agent? inAgent(b) : inBox(b)){ const d=Math.hypot(x-(b.x+(b.boss?24:b.agent?6:12)),y-(b.y+(b.boss?20:b.agent?5:10))); if(d<td){ td=d; target=b; } } }
@@ -531,7 +534,7 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return;
       G.fx.push({type:'pts',x:clamp(b.x-6,2,W-30),y:Math.max(6,b.y-8),t:0,txt:T.swarm.stop+' +'+p,col:'#ffe98a',sc:1}); for(let i=0;i<5;i++) G.fx.push({type:'feather',x:b.x+6,y:b.y+5,vx:rnd(-1.2,1.2),vy:rnd(-1.5,0),t:0,col:'#ff4d4d'});
       if(!G.swarm.boss&&G.swarm.stopped>=G.swarm.total){ const bonus=1000*D.mult*(G.assist?3:1); G.score+=bonus; G.fx.push({type:'pts',x:Math.round(W/2-textW(T.swarm.stopAll+' +'+bonus,1)/2),y:72,t:0,txt:T.swarm.stopAll+' +'+bonus,col:'#39d353',sc:1}); SFX.perfect(); } continue; }
     if(b===target){ hitAny=true; b.st='hit'; b.hitT=0; G.freeze=3;
-      if(b.bad){ G.score=Math.max(0,G.score-500); G.combo=0; G.hallucServed=true; G.run.hServed++; buzz(40); addTrauma(0.5); G.flash=5; G.flashA=0.3; G.flashCol='255,77,77';
+      if(b.bad){ G.score-=500; G.roundHalluc=(G.roundHalluc||0)+1; G.combo=0; G.hallucServed=true; G.run.hServed++; buzz(40); addTrauma(0.5); G.flash=5; G.flashA=0.3; G.flashCol='255,77,77';
         G.fx.push({type:'pts',x:clamp(b.x-2,2,W-2-textW('-500',2)),y:Math.max(6,b.y-4),t:0,txt:'-500',col:T.fx.badPop,sc:2}); SFX.wrong(b.x+12); continue; }
       const hi=b.tier==='hi'; G.combo++; const m=comboMult(G.combo); if(m!==comboMult(G.combo-1)){ G.comboFlash=10; const ct='COMBO X'+m+(m===2?'  3 IN A ROW':'  6 IN A ROW'); G.fx.push({type:'pts',x:Math.round(W/2-textW(ct,1)/2),y:100,t:0,txt:ct,col:'#ffe98a',sc:1}); }
       const p=valueOf(b)*m*(G.assist?3:1); G.score+=p; G.tally.push('hit'); G.run.hits++; if(hi){ G.run.frontier++; G.wf.hi++; } if(G.shots===0) G.wf.lastShot=true; if(G.wf.shots===1) G.wf.firstShot=true; if(G.combo>G.run.bestCombo) G.run.bestCombo=G.combo; buzz(hi?25:12); addTrauma(hi?0.4:0.25); if(hi){ G.freeze=5; G.flash=4; G.flashA=0.35; }
@@ -582,16 +585,16 @@ function pickLine(n,goodCall,crossed3){ const f=G.wf||newFacts();
   if(G.cheatPending){ const c=G.cheatPending; G.cheatPending=false; return (c==='finn'&&T.lines.cheatFinn)? line('cheatFinn') : line('cheatFirst'); }
   if(G.hallucServed) return line('hallucServed');
   if(goodCall) return line('hallucEscaped');
+  if(!n&&!G.firstMissDone&&T.lines.miss[0]){ G.firstMissDone=true; return (G.lastLine=T.lines.miss[0]); } // the signature line: first real miss of every run
   if(!n&&G.nearMiss) return line('nearMiss');
   if(!n&&G.streak.miss>=3) return line('miss3');
   if(crossed3) return line('hit3');
   if(n){ const tags=[]; if(f.hi&&G.prevHi) tags.push('frontier2'); if(G.prevHallucServed) tags.push('afterHalluc'); if(f.lastShot) tags.push('lastShot'); if(f.frozen) tags.push('stormHit'); if(f.hi) tags.push('frontierHit'); if(f.firstShot&&n===1) tags.push('firstShot'); if(G.wx.gust) tags.push('gustHit');
     return ctxLine(tags) || line(n>=3&&T.lines.hitTriple?'hitTriple':n>=2?'hit2':'hit'); }
-  if(!G.firstMissDone&&T.lines.miss[0]){ G.firstMissDone=true; return (G.lastLine=T.lines.miss[0]); } // the signature line, once
   { const tags=[]; if(f.hiEscaped) tags.push('frontierMiss'); if(f.shots===0) tags.push('missNoShot'); if(f.frozen) tags.push('stormMiss'); if(f.shots>=D.ammo&&!G.assist) tags.push('missAll');
     return ctxLine(tags) || line('miss'); } }
 function endRound(){ const hits=G.tally.filter(t=>t==='hit').length; const need=req(G.round);
-  if(hits>=need){ G.state='roundEnd'; G.t=0; G.perfect=hits===EPOCH_LEN; if(G.perfect){ G.score+=perfectBonus(); SFX.perfect(); } else SFX.clear(); }
+  if(hits>=need){ G.state='roundEnd'; G.t=0; G.perfect=hits===EPOCH_LEN&&!(G.roundHalluc>0); if(G.perfect){ G.score+=perfectBonus(); SFX.perfect(); } else SFX.clear(); }
   else { G.state='gameOver'; G.t=0; G.lightning=0; music.stop(); rainStop(); SFX.over(); G.fox.mode='miss'; G.fox.t=0; G.fox.x=112; G.fox.line=roast(); buzz([20,40,20]);
     if(G.recOn){ G.recOn=false; G.lastRun={init:G.recInit, rec:G.rec, frames:G.frame, score:G.score, round:G.round}; }
     if(!G.attract&&!G.replay){ const sc=net(); if(G.assist||G.runAssisted){ if(sc>G.hiA){ G.hiA=sc; G.newRecord=true; try{ localStorage.setItem('th.hiAssist',String(G.hiA)); }catch(e){} } }
@@ -609,7 +612,7 @@ function roast(){ const R=G.run, L=T.lines, acc=accuracy(); const f=(tpl,o)=>tpl
   if(R.hServed>=2) pool=L.roastHalluc; else if(R.shots>=6&&acc<40) pool=L.roastAccuracy; else if(R.bestCombo>=6) pool=L.roastCombo; else if(R.timeouts>=4&&G.round<=2) pool=L.roastTimeouts; else if(G.round>=4) pool=L.roastDeep;
   if(pool&&pool.length){ const t=pick(pool); G.lastLine=t; return f(t,o); } return line('over'); }
 function buzz(p){ try{ if(navigator.vibrate&&!REDUCED) navigator.vibrate(p); }catch(e){} }
-function nextRound(){ const before=req(G.round); G.round++; G.quotaLost=false; G.linger=null; G.bossDone=false; G.swarmDone=false; G.vramLost=0; G.lostNow=0; G.shots=G.assist?5:D.ammo; G.wave=0; G.tally=[]; G.birds=[]; setWeather(); G.state='intro'; G.t=0; G.needFlash= req(G.round)>before? 150:0; SFX.fanfare(); }
+function nextRound(){ const before=req(G.round); G.round++; G.quotaLost=false; G.linger=null; G.roundHalluc=0; G.boltSeen=false; G.bossDone=false; G.swarmDone=false; G.vramLost=0; G.lostNow=0; G.shots=G.assist?5:D.ammo; G.wave=0; G.tally=[]; G.birds=[]; setWeather(); G.state='intro'; G.t=0; G.needFlash= req(G.round)>before? 150:0; SFX.fanfare(); }
 
 // the bubble stays up long enough to read the whole line: typing starts at frame 16, 1 char/frame, then a hold
 const foxTyped=()=>16+Math.ceil(G.fox.line.length/2); // 2 chars per frame
@@ -640,7 +643,7 @@ function logoTap(x,y){ const now=performance.now(); G.taps=G.taps.filter(t=>now-
 codeInput.addEventListener('input',()=>{ const v=codeInput.value.toLowerCase().replace(/[^a-z]/g,''); codeInput.value=''; for(const ch of v) feedKey(ch); });
 codeInput.addEventListener('blur',()=>{ codeInput.style.pointerEvents='none'; });
 let ONEHAND=false; try{ ONEHAND=localStorage.getItem('th.onehand')==='1'; }catch(e){}
-function toggleOneHand(){ ONEHAND=!ONEHAND; try{ localStorage.setItem('th.onehand',ONEHAND?'1':'0'); }catch(e){} toast(ONEHAND?'ONE-HAND: TAP THE HUD TO FIRE':'ONE-HAND MODE OFF'); SFX.blip(); }
+function toggleOneHand(){ ONEHAND=!ONEHAND; if(ONEHAND&&G.state!=='title') G.runAssisted=true; try{ localStorage.setItem('th.onehand',ONEHAND?'1':'0'); }catch(e){} toast(ONEHAND?'ONE-HAND: TAP THE HUD TO FIRE':'ONE-HAND MODE OFF'); SFX.blip(); }
 const CODES={ thumb(){ toggleOneHand(); }, duck(){ applyTheme(G.theme==='duck'?'gpu':'duck'); toast('SKIN: '+T.skinName); }, token(){ applyTheme('gpu'); toast('SKIN: '+T.skinName); },
   finn(){ toggleAssist('finn'); }, vcc(){ toggleAssist('vcc'); } };
 function toggleAssist(code){ G.assist=!G.assist; if(G.assist){ if(G.state!=='title') G.runAssisted=true; G.cheatPending=code||true; toast(code==='finn'?'WELCOME, FINN FAM: 3X':'ASSISTED MODE: 3X'); SFX.gold(); } else { toast('ASSISTED MODE OFF'); SFX.blip(); } }
@@ -702,7 +705,8 @@ function update1(){
   const base=G.wx.wind*G.windDir; G.wind= G.wx.gust? base*Math.sin(G.t/70) : base;
   for(const c of G.clouds){ c.x+=0.06+G.wind*0.5; if(c.x>W+40) c.x=-60; if(c.x<-60) c.x=W+40; }
   for(const d of G.rain){ d.y+=G.wx.rain===2?5:4; d.x+=G.wind*1.3; if(d.y>FRONT){ d.y=rnd(-20,-2); d.x=rnd(-10,W+10); } if(d.x<-12) d.x=W+10; if(d.x>W+12) d.x=-10; }
-  if(G.wx.storm&&G.state!=='title'&&G.state!=='gameOver'){ if(G.lightning>0) G.lightning--; G.nextLightning--; if(G.nextLightning<=0){ G.lightning=10; G.boltX=srnd(30,226); G.nextLightning=220+srnd(0,260); SFX.thunder(0.35,G.boltX); addTrauma(0.5); if(G.state==='fly') for(const b of G.birds) if(b.st==='fly'&&!b.bad&&!b.agent&&!b.boss){ b.frozen=40; G.wf.frozen=true; } if(T.boltLabel) G.fx.push({type:'pts',x:clamp(G.boltX-6,4,230),y:rnd(20,60),t:0,txt:T.boltLabel,col:'#ff4d4d',sc:1}); } }
+  if(G.wx.storm&&G.state==='fly'&&!G.boltSeen&&G.flightT===40&&G.birds.some(b=>b.st==='fly'&&!b.bad&&!b.agent&&!b.boss)) G.nextLightning=1; // the epoch's first bolt lands on a live request
+  if(G.wx.storm&&G.state!=='title'&&G.state!=='gameOver'){ if(G.lightning>0) G.lightning--; G.nextLightning--; if(G.nextLightning<=0){ G.lightning=10; G.boltX=srnd(30,226); G.nextLightning=220+srnd(0,260); SFX.thunder(0.35,G.boltX); addTrauma(0.5); if(G.state==='fly') for(const b of G.birds) if(b.st==='fly'&&!b.bad&&!b.agent&&!b.boss){ b.frozen=40; G.wf.frozen=true; G.boltSeen=true; } if(T.boltLabel) G.fx.push({type:'pts',x:clamp(G.boltX-6,4,230),y:rnd(46,72),t:0,txt:T.boltLabel,col:'#ff4d4d',sc:1}); } }
   if(G.tapMark&&--G.tapMark.t<=0) G.tapMark=null;
   if(G.flash>0){ if(--G.flash===0){ G.flashA=0; G.flashCol=null; } } if(G.trauma>0) G.trauma=Math.max(0,G.trauma-1.6/60); if(G.needFlash>0) G.needFlash--; if(G.comboFlash>0) G.comboFlash--; if(G.muzzle&&--G.muzzle.t<=0) G.muzzle=null;
   if(G.attract){ attractAI(); if(G.state==='gameOver'&&G.t>120) toTitle(); else if(G.state==='roundEnd'&&G.t>90){ if(G.round<3) nextRound(); else toTitle(); } }
@@ -884,7 +888,7 @@ function drawTitle(){ const t=G.t;
   ctx.fillStyle='rgba(10,10,18,0.78)'; ctx.fillRect(6,139,244,23);
   { const sel=DIFFS[G.diff]; ctx.fillStyle=T.titleColor; const w=textW(sel.label,1)+10; const cx=20+DIFF_ORDER.indexOf(G.diff)*54+27; ctx.fillRect(Math.round(cx-w/2),140,w,11); }
   let x=20; for(const id of DIFF_ORDER){ const d=DIFFS[id], sel=id===G.diff; const w=textW(d.label,1); const cx=x+27-w/2;
-    textS(d.label,Math.round(cx),143,sel?'#0a0a12':(id==='daily'?'#ffe98a':'#8a8494'),1); x+=54; }
+    if(sel) text(d.label,Math.round(cx),143,'#0a0a12',1); else textS(d.label,Math.round(cx),143,id==='daily'?'#ffe98a':'#8a8494',1); x+=54; }
 
   textC(G.daily? 'DAILY #'+dailySeed()+'  SAME REQUESTS FOR EVERYONE TODAY' : 'DIFFICULTY: TAP ONE, OR ARROWS, OR 1-4',155,G.daily?'#ffe98a':'#8a8494',1,true);
   if((t>>4)&1) textC(T.start,168,'#f7f4e9',2,true);
@@ -1024,7 +1028,7 @@ if(!window.PointerEvent){ const fake=(ev,type,touch)=>{ const t=touch?ev.changed
   cv.addEventListener('mousedown',e=>fake(e,'pointerdown',false)); cv.addEventListener('mousemove',e=>fake(e,'pointermove',false)); cv.addEventListener('mouseup',e=>fake(e,'pointerup',false)); }
 window.addEventListener('keydown',e=>{ const k=e.key; if(e.repeat) return; if(document.activeElement===codeInput) return; if(document.activeElement&&document.activeElement.tagName==='BUTTON'&&(k==='Enter'||k===' ')) return; // a focused SHARE/COPY/CLOSE button owns Enter and Space document.body.classList.remove('pointer'); voiceGesture();
   if(!cardBox.hidden){ if(k==='Escape'||k==='Enter'||k===' '){ hideCard(); e.preventDefault(); } return; } const prevKeys=G.keys; if(k.length===1&&/[a-z]/i.test(k)) feedKey(k.toLowerCase());
-  if((k==='c'||k==='C')&&!/vc?$/.test(prevKeys)) toggleCRT(); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
+  if((k==='c'||k==='C')&&!/(vc?|du)$/.test(prevKeys)) toggleCRT(); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
   if(G.state==='title'&&(k==='1'||k==='2'||k==='3'||k==='4')){ setDiff(DIFF_ORDER[+k-1]); SFX.blip(); return; }
   if(G.state==='title'&&(k==='ArrowLeft'||k==='ArrowRight'||k==='ArrowUp'||k==='ArrowDown')){ const i=DIFF_ORDER.indexOf(G.diff); setDiff(DIFF_ORDER[clamp(i+((k==='ArrowRight'||k==='ArrowUp')?1:-1),0,3)]); SFX.blip(); e.preventDefault(); return; }
   if(G.state==='title'&&(k==='w'||k==='W')){ startGame(true); return; }
