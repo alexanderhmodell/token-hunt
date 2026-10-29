@@ -280,8 +280,8 @@ const THEMES={
       bossLoss:['THE DDOS GOT THROUGH. WE ARE TRENDING.','AN OUTAGE. I WILL BLAME THE INTERN.'],
       perfect:['99.9% UPTIME. I AM IMPRESSED.'],
       over:['HAVE YOU TRIED TURNING IT OFF AND ON?','CONSIDER UPGRADING YOUR PLAN.','YOUR SESSION HAS EXPIRED.'],
-      cheatFirst:["ACCESS GRANTED. DON'T TELL THE JUDGES."],
-      cheatFinn:['WELCOME, FINN FAM. TRIPLE TOKENS, ON THE HOUSE.','FINN FAM IN THE BUILDING. 3X. NOTED.'],
+      cheatFirst:['WELCOME, FINN FAM.'],
+      cheatFinn:['WELCOME, FINN FAM.'],
       tutorial:['TAP A REQUEST TO SERVE IT.'],
       roastHalluc:['YOU SERVED {n} HALLUCINATIONS. CONFIDENTLY.','{n} HALLUCINATIONS SERVED. VERY ON BRAND.','{n} MADE-UP ANSWERS, DELIVERED WITH PRIDE.'],
       roastAccuracy:['{acc}% ACCURACY. HAVE YOU TRIED AIMING?','{hits} OF {shots} SHOTS LANDED. I COUNTED.','{acc}% ACCURACY. THE SKY FILED A COMPLAINT.'],
@@ -344,8 +344,8 @@ const THEMES={
       bossLoss:['THE STORM ROLLED RIGHT OVER US.'],
       perfect:['NOT A SINGLE ONE GOT AWAY.'],
       over:['THE BIRDS SEND THEIR REGARDS.','BETTER LUCK NEXT SEASON.'],
-      cheatFirst:["WELL, THAT'S CHEATING. CARRY ON."],
-      cheatFinn:['WELCOME, FINN FAM. THE BIRDS ARE NERVOUS.'],
+      cheatFirst:['WELCOME, FINN FAM.'],
+      cheatFinn:['WELCOME, FINN FAM.'],
       tutorial:['TAP A BIRD.'],
       roastHalluc:['YOU SHOT {n} DECOYS. THEY WERE WOODEN.','{n} DECOYS. THE DUCKS ARE LAUGHING.'],
       roastAccuracy:['{acc}% ACCURACY. THE SKY IS SAFE.','{hits} OF {shots} SHOTS. GENEROUS OF YOU.'],
@@ -406,7 +406,7 @@ try{ G.hiA=parseInt(localStorage.getItem('th.hiAssist')||'0',10)||0; G.seen=loca
 try{ G.hi=parseInt(localStorage.getItem('th.hi')||'0',10)||0; }catch(e){}
 const pick=a=>a[Math.floor(G.rng2()*a.length)];
 function line(kind){ const pool=T.lines[kind]||T.lines.miss; let s=pick(pool); if(pool.length>1&&s===G.lastLine) s=pool[(pool.indexOf(s)+1)%pool.length]; G.lastLine=s; return s; }
-function toast(txt){ G.toast={txt,t:0}; }
+function toast(txt,big){ G.toast={txt,t:0,big:!!big}; }
 
 function setWeather(){ G.wx=lvl(G.round); G.windDir=G.rng()<0.5?-1:1;
   G.rain=[]; const n=G.wx.rain===2?130: G.wx.rain===1?70:0; for(let i=0;i<n;i++) G.rain.push({x:rnd(0,W),y:rnd(-20,FRONT),l:G.wx.rain===2&&fxRng()<0.4?5:3});
@@ -631,16 +631,16 @@ codeInput.addEventListener('input',()=>{ const v=codeInput.value.toLowerCase().r
 codeInput.addEventListener('blur',()=>{ codeInput.style.pointerEvents='none'; });
 let ONEHAND=false; try{ ONEHAND=localStorage.getItem('th.onehand')==='1'; }catch(e){}
 function toggleOneHand(){ ONEHAND=!ONEHAND; if(ONEHAND&&G.state!=='title') G.runAssisted=true; try{ localStorage.setItem('th.onehand',ONEHAND?'1':'0'); }catch(e){} toast(ONEHAND?'ONE-HAND: TAP THE HUD TO FIRE':'ONE-HAND MODE OFF'); SFX.blip(); }
-const CODES={ thumb(){ toggleOneHand(); }, duck(){ applyTheme(G.theme==='duck'?'gpu':'duck'); toast('SKIN: '+T.skinName); }, token(){ applyTheme('gpu'); toast('SKIN: '+T.skinName); },
+const CODES={ thumb(){ toggleOneHand(); }, duck(){ applyTheme(G.theme==='duck'?'gpu':'duck'); if(G.theme==='duck') toast('KEEP CALM AND QUACK ON',true); else toast('SKIN: '+T.skinName); }, token(){ applyTheme('gpu'); toast('SKIN: '+T.skinName); },
   finn(){ toggleAssist('finn'); }, vcc(){ toggleAssist('vcc'); } };
-function toggleAssist(code){ G.assist=!G.assist; if(G.assist){ if(G.state!=='title') G.runAssisted=true; G.cheatPending=code||true; toast(code==='finn'?'WELCOME, FINN FAM: 3X':'ASSISTED MODE: 3X'); SFX.gold(); } else { toast('ASSISTED MODE OFF'); SFX.blip(); } }
+function toggleAssist(code){ G.assist=!G.assist; if(G.assist){ if(G.state!=='title') G.runAssisted=true; G.cheatPending='finn'; toast('WELCOME, FINN FAM'); SFX.gold(); } else { toast('FINN FAM MODE OFF'); SFX.blip(); } }
 function feedKeyRaw(ch){ G.keys=(G.keys+ch).slice(-8); for(const c in CODES) if(G.keys.endsWith(c)){ G.keys=''; CODES[c](); break; } }
 function feedKey(ch){ if(G.replay) return; recIn('k',ch); feedKeyRaw(ch); }
 // brag line (A11)
 const bragBtn=document.getElementById('brag'), bragTxt=document.getElementById('bragtxt'), shareBtn=document.getElementById('share');
 shareBtn.addEventListener('click',()=>{ shareCard(); });
 function modeTag(){ return G.daily? 'DAILY #'+dailySeed() : D.label; }
-function bragText(){ return T.titleA+' '+T.titleB+' · '+T.banners.unit+' '+net().toLocaleString()+' · '+modeTag()+' · '+T.hud.round+' '+G.round+' · THE BOT SAID: "'+G.fox.line+'"'+((G.assist||G.runAssisted)?' · ASSISTED RUN':'')+' · '+location.href; }
+function bragText(){ return T.titleA+' '+T.titleB+' · '+T.banners.unit+' '+net().toLocaleString()+' · '+modeTag()+' · '+T.hud.round+' '+G.round+' · THE BOT SAID: "'+G.fox.line+'"'+((G.assist||G.runAssisted)?' · FINN FAM 3X':'')+' · '+location.href; }
 // 1080x1080 share card drawn from the game's own sprites and font
 function makeCard(){ const C=document.createElement('canvas'); C.width=1080; C.height=1080; const x=C.getContext('2d'); x.imageSmoothingEnabled=false;
   x.fillStyle=T.css.cab; x.fillRect(0,0,1080,1080); x.fillStyle=G.wx.sky; x.fillRect(60,60,960,560); x.fillStyle=T.css.cab; x.fillRect(60,560,960,60);
@@ -654,7 +654,7 @@ function makeCard(){ const C=document.createElement('canvas'); C.width=1080; C.h
   const lsc=6, lh=lsc*5+14, bw=22*4*lsc+36, bh=lines.length*lh+26, bx=420, by=330; x.fillStyle='#f7f4e9'; x.fillRect(bx,by,bw,bh); x.fillStyle=SHADOW; x.fillRect(bx+8,by+bh,bw-16,8); x.fillRect(bx-16,by+36,16,16);
   lines.forEach((ln,i)=>px(ln,bx+18,by+16+i*lh,SHADOW,lsc));
   pxC(T.banners.unit+' '+net().toLocaleString(),556,'#f7f4e9',10);
-  pxC(modeTag()+' · '+T.hud.round+' '+G.round+' · '+accuracy()+'% ACC · BEST COMBO X'+Math.max(1,G.run.bestCombo)+((G.assist||G.runAssisted)?' · ASSISTED':''),640,'#bdeeff',5);
+  pxC(modeTag()+' · '+T.hud.round+' '+G.round+' · '+accuracy()+'% ACC · BEST COMBO X'+Math.max(1,G.run.bestCombo)+((G.assist||G.runAssisted)?' · FINN FAM 3X':''),640,'#bdeeff',5);
   px(T.banners.over,100,700,T.banners.overColor,10);
   px(T.lines.receipt[2]+': '+G.run.hServed+' SERVED, '+G.run.hDodged+' DODGED',100,790,'#8a8494',6);
   px(T.lines.receipt[3]+': '+G.run.frontier,100,840,'#8a8494',6);
@@ -676,7 +676,7 @@ bragBtn.addEventListener('click',()=>{ const t=bragText(); const fail=()=>{ brag
 
 // ------------------------------------------------------------------ update
 function update(){
-  if(G.toast){ G.toast.t++; if(G.toast.t>90) G.toast=null; }
+  if(G.toast){ G.toast.t++; if(G.toast.t>(G.toast.big?180:90)) G.toast=null; }
   if(G.paused) return;
   if(G.replay) replayFeed();
   G.frame++; if(G.unpauseT>0) G.unpauseT--; if(G.linger&&(++G.linger.t>=G.linger.len||G.state==='fox'||G.state==='gameOver'||G.state==='roundEnd'||G.state==='title')) G.linger=null; snapPrev();
@@ -823,7 +823,7 @@ function drawHUD(){ ctx.fillStyle=SHADOW; ctx.fillRect(0,SKY_H,W,H-SKY_H); ctx.f
   const glow= hits===need-1 && ((G.t>>3)&1); ctx.fillStyle= glow?'#fff6c8':'#f2c438'; ctx.fillRect(66+need*11-2,glow?211:212,1,glow?9:7);
   const m=comboMult(G.combo); if(m>1){ const flash=G.comboFlash>0&&((G.comboFlash>>1)&1); textS('X'+m,150,205,flash?'#fff6c8':'#ffe98a',flash?2:1); }
   text(h.score,204,205,lab); if(D.mult!==1) text('X'+D.mult,232,205,'#ffe98a'); text(pad(net(),6),204,213,ink); text(h.cost+' -'+pad(G.cost,5),204,221,'#5a5468');
-  text(h.round+' '+pad(G.round,2)+' '+D.tag,10,229,lab); text(G.wx.name,66,229,h.levelColor); { const w=G.wind; if(Math.abs(w)>0.15){ const n=Math.min(3,Math.ceil(Math.abs(w)*2.5)); text((w<0?'<':'>').repeat(n),66+textW(G.wx.name,1)+4,229,'#bdeeff'); } } if(G.assist) text('ASSIST 3X',150,229,'#ffe98a'); else if(G.daily) text('DAILY #'+dailySeed(),150,229,'#ffe98a'); { const hi=G.assist?G.hiA:G.hi, live=!G.attract&&G.state!=='title'&&net()>hi; text(h.best+' '+pad(live?net():hi,6),204,229,live?'#ffe98a':lab); } }
+  text(h.round+' '+pad(G.round,2)+' '+D.tag,10,229,lab); text(G.wx.name,66,229,h.levelColor); { const w=G.wind; if(Math.abs(w)>0.15){ const n=Math.min(3,Math.ceil(Math.abs(w)*2.5)); text((w<0?'<':'>').repeat(n),66+textW(G.wx.name,1)+4,229,'#bdeeff'); } } if(G.assist) text('FINN FAM 3X',150,229,'#ffe98a'); else if(G.daily) text('DAILY #'+dailySeed(),150,229,'#ffe98a'); { const hi=G.assist?G.hiA:G.hi, live=!G.attract&&G.state!=='title'&&net()>hi; text(h.best+' '+pad(live?net():hi,6),204,229,live?'#ffe98a':lab); } }
 
 const perfectBonus=()=>Math.round(10000*D.mult); // the perfect-epoch bonus scales with the mode, so an Easy marathon cannot out-score a Hard run
 const fmt=(s,m)=>s.replace('%R',pad(G.round,2)).replace('%L',G.wx.name).replace('%N',String(req(G.round))).replace('%E',String(EPOCH_LEN)).replace('%H',String(m||0)).replace('%B',String(perfectBonus()));
@@ -841,7 +841,7 @@ function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
     textC(fmt(B.served,hits),90,'#f7f4e9',1); if(G.perfect){ textC(fmt(B.perfect),106,((t>>2)&1)?'#fff6c8':'#ffe98a',1); } else textC(fmt(B.survived),106,'#bdeeff',1);
     if(t>40) textC('TAP TO CONTINUE',118,'#8a8494',1); }
   if(G.state==='gameOver'){ const R=G.run, rc=T.lines.receipt; panel(32,30,192,100); textC(B.over,38,B.overColor,2);
-    textC(B.unit+' '+pad(net(),6)+'  '+modeTag()+((G.assist||G.runAssisted)?'  ASSISTED 3X':''),54,'#f7f4e9',1);
+    textC(B.unit+' '+pad(net(),6)+'  '+modeTag()+((G.assist||G.runAssisted)?'  FINN FAM 3X':''),54,'#f7f4e9',1);
     text(rc[0]+' '+accuracy()+'%',40,66,'#8a8494'); text(rc[1]+' X'+Math.max(1,R.bestCombo),136,66,'#8a8494');
     text(rc[2]+' '+R.hServed+' SERVED / '+R.hDodged+' DODGED',40,76,'#8a8494');
     text(rc[3]+' '+R.frontier,40,86,'#8a8494'); text(T.hud.round+' '+G.round,136,86,'#8a8494');
@@ -855,7 +855,8 @@ function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
   if(G.attract&&G.state!=='title'&&((t>>4)&1)) textC('DEMO  -  TAP TO PLAY',6,'#ffe98a',1,true);
   if(G.paused){ panel(68,80,120,44); textC('PAUSED',90,'#f7f4e9',2); textC('TAP TO RESUME',110,'#8a8494',1); }
   else if(G.unpauseT>0&&G.state==='fly') textC('READY IN '+Math.ceil(G.unpauseT/6),90,'#ffe98a',1,true);
-  if(G.toast&&(G.toast.t<70||(G.toast.t&2))) textC(G.toast.txt,180,'#ffe98a',1,true); }
+  if(G.toast&&G.toast.big){ ctx.fillStyle='rgba(10,10,18,0.82)'; ctx.fillRect(0,88,W,26); ctx.fillStyle='#f0b22e'; ctx.fillRect(0,88,W,1); ctx.fillRect(0,113,W,1); textC(G.toast.txt,95,'#ffe98a',2,true); } // a banner across the whole screen
+  else if(G.toast&&(G.toast.t<70||(G.toast.t&2))) textC(G.toast.txt,180,'#ffe98a',1,true); }
 function drawCaptions(){ if(!muted||!CAPS.length) return; const now=performance.now(); while(CAPS.length&&now-CAPS[0].at>1500) CAPS.shift();
   CAPS.forEach((c,i)=>{ const w=textW(c.t,1)+4, y=G.replay?24+i*9:4+i*9; ctx.fillStyle=SHADOW; ctx.fillRect(2,y-2,w,9); text(c.t,4,y,'#bdeeff',1); }); }
 function drawReplayBadge(){ if(!G.replay) return; ctx.fillStyle=SHADOW; ctx.fillRect(2,2,46,9); if((G.frame>>4)&1){ ctx.fillStyle='#ff4d4d'; ctx.fillRect(5,4,4,5); } text('REPLAY '+G.replay.speed+'X',12,4,'#f7f4e9',1);
