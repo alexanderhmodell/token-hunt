@@ -191,6 +191,28 @@ BOT_FLAT[13] = "KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK"
 BOT_FLAT[14] = "KPPPPPPPPPKKKKKKKKKKKKPPPPPPPPPK"
 BOT_FLAT[15] = "KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK"
 
+# talking: an alternate mouth frame per critic face (the game flaps between a face and its "O" frame while the bot speaks)
+def rows_with(base, repl):
+    rows = list(base)
+    for i, r in repl.items():
+        assert len(r) == len(base[0]), (i, len(r))
+        rows[i] = r
+    return rows
+MOUTH_OPEN = {13: "KPPPPPPPPPPKKKKKKKKKKPPPPPPPPPPK", 14: "KPPPPPPPPPKDDDDDDDDDDKPPPPPPPPPK",
+              15: "KPPPPPPPPPKDDRRRRRRDDKPPPPPPPPPK", 16: "KPPPPPPPPPPKKKKKKKKKKPPPPPPPPPPK"}
+BOT_O = rows_with(BOT, MOUTH_OPEN)
+BOT_HAPPY_O = rows_with(BOT_HAPPY, MOUTH_OPEN)
+BOT_FLAT_O = rows_with(BOT_FLAT, {13: "KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK", 14: "KPPPPPPPPPPPPKKKKKKPPPPPPPPPPPPK",
+                                  15: "KPPPPPPPPPPPKDDDDDDKPPPPPPPPPPPK", 16: "KPPPPPPPPPPPPKKKKKKPPPPPPPPPPPPK"})
+# smug (the game-over roast): left brow raised, right eye half-lidded under a low brow, one-sided smirk
+BOT_SMUG = list(BOT)
+for _i in range(6, 11):
+    BOT_SMUG[_i] = BOT[_i][:16] + BOT_FLAT[_i][16:]
+BOT_SMUG = rows_with(BOT_SMUG, {4: "KPPpPPKKKKKPPPPPPPPPPPPPPPPPPPPK", 5: "KPPPPPPPPPPPPPPPPPPPPKKKKKPPPPPK",
+                                13: "KPPPPPPPPPPPPPPPPPPPPPKPPPPPPPPK", 14: "KPPPPPPPPPPPPKKKKKKKKKPPPPPPPPPK",
+                                15: "KPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPK"})
+BOT_SMUG_O = rows_with(BOT_SMUG, {15: "KPPPPPPPPPPPPKDDDDDDDKPPPPPPPPPK", 16: "KPPPPPPPPPPPPPKKKKKKKPPPPPPPPPPK"})
+
 # ------------------------------------------------------------ icons
 VRAM = [       # 5x6 memory stick
     "XXXXX",
@@ -261,7 +283,8 @@ SPRITES = {
     "req0": overlay(BODY, WING_UP),
     "req1": overlay(BODY, WING_MID),
     "req2": overlay(BODY, WING_DOWN),
-    "bot": BOT, "botHappy": BOT_HAPPY, "botFlat": BOT_FLAT,
+    "bot": BOT, "botHappy": BOT_HAPPY, "botFlat": BOT_FLAT, "botSmug": BOT_SMUG,
+    "botO": BOT_O, "botHappyO": BOT_HAPPY_O, "botFlatO": BOT_FLAT_O, "botSmugO": BOT_SMUG_O,
 }
 for i in range(3):
     SPRITES[f"lo{i}"] = recolor(SPRITES[f"req{i}"], LO)
@@ -281,6 +304,9 @@ SPRITES["goldFall"] = _F.SPRITES["goldFall"]
 SPRITES["decoyFall"] = recolor(_F.SPRITES["fall"], {"G": "T", "g": "T", "B": "b", "W": "L", "O": "T"})
 SPRITES["fox"] = _F.SPRITES["fox"]
 SPRITES["foxLaugh"] = _F.SPRITES["foxLaugh"]
+# fox talk frames: the neutral fox borrows the laugh's open mouth; the laughing fox closes to the neutral smile
+SPRITES["foxO"] = _F.SPRITES["fox"][:17] + _F.SPRITES["foxLaugh"][17:21] + _F.SPRITES["fox"][21:]
+SPRITES["foxLaughO"] = _F.SPRITES["foxLaugh"][:17] + _F.SPRITES["fox"][17:21] + _F.SPRITES["foxLaugh"][21:]
 
 # ---- rogue agent (12x10): a red diamond drone with one eye; two frames
 AGENT0 = [

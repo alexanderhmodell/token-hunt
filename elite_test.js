@@ -178,6 +178,73 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
     }
   }
 
+  // ---------------------------------------------------------------- E2 the bot speaks
+  if (want('E2')) {
+    const STUB = () => {
+      window.__ss = { spoken: [], cancels: 0, last: null };
+      const voices = [{ name: 'Google US English', lang: 'en-US', localService: false }, { name: 'Samantha', lang: 'en-US', localService: true }, { name: 'Thomas', lang: 'fr-FR', localService: true }];
+      const ss = { getVoices: () => voices, addEventListener() {}, cancel() { window.__ss.cancels++; window.__ss.last = null; },
+        speak(u) { const S = window.__ss; S.spoken.push(u.text); S.last = u; S.meta = { voice: u.voice && u.voice.name, pitch: u.pitch, rate: u.rate, volume: u.volume };
+          setTimeout(() => { if (S.last !== u) return; u.onstart && u.onstart(); let i = 0; const iv = setInterval(() => { if (S.last !== u || i++ > 6) { clearInterval(iv); if (S.last === u && u.onend) u.onend(); return; } u.onboundary && u.onboundary({ name: 'word' }); }, 90); }, 15); } };
+      Object.defineProperty(window, 'speechSynthesis', { value: ss, configurable: true });
+      window.SpeechSynthesisUtterance = function (t) { this.text = t; this.volume = 1; };
+    };
+    const spoken = (page) => page.evaluate(() => window.__ss.spoken.filter(t => t.trim()));
+    const foxAt = (page, t, line, mode) => page.evaluate(([t, line, mode]) => { const G = window.__th; G.paused = false; G.attract = false; G.replay = null; G.state = 'fox'; G.wave = 1; G.fox = { mode: mode || 'hit', t, x: 112, count: 0, line }; }, [t, line, mode]);
+    {
+      const { ctx, page, errs } = await newPage(browser); await page.addInitScript(STUB);
+      await page.goto(url); await sleep(500);
+      await foxAt(page, 10, 'GREAT QUESTION!'); await sleep(400);
+      ok((await spoken(page)).length === 0, 'E2: no speech before the first user gesture');
+      await page.evaluate(() => { window.__th.state = 'title'; }); await page.evaluate(() => window.__tap(128, 100)); await sleep(100);
+      const v = await page.evaluate(() => window.__voice());
+      ok(v.ok && v.gesture && v.voice === 'Samantha', `E2: picks a local English voice, never a network one (${v.voice})`);
+      // play: every critic appearance is spoken exactly once, with its own line
+      const seen = await page.evaluate(async () => { const mem = { restart: true }, lines = []; let inApp = false, lastT = 999; const t0 = performance.now();
+        while (performance.now() - t0 < 30000) { await new Promise(r => setTimeout(r, 40)); const G = window.__th; const up = G.state === 'fox' || G.state === 'gameOver';
+          if (up && G.fox.t >= 17) { if (!inApp || G.fox.t < lastT) lines.push(G.fox.line); inApp = true; lastT = G.fox.t; } else if (!up) { inApp = false; lastT = 999; }
+          window.__bot('aim', mem); }
+        return lines; });
+      const sp = await spoken(page); const want2 = await page.evaluate((ls) => ls.map(l => window.__speechText(l)), seen);
+      const meta = await page.evaluate(() => window.__ss.meta);
+      ok(seen.length >= 6 && sp.length === seen.length && sp.every((t, i) => t === want2[i]), `E2: speak() once per critic line with that line's text (${sp.length} spoken / ${seen.length} lines, e.g. "${sp[0]}")`);
+      ok(meta && meta.pitch === 1.4 && meta.rate === 1.15 && meta.volume === 1, `E2: pitch 1.4, rate 1.15, full volume when unmuted (${JSON.stringify(meta)})`);
+      // skip cancels the line in progress
+      await foxAt(page, 14, 'I HOPE THIS HELPS!'); await sleep(250); const c0 = await page.evaluate(() => ({ c: window.__ss.cancels, talking: window.__voice().talking, open: window.__voice().open }));
+      await page.evaluate(() => { window.__th.fox.t = 40; }); await page.evaluate(() => window.__tap(128, 100)); await sleep(60);
+      const c1 = await page.evaluate(() => ({ c: window.__ss.cancels, talking: window.__voice().talking, t: window.__th.fox.t }));
+      ok(c0.talking && c1.c === c0.c + 1 && !c1.talking, `E2: tapping to skip the critic cancels its speech (cancels ${c0.c} -> ${c1.c})`);
+      ok(c0.open > 0, `E2: mouth flaps on speech word boundaries (${c0.open} open-mouth frames drawn)`);
+      // mute silences the voice; replays never speak
+      await page.keyboard.press('m'); const n0 = (await spoken(page)).length; await foxAt(page, 14, 'TRY REPHRASING YOUR REQUEST.'); await sleep(300); const n1 = (await spoken(page)).length;
+      await page.keyboard.press('m');
+      ok(n1 === n0, `E2: muted -> no speech (${n0} -> ${n1})`);
+      const n2 = (await spoken(page)).length; const rp = await page.evaluate(() => { const G = window.__th; if (!G.recInit) return 'none'; window.__replay({ init: G.recInit, rec: G.rec.slice(), frames: G.frame }, { headless: true, toFrame: 2000 }); return 'ok'; });
+      const n3 = (await spoken(page)).length; ok(rp === 'ok' && n3 === n2, `E2: replays are silent (${n2} -> ${n3})`);
+      // entrance: peek, 3 px dip, ~4 px overshoot, settle; exit eases in
+      const ys = await page.evaluate(() => Array.from({ length: 79 }, (_, t) => window.__criticY(t, false)));
+      const top = 200 - 44, minY = Math.min(...ys.slice(10, 24)), dip = ys[10] - ys[6];
+      ok(Math.abs(dip - 3) < 0.01 && top - minY > 3 && top - minY < 5 && ys.slice(24, 60).every(y => y === top) && (ys[77] - ys[76]) > (ys[62] - ys[61]) && ys[78] >= 199.9,
+        `E2: entrance dips ${dip.toFixed(1)} px, overshoots ${(top - minY).toFixed(1)} px, settles at ${top}; exit accelerates (${(ys[62] - ys[61]).toFixed(2)} -> ${(ys[77] - ys[76]).toFixed(2)} px/f)`);
+      // faces: talking frame + the game-over roast face
+      await foxAt(page, 18, 'CERTAINLY! HERE IS YOUR ANSWER.'); await page.evaluate(() => { window.__th.birds = []; }); await sleep(120);
+      await page.screenshot({ path: path.resolve(__dirname, 'shots', 'e2_talk.png') });
+      await page.evaluate(() => { const G = window.__th; G.state = 'gameOver'; G.t = 100; G.fox = { mode: 'miss', t: 40, x: 112, count: 0, line: '12 OF 30 SHOTS LANDED. I COUNTED.' }; }); await sleep(120);
+      await page.screenshot({ path: path.resolve(__dirname, 'shots', 'e2_roast.png') });
+      ok(errs.length === 0, 'E2: zero page errors' + (errs.length ? ' ' + errs[0] : ''));
+      await ctx.close();
+    }
+    {
+      // no speech API: chirp typewriter + typewriter-driven mouth flap
+      const { ctx, page, errs } = await newPage(browser); await page.addInitScript(() => { Object.defineProperty(window, 'speechSynthesis', { value: undefined, configurable: true }); });
+      await page.goto(url); await sleep(500); await page.evaluate(() => window.__tap(128, 100)); await sleep(100);
+      await foxAt(page, 14, 'THAT IS OUTSIDE MY TRAINING DATA.'); await sleep(500);
+      const v = await page.evaluate(() => window.__voice());
+      ok(!v.ok && v.said === 0 && v.open > 0 && errs.length === 0, `E2: without speechSynthesis the typewriter drives the mouth (${v.open} open frames), zero errors`);
+      await ctx.close();
+    }
+  }
+
   await browser.close();
   console.log(`\n${fails.length ? 'FAILURES: ' + fails.length + '\n - ' + fails.join('\n - ') : 'ALL PASS'}`);
   process.exit(fails.length ? 1 : 0);
