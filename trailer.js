@@ -149,7 +149,7 @@ async function record() {
     await G(a => { const g = window.__th; g.round = a.round; g.wave = 6; g.tally = a.tally; g.state = 'fox'; g.fox.t = 109; g.fox.mode = 'hit'; g.fox.line = 'HAPPY TO HELP!'; g.birds = []; g.linger = null; g.swarm = null; }, { round, tally });
     if (!await waitState('roundEnd', 4000)) mark('WARN no roundEnd');
     const upd = await G(() => window.__th.adv && window.__th.adv.update); if (upd) mark('model update: ' + upd.join(' | '));
-    await sleep(hold); await click(128, 100); // EPOCH COMPLETE panel, jingle, then a real tap -> nextRound()
+    await sleep(hold); for (let k = 0; k < 3 && await G(() => window.__th.state === 'roundEnd'); k++) { await click(128, 100); await sleep(160); } // a first tap shows every line, the next continues
     if (!await waitState('intro', 3000)) mark('WARN no intro');
   };
 
@@ -191,6 +191,11 @@ async function record() {
     await waitState('fly', 4000);
     if (await waitFor(() => window.__th.birds.some(b => b.frozen > 0), null, 4000)) { mark('429 strike: requests frozen'); await sleep(700); }
     await fireAll('real', {}, 6); await waitState('fox', 8000); mark('critic: ' + await line()); await sleep(1100);
+    // ---- 7b  the adversary's first trained fake passes for a real request for the player's own reaction time: serve it
+    if (await waitFor(() => window.__th.state === 'fly' && window.__th.birds.some(b => b.bad && b.adv && b.st === 'fly'), null, 9000)) {
+      mark('trained fake: ' + JSON.stringify(await G(() => { const h = window.__th.birds.find(b => b.bad && b.adv); return { tier: h.tier, hide: h.hide, at: h.at }; })));
+      await sleep(120); await fire('fake', { steps: 6, gain: 0.5 }); await sleep(600); await fireAll('real');
+      await waitState('fox', 8000); mark('critic: ' + await line()); await sleep(1500); } else mark('WARN no trained fake in epoch 2');
     // ---- 8  epoch 3, ROGUE AGENTS LOOSE: stop three, one gets through
     await clearEpoch(2, ['hit', 'hit', 'miss', 'hit', 'hit', 'hit']); mark('epoch 3: swarm intro');
     await G(() => { const g = window.__th; g.wave = 3; g.tally = ['hit', 'hit', 'hit']; g.swarmDone = false; }); // the swarm arrives once 3 requests are in
@@ -206,6 +211,7 @@ async function record() {
     for (let i = 0, t = Date.now(); i < 30 && Date.now() - t < 16000; i++) {
       const s = await G(() => { const g = window.__th, b = g.birds.find(b => b.boss && b.st === 'fly'), a = g.birds.filter(b => b.agent && b.st === 'fly'); return { boss: !!b, hp: b ? b.hp : 0, agents: a.length, low: a.length ? Math.max(...a.map(x => x.y)) : -1, shots: g.shots }; });
       if ((!s.boss && !s.agents) || s.shots <= 0) break;
+      if (s.boss && !s.agents && await G(() => { const b = window.__th.birds.find(b => b.boss && b.st === 'fly'); return b && (b.enter || ((b.fw || 0) % 80) >= 50); })) { await sleep(120); i--; continue; } // wait out the firewall
       await fire(s.agents && (s.low > 105 || !s.boss) ? 'agent' : 'boss', { steps: 5, gain: 0.65 }); await sleep(280);
     }
     await waitState('fox', 10000); mark('boss down. critic: ' + await line()); await sleep(1500);

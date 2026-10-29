@@ -2,11 +2,11 @@
 
 [![test](https://github.com/alexanderhmodell/token-hunt/actions/workflows/test.yml/badge.svg)](https://github.com/alexanderhmodell/token-hunt/actions/workflows/test.yml)
 
-An original 8-bit arcade game in one HTML file. You are a GPU cluster. Requests fly in with wings; you have three VRAM per flight to serve them before they time out. The load changes every epoch, and a chatbot rises from the rack row to comment on your aim.
+An original 8-bit arcade game in one HTML file. You are a GPU cluster. Requests fly in with wings; you have three VRAM per flight to serve them before they time out. Some are hallucinations, and they train on you: after every epoch an adversary model reads your habits (the colour you serve most readily, your time to fire, whether you read its tag) and builds the next epoch's fakes to exploit them, printing exactly what it learned. The load changes every epoch, and a chatbot rises from the rack row to comment on your aim.
 
 - **Play:** open `dist/index.html` in any browser, or host that one file anywhere (itch.io, Vercel, GitHub Pages).
-- **Controls:** click or tap to serve · `M` mute · `P`/`Esc` pause · `C` CRT · `R` watch replay (game over) · `1`/`2`/`3` difficulty · Space/Enter to advance. Wait on the title and it plays itself.
-- **No assets.** Every sprite is hand-pixeled in `sprites.py`, the font is a 3×5 bitmap, and all audio (shot, chiptune loop, packet rain, thunder) is synthesized live with the Web Audio API. Native 256×240, scaled pixel-perfect, CRT overlay.
+- **Controls:** click or tap to serve · arrows + `Z`/`X`/Enter to aim and fire · `M` mute · `P`/`Esc` pause · `C` CRT · `R` watch replay, `Esc` menu (game over) · `1`-`4` or the arrows on the title for difficulty (4 = Daily) · Space/Enter to advance. Wait on the title and it plays itself.
+- **No assets.** Every sprite is hand-pixeled in `sprites.py`, the fonts are 3×5 and 5×7 bitmaps, and all audio (shot, chiptune loop, packet rain, thunder) is synthesized live with the Web Audio API. Native 256×240, scaled pixel-perfect, CRT overlay.
 - **Two skins.** Token Hunt (default) and Fowl Weather, the original meadow version. Both share every mechanic.
 
 ## Build
@@ -20,6 +20,8 @@ node stress.js          # stress battery: invariants under click/pause/skin spam
 node stress2.js         # touch emulation, keyboard + state fuzz, blur/focus, keyboard paths, 150 s aimbot run
 node elite_test.js      # v3 systems: replay determinism, WebGL CRT tiers, speech, audio mix, interpolation, boss, flow, gates (ONLY=E0,E3 for a subset)
 node visual_test.js     # 9 canonical states rendered deterministically, pixel-diffed against goldens/ (0.5%); --update-goldens to rewrite
+node adversary_test.js  # the adversary (what it learns, prints and builds), the epoch card, the boss firewall, text widths, Daily independence
+node trailer.js         # ~60 s scripted trailer with game audio, recorded in the page -> dist/trailer.mp4 (git-ignored)
 ```
 
 Tests find Playwright and Chromium at this sandbox's paths by default (`pw.js`); set `PLAYWRIGHT_MODULE=playwright CHROME_PATH=` to use an npm install and its bundled browser. `.github/workflows/test.yml` runs the whole suite on every push in the Playwright container and fails if the committed `dist/` does not match the source.
@@ -31,7 +33,8 @@ Tests find Playwright and Chromium at this sandbox's paths by default (`pw.js`);
 - **WebGL CRT** (`C` / third HUD icon): curvature, scanlines, aperture grille, bloom, chromatic aberration, phosphor persistence; quality tier chosen by timing real frames, CSS fallback without WebGL.
 - **The bot speaks** through the browser's own `speechSynthesis` (local voices only), with mouth flaps and an eased entrance.
 - **Mixed audio:** buses, compressor, sidechain ducking on hits and speech, stereo by screen position, music layers that build with your combo and the weather.
-- **Every 4th epoch a DDoS boss**; Easy/Medium quietly hold you in a 65–75% success channel.
+- **The adversary** (`advTrain`): running statistics per epoch, no rng, so replays and the seed stay deterministic; it sits out the Daily so everyone gets the same requests.
+- **Every 4th epoch a DDoS boss** behind a firewall, stronger each time; Easy/Medium quietly hold you in a 65–75% success channel (capped below Hard).
 
 `build.py` refuses to emit a build containing any third-party game names or trademarks (see `FORBIDDEN`).
 
@@ -44,7 +47,9 @@ Tests find Playwright and Chromium at this sandbox's paths by default (`pw.js`);
 | `build.py` | sprite injection, IP guard, two outputs |
 | `test.js` | headless state-machine playtest and screenshots |
 | `PLAN.md` | the v2 implementation plan with checkpoints, gates, and a zero-touch mode |
-| `dist/SUBMISSION.md` | hackathon blurb, hosting steps, demo-video shot list |
+| `SUBMISSION.md` | submission blurb, one-liner, originality note |
+| `trailer.js` | records a ~60 s trailer with game audio, in the page → `dist/trailer.mp4` |
+| `PANEL2.md`–`PANEL4.md` | the judge panels and what each changed |
 | `legacy/` | Fowl Weather v1.0 source, kept for the duck skin; never shipped directly |
 
 ## Credits

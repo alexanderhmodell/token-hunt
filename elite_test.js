@@ -403,8 +403,8 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       reset(); for (let i = 0; i < 8; i++) window.__flowNote(false); o.low = +G.flow.speed.toFixed(4); o.hlow = +G.flow.halluc.toFixed(4);
       o.diffMedium = window.__flowOn();
       return o; });
-    ok(r.before8 === 1 && Math.abs(r.after8 - 1.06) < 1e-9 && Math.abs(r.h8 - 0.05) < 1e-9, `E6: after a full window of 8 served waves: speed x${r.after8}, hallucinations +${r.h8}`);
-    ok(r.cap === 1.3 && r.hcap === 0.15, `E6: nudges are capped (speed x${r.cap}, hallucinations +${r.hcap})`);
+    ok(r.before8 === 1 && Math.abs(r.after8 - 1.03) < 1e-9 && Math.abs(r.h8 - 0.02) < 1e-9, `E6: after a full window of 8 served waves: speed x${r.after8}, hallucinations +${r.h8}`);
+    ok(r.cap === 1.12 && r.hcap === 0.04, `E6: nudges are capped (speed x${r.cap}, hallucinations +${r.hcap})`);
     ok(r.inBand === 1, `E6: 6 of 8 (75%) is inside the 65-75% channel: no change (x${r.inBand})`);
     ok(r.low < 1 && r.hlow < 0, `E6: 8 failed waves ease off (speed x${r.low}, hallucinations ${r.hlow})`);
     // integration: a wave spawned with flow speed 1.2 flies exactly 1.2x faster than the same wave at 1.0 (same rng state)

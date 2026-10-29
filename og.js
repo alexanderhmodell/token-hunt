@@ -31,8 +31,8 @@ const { chromium, launchOpts } = require('./pw'); const path = require('path'); 
     const g7s = (s, X, Y, k, col) => { g7(s, X + k, Y + k, k, '#1a1420'); g7(s, X, Y, k, col); };
     const L = fx + fw + 42; // right column
     g7s('TOKEN', L, 74, 11, '#f7f4e9'); g7s('HUNT', L, 74 + 92, 11, '#3cd0ff');
-    g7s('THE HALLUCINATIONS', L, 300, 4, '#e6e2f0'); g7s('TRAIN ON YOU.', L, 340, 4, '#e6e2f0');
-    g7('SERVE THE REAL REQUESTS.', L, 412, 3, '#e2ccff'); g7('LET THE GREY FAKES GO.', L, 440, 3, '#e2ccff'); g7('THEY LEARN HOW YOU PLAY.', L, 468, 3, '#e2ccff');
+    g7s('THE FAKES', L, 292, 5, '#e6e2f0'); g7s('TRAIN ON YOU.', L, 340, 5, '#b99cff');
+    g7('SERVE THE REAL REQUESTS.', L, 412, 3, '#e2ccff'); g7('NEVER SERVE A GREY GHOST.', L, 440, 3, '#e2ccff'); g7('IT LEARNS HOW YOU PLAY.', L, 468, 3, '#e2ccff');
     g7('PLAYS IN ANY BROWSER', L, 548, 3, '#3cd0ff'); g7('ONE FILE. ZERO ASSETS.', L, 576, 3, '#8a84a3');
     return c.toDataURL('image/png').split(',')[1]; }, FONT7);
   fs.writeFileSync(path.resolve(__dirname, 'dist/og.png'), Buffer.from(png, 'base64'));

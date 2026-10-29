@@ -29,6 +29,8 @@ standalone = (
     "<meta name=\"twitter:card\" content=\"summary_large_image\">\n"
     f"<meta name=\"twitter:image\" content=\"{OG}\">\n"
     "<meta name=\"theme-color\" content=\"#0a0a12\">\n"
+    # an inline icon: without one the browser asks the server for /favicon.ico, the page's only network request
+    "<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='1' y='2' width='14' height='10' fill='%238a5cf5'/%3E%3Crect x='3' y='12' width='3' height='2' fill='%238a5cf5'/%3E%3Crect x='4' y='5' width='2' height='3' fill='%23fff'/%3E%3Crect x='10' y='5' width='2' height='3' fill='%23fff'/%3E%3Crect x='5' y='9' width='6' height='1' fill='%231a1420'/%3E%3C/svg%3E\">\n"
     + body.replace('<meta name="claude:viewport-fit-sides" content="cover">\n', "")
       .replace("</style>\n", "</style>\n</head>\n<body>\n", 1)
     + "\n</body>\n</html>\n"
