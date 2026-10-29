@@ -14,15 +14,20 @@ body = body.replace("/*__SPRITES__*/", S.to_js())
 # the artifact skeleton supplies this meta; standalone needs its own head
 artifact = body.replace('<meta name="claude:viewport-fit-sides" content="cover">\n', '<meta name="claude:viewport-fit-sides" content="cover">\n')
 
+OG = "https://raw.githubusercontent.com/alexanderhmodell/token-hunt/main/dist/og.png"
 standalone = (
     "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
     "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no\">\n"
-    "<meta name=\"description\" content=\"Token Hunt: an original 8-bit arcade game. You are a GPU cluster. Serve the requests, survive the load, ignore the chatbot.\">\n"
+    "<meta name=\"description\" content=\"Token Hunt: an original 8-bit arcade game. You are a GPU cluster. Serve the requests, let the fakes go. The hallucinations train on how you play.\">\n"
     "<meta property=\"og:title\" content=\"Token Hunt\">\n"
-    "<meta property=\"og:description\" content=\"You are a GPU cluster. Serve the requests, survive the load, ignore the chatbot. 8-bit, one file, zero assets.\">\n"
+    "<meta property=\"og:description\" content=\"You are a GPU cluster. Serve the requests, let the fakes go. The hallucinations train on how you play. 8-bit, one file, zero assets.\">\n"
     "<meta property=\"og:type\" content=\"website\">\n"
-    "<meta property=\"og:image\" content=\"og.png\">\n"
+    # link previews need an absolute image URL; the repo's raw file is stable whatever domain the page is served from
+    f"<meta property=\"og:image\" content=\"{OG}\">\n"
+    "<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n"
+    "<meta property=\"og:image:alt\" content=\"Token Hunt: requests fly over GPU racks, a grey ghost tagged FAKE, the chatbot critic heckling.\">\n"
     "<meta name=\"twitter:card\" content=\"summary_large_image\">\n"
+    f"<meta name=\"twitter:image\" content=\"{OG}\">\n"
     "<meta name=\"theme-color\" content=\"#0a0a12\">\n"
     + body.replace('<meta name="claude:viewport-fit-sides" content="cover">\n', "")
       .replace("</style>\n", "</style>\n</head>\n<body>\n", 1)
