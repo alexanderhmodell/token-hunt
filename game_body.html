@@ -201,7 +201,7 @@ const music={on:false,step:0,next:0,timer:null,semi:0,stepLen:0.15,root:36, tgt:
     if(this.play.boss){ tone(NOTE(this.root+12+[0,0,12,0,3,0,10,7][i%8]+s),0.1,'sawtooth',0.045,null,when,0,L.boss); if(i%4===2) noise(0.06,0.09,when,1200,0,L.boss,'bandpass'); }
     if(this.play.storm){ if(b) tone(NOTE(b+s-12),0.28,'sine',0.24,null,when,0,L.storm); noise(0.02,0.035,when,7000,i%2?0.5:-0.5,L.storm,'highpass'); }
     this.next+=this.stepLen; this.step++; } } };
-function toggleMute(){ muted=!muted; if(master) master.gain.value=muted?0:0.5; try{ localStorage.setItem('th.muted',muted?'1':'0'); }catch(e){} if(muted) hush(); }
+function toggleMute(){ muted=!muted; G.seenSound=true; if(master) master.gain.value=muted?0:0.5; try{ localStorage.setItem('th.muted',muted?'1':'0'); }catch(e){} if(muted) hush(); }
 
 // ------------------------------------------------------------------ the bot speaks (E2)
 // Each critic line goes to the browser's built-in speechSynthesis with a LOCAL voice only (network voices would break the
@@ -277,6 +277,7 @@ const THEMES={
       perfect:['99.9% UPTIME. I AM IMPRESSED.'],
       over:['HAVE YOU TRIED TURNING IT OFF AND ON?','CONSIDER UPGRADING YOUR PLAN.','YOUR SESSION HAS EXPIRED.'],
       cheatFirst:["ACCESS GRANTED. DON'T TELL THE JUDGES."],
+      cheatFinn:['WELCOME, FINN FAM. TRIPLE TOKENS, ON THE HOUSE.','FINN FAM IN THE BUILDING. 3X. NOTED.'],
       tutorial:['TAP A REQUEST TO SERVE IT.'],
       roastHalluc:['YOU SERVED {n} HALLUCINATIONS. CONFIDENTLY.','{n} HALLUCINATIONS SERVED. VERY ON BRAND.'],
       roastAccuracy:['{acc}% ACCURACY. HAVE YOU TRIED AIMING?','{hits} OF {shots} SHOTS LANDED. I COUNTED.'],
@@ -340,6 +341,7 @@ const THEMES={
       perfect:['NOT A SINGLE ONE GOT AWAY.'],
       over:['THE BIRDS SEND THEIR REGARDS.','BETTER LUCK NEXT SEASON.'],
       cheatFirst:["WELL, THAT'S CHEATING. CARRY ON."],
+      cheatFinn:['WELCOME, FINN FAM. THE BIRDS ARE NERVOUS.'],
       tutorial:['TAP A BIRD.'],
       roastHalluc:['YOU SHOT {n} DECOYS. THEY WERE WOODEN.','{n} DECOYS. THE DUCKS ARE LAUGHING.'],
       roastAccuracy:['{acc}% ACCURACY. THE SKY IS SAFE.','{hits} OF {shots} SHOTS. GENEROUS OF YOU.'],
@@ -429,7 +431,7 @@ function flowNote(win){ const F=G.flow||(G.flow={speed:1,halluc:0,hist:[]}); F.h
   if(r>0.75){ F.speed=Math.min(1.3,F.speed*1.06); F.halluc=Math.min(0.15,F.halluc+1/20); } else if(r<0.65){ F.speed=Math.max(0.75,F.speed/1.06); F.halluc=Math.max(-0.1,F.halluc-1/20); } }
 const flowSpeed=()=> flowOn()&&G.flow? G.flow.speed : 1, flowHalluc=()=> flowOn()&&G.flow? G.flow.halluc : 0;
 function seedRun(seed){ G.seed=seed>>>0; G.rng=makeRng(G.seed); G.rng2=makeRng(G.seed^0x5bd1e995); }
-function startGame(attract,skipBoot){ G.attract=!!attract; G.idle=0; G.taps=[]; G.recOn=false; if(!attract) G.wavesStarted=0; G.touchRun=document.body.classList.contains('touch'); seedRun(G.daily? dailySeed()*7919 : Math.random()*4294967296); resetRunState(); setWeather();
+function startGame(attract,skipBoot){ G.attract=!!attract; if(!attract) G.seenSound=true; G.idle=0; G.taps=[]; G.recOn=false; if(!attract) G.wavesStarted=0; G.touchRun=document.body.classList.contains('touch'); seedRun(G.daily? dailySeed()*7919 : Math.random()*4294967296); resetRunState(); setWeather();
   if(G.attract){ G.state='intro'; G.t=0; return; }
   if(skipBoot){ bootDone(); return; }
   G.state='boot'; G.t=0; G.boot={t:0,line:-1}; }
@@ -559,7 +561,7 @@ function updateBirds(){ let limit=Math.max(150,460-G.round*18); if(G.wx.shortFli
 // which line the critic says: the rare, specific thing first; the generic pool only when nothing specific happened
 function ctxLine(tags){ for(const t of tags){ if(T.lines[t]&&T.lines[t].length&&G.rng2()<0.8) return line(t); } return null; } // sim stream: replays pick the same lines
 function pickLine(n,goodCall,crossed3){ const f=G.wf||newFacts();
-  if(G.cheatPending){ G.cheatPending=false; return line('cheatFirst'); }
+  if(G.cheatPending){ const c=G.cheatPending; G.cheatPending=false; return (c==='finn'&&T.lines.cheatFinn)? line('cheatFinn') : line('cheatFirst'); }
   if(G.hallucServed) return line('hallucServed');
   if(goodCall) return line('hallucEscaped');
   if(!n&&G.nearMiss) return line('nearMiss');
@@ -604,7 +606,7 @@ function handleTap(x,y){
   if(G.attract){ toTitle(); startGame(); return; }
   G.idle=0;
   switch(G.state){
-    case 'title': if(y<70){ logoTap(x,y); return; } if(!titleTap(x,y)) startGame(); break;
+    case 'title': if(y<70){ logoTap(x,y); return; } if(y>=184){ startGame(true); return; } if(!titleTap(x,y)) startGame(); break;
     case 'boot': if(G.boot.t>10) bootDone(); break;
     case 'fly': shoot(x,y,G.mouse.touch); break;
     case 'intro': if(G.t>((T.rules&&T.rules[G.round])?70:20)) G.t=999; break; // an epoch that brings a new rule holds its card a little longer
@@ -621,9 +623,9 @@ codeInput.addEventListener('input',()=>{ const v=codeInput.value.toLowerCase().r
 codeInput.addEventListener('blur',()=>{ codeInput.style.pointerEvents='none'; });
 let ONEHAND=false; try{ ONEHAND=localStorage.getItem('th.onehand')==='1'; }catch(e){}
 function toggleOneHand(){ ONEHAND=!ONEHAND; try{ localStorage.setItem('th.onehand',ONEHAND?'1':'0'); }catch(e){} toast(ONEHAND?'ONE-HAND: TAP THE HUD TO FIRE':'ONE-HAND MODE OFF'); SFX.blip(); }
-const CODES={ thumb(){ toggleOneHand(); }, duck(){ applyTheme('duck'); toast('SKIN: '+T.skinName); }, token(){ applyTheme('gpu'); toast('SKIN: '+T.skinName); },
-  finn(){ toggleAssist(); }, vcc(){ toggleAssist(); } };
-function toggleAssist(){ G.assist=!G.assist; if(G.assist){ if(G.state!=='title') G.runAssisted=true; G.cheatPending=true; toast('ASSISTED MODE: 3X'); SFX.gold(); } else { toast('ASSISTED MODE OFF'); SFX.blip(); } }
+const CODES={ thumb(){ toggleOneHand(); }, duck(){ applyTheme(G.theme==='duck'?'gpu':'duck'); toast('SKIN: '+T.skinName); }, token(){ applyTheme('gpu'); toast('SKIN: '+T.skinName); },
+  finn(){ toggleAssist('finn'); }, vcc(){ toggleAssist('vcc'); } };
+function toggleAssist(code){ G.assist=!G.assist; if(G.assist){ if(G.state!=='title') G.runAssisted=true; G.cheatPending=code||true; toast(code==='finn'?'WELCOME, FINN FAM: 3X':'ASSISTED MODE: 3X'); SFX.gold(); } else { toast('ASSISTED MODE OFF'); SFX.blip(); } }
 function feedKeyRaw(ch){ G.keys=(G.keys+ch).slice(-8); for(const c in CODES) if(G.keys.endsWith(c)){ G.keys=''; CODES[c](); break; } }
 function feedKey(ch){ if(G.replay) return; recIn('k',ch); feedKeyRaw(ch); }
 // brag line (A11)
@@ -834,7 +836,7 @@ function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
     text(rc[0]+' '+accuracy()+'%',40,66,'#8a8494'); text(rc[1]+' X'+Math.max(1,R.bestCombo),136,66,'#8a8494');
     text(rc[2]+' '+R.hServed+' SERVED / '+R.hDodged+' DODGED',40,76,'#8a8494');
     text(rc[3]+' '+R.frontier,40,86,'#8a8494'); text(T.hud.round+' '+G.round,136,86,'#8a8494');
-    if(G.newRecord){ if((t>>2)&1) textC('NEW BEST!',100,'#ffe98a',1); } else textC(T.hud.best+' '+pad(G.assist?G.hiA:G.hi,6),100,'#8a8494',1);
+    if(G.newRecord){ if((t>>2)&1) textC('NEW BEST!',100,'#ffe98a',1); } else { const hi=(G.assist||G.runAssisted)?G.hiA:G.hi, gap=hi-net(); textC(T.hud.best+' '+pad(hi,6)+(gap>0?'   '+gap.toLocaleString()+' TO BEAT':''),100,'#8a8494',1); } // the one-more-run number
     if(t>70){ textC(T.restart,112,'#8a8494',1); text('< MENU',38,120,'#8a8494',1); if(G.lastRun&&!G.replay) text('WATCH REPLAY >',163,120,'#bdeeff',1); } }
   if(G.state==='boot'){ ctx.fillStyle='#07070c'; ctx.fillRect(0,0,W,SKY_H); const n=Math.min(T.boot.length,Math.floor(G.boot.t/22)+1);
     for(let i=0;i<n;i++){ const full=i<n-1||G.boot.t%22>14; const ln=T.boot[i]; text(full?ln:ln.slice(0,Math.floor((G.boot.t%22)/14*ln.length)),16,20+i*14,i===n-1?'#f7f4e9':'#8a8494',1); }
@@ -860,13 +862,18 @@ function drawTitle(){ const t=G.t;
   textC(T.tagline[1],94,'#f7f4e9',1,true);
   textC(T.howto[0],110,'#bdeeff',1,true); textC(T.howto[1],120,'#e2ccff',1,true);
   textC(T.howto[2],130,'#ff9a9a',1,true);
-  // difficulty row, on a dark band so the labels never fight the rack art behind them
-  ctx.fillStyle='rgba(10,10,18,0.78)'; ctx.fillRect(6,139,244,13);
+  // difficulty row, on a dark band so the labels never fight the rack art behind them; labelled, with the keys spelled out
+  ctx.fillStyle='rgba(10,10,18,0.78)'; ctx.fillRect(6,139,244,23);
+  { const sel=DIFFS[G.diff]; ctx.fillStyle=T.titleColor; const w=textW(sel.label,1)+10; const cx=20+DIFF_ORDER.indexOf(G.diff)*54+27; ctx.fillRect(Math.round(cx-w/2),140,w,11); }
   let x=20; for(const id of DIFF_ORDER){ const d=DIFFS[id], sel=id===G.diff; const w=textW(d.label,1); const cx=x+27-w/2;
-    if(sel){ textS('>',Math.round(cx-8),143,T.titleColor,1); textS('<',Math.round(cx+w+5),143,T.titleColor,1); }
-    textS(d.label,Math.round(cx),143,sel?T.titleColor:(id==='daily'?'#ffe98a':'#8a8494'),1); x+=54; }
-  if(G.daily){ ctx.fillStyle='rgba(10,10,18,0.78)'; ctx.fillRect(6,163,244,11); textC('DAILY #'+dailySeed()+'  SAME REQUESTS FOR EVERYONE TODAY',166,'#ffe98a',1); }
-  if((t>>4)&1) textC(T.start,G.daily?177:158,'#f7f4e9',2,true); }
+    textS(d.label,Math.round(cx),143,sel?'#0a0a12':(id==='daily'?'#ffe98a':'#8a8494'),1); x+=54; }
+
+  textC(G.daily? 'DAILY #'+dailySeed()+'  SAME REQUESTS FOR EVERYONE TODAY' : 'DIFFICULTY: TAP ONE, OR ARROWS, OR 1-4',155,G.daily?'#ffe98a':'#8a8494',1,true);
+  if((t>>4)&1) textC(T.start,168,'#f7f4e9',2,true);
+  // sound: a pulsing ring around the speaker icon until the first tap, so nobody plays it muted by accident
+  if(!G.seenSound){ const ph=(t>>3)&1; ctx.fillStyle=ph?'#ffe98a':T.titleColor; ctx.fillRect(241,0,15,1); ctx.fillRect(241,12,15,1); ctx.fillRect(241,0,1,13); ctx.fillRect(255,0,1,13);
+    textS(muted?'SOUND OFF':'SOUND ON',muted?218:222,15,ph?'#ffe98a':'#f7f4e9',1); } }
+function drawTitleFront(){ const t=G.t; textC('WATCH DEMO - W',191,((t>>5)&1)?'#bdeeff':'#8a8494',1,true); } // drawn after the road strip
 function titleTap(x,y){ const ry=y+(G.mouse.touch?TOUCH_LIFT:0); // undo the finger lift: the row is a target you look at, not a bird you lead
   if(ry>=136&&ry<=154){ const i=clamp(Math.floor((x-20)/54),0,3); setDiff(DIFF_ORDER[i]); SFX.blip(); return true; } return false; }
 
@@ -971,7 +978,7 @@ function draw(){ ctx.save(); ctx.imageSmoothingEnabled=false; { const [ox,oy]=sh
   if(G.state==='title') drawTitle();
   else if(G.paused){ ctx.fillStyle='rgba(10,10,18,0.7)'; ctx.fillRect(0,0,W,SKY_H); } // paused: the sky is hidden, so pausing cannot be used to aim
   else { const foxUp=G.state==='fox'||G.state==='gameOver'; for(const b of G.birds) if(b.st!=='gone'&&!(foxUp&&b.st==='landed')) drawBird(b); if(foxUp) drawFox(0); else if(G.linger) withLinger(()=>drawFox(0)); }
-  front(); drawRain(); if(!G.paused&&(G.state==='fox'||G.state==='gameOver')) drawFox(1); else if(!G.paused&&G.linger) withLinger(()=>drawFox(1)); drawFx(); ctx.restore();
+  front(); if(G.state==='title') drawTitleFront(); drawRain(); if(!G.paused&&(G.state==='fox'||G.state==='gameOver')) drawFox(1); else if(!G.paused&&G.linger) withLinger(()=>drawFox(1)); drawFx(); ctx.restore();
   if(G.flash>0){ ctx.fillStyle='rgba('+(G.flashCol||'255,255,255')+','+(G.flashA||0.18)+')'; ctx.fillRect(0,0,W,SKY_H); }
   drawBanner(); drawHUD(); drawCrosshair(); drawIcons(); drawReplayBadge(); drawCaptions();
   if(ONEHAND&&G.state==='fly'&&!G.paused){ text('ONE-HAND',150,221,'#bdeeff',1); if((G.t>>5)&1) textC('TAP THE HUD TO FIRE',191,'#5a5468',1); } }
@@ -1001,11 +1008,13 @@ window.addEventListener('keydown',e=>{ const k=e.key; if(e.repeat) return; if(do
   if(!cardBox.hidden){ if(k==='Escape'||k==='Enter'||k===' '){ hideCard(); e.preventDefault(); } return; } const prevKeys=G.keys; if(k.length===1&&/[a-z]/i.test(k)) feedKey(k.toLowerCase());
   if((k==='c'||k==='C')&&!/vc?$/.test(prevKeys)) toggleCRT(); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
   if(G.state==='title'&&(k==='1'||k==='2'||k==='3'||k==='4')){ setDiff(DIFF_ORDER[+k-1]); SFX.blip(); return; }
-  if(G.state==='title'&&(k==='ArrowLeft'||k==='ArrowRight')){ const i=DIFF_ORDER.indexOf(G.diff); setDiff(DIFF_ORDER[clamp(i+(k==='ArrowRight'?1:-1),0,3)]); SFX.blip(); e.preventDefault(); return; }
+  if(G.state==='title'&&(k==='ArrowLeft'||k==='ArrowRight'||k==='ArrowUp'||k==='ArrowDown')){ const i=DIFF_ORDER.indexOf(G.diff); setDiff(DIFF_ORDER[clamp(i+((k==='ArrowRight'||k==='ArrowUp')?1:-1),0,3)]); SFX.blip(); e.preventDefault(); return; }
+  if(G.state==='title'&&(k==='w'||k==='W')){ startGame(true); return; }
   if(k==='m'||k==='M') toggleMute();
   else if(k==='p'||k==='P'||k==='Escape'){ setPaused(!G.paused); e.preventDefault(); }
   else if(G.replay){ if(k===' '||k==='Enter'){ skipReplay(); e.preventDefault(); } }
   else if((k==='r'||k==='R')&&G.state==='gameOver'&&G.t>70&&G.lastRun){ hideBrag(); watchReplay(); }
+  else if(k===' '&&G.state==='fly'&&!G.paused){ setPaused(true); e.preventDefault(); } // space pauses mid-flight; space or enter resumes
   else if(k===' '||k==='Enter'){ if(G.paused) setPaused(false); else if(G.state!=='fly'){ audioInit(); recIn('m',128,100); handleTap(128,100); } e.preventDefault(); } });
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) setPaused(true); else if(G.attract) setPaused(false); });
 window.addEventListener('focus',()=>{ if(G.attract) setPaused(false); });
