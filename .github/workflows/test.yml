@@ -1,0 +1,36 @@
+name: test
+# Full headless suite on every push. Vercel deploys main only, so main stays green by merging only green branches.
+on:
+  push:
+  pull_request:
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
+    env:
+      PLAYWRIGHT_MODULE: playwright
+      CHROME_PATH: ''
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tools
+        run: |
+          apt-get update -qq && apt-get install -y -qq python3 git >/dev/null
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          npm i --no-save --no-audit --no-fund playwright@1.63.0
+          mkdir -p shots
+      - name: Build (IP guard + the committed dist must match the source)
+        run: |
+          python3 build.py
+          git diff --exit-code -- dist/index.html dist/artifact.html
+      - run: node test.js
+      - run: node verify_v25.js
+      - run: node stress.js
+      - run: node stress2.js
+      - run: node elite_test.js
+      - name: Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shots
+          path: shots/

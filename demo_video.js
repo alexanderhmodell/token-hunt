@@ -1,10 +1,10 @@
 // Scripted ~75 s demo recording (silent — headless has no audio device). Output: dist/demo.mp4 via ffmpeg.
-const { chromium } = require('/opt/npm-tools/node_modules/playwright');
+const { chromium, launchOpts } = require('./pw');
 const path = require('path'); const fs = require('fs'); const { execSync } = require('child_process');
 const outDir = path.resolve(__dirname, 'video_tmp'); fs.rmSync(outDir, { recursive: true, force: true }); fs.mkdirSync(outDir);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' });
+  const browser = await chromium.launch(launchOpts);
   const ctx = await browser.newContext({ viewport: { width: 1024, height: 1000 }, recordVideo: { dir: outDir, size: { width: 1024, height: 1000 } } });
   const page = await ctx.newPage();
   await page.goto('file://' + path.resolve(__dirname, 'dist/index.html')); await sleep(400);

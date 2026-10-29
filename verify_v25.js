@@ -1,6 +1,6 @@
 // Confirms each of the ten pass-2 fixes is present in the SHIPPED file (dist/index.html) and, where behavior is
 // observable headlessly, that the behavior holds. Static checks grep the built source; dynamic checks drive the game.
-const { chromium } = require('/opt/npm-tools/node_modules/playwright');
+const { chromium, launchOpts } = require('./pw');
 const fs = require('fs'); const path = require('path');
 const html = fs.readFileSync(path.resolve(__dirname, 'dist/index.html'), 'utf8');
 const out = []; const rep = (n, what, pass, how) => out.push({ n, what, pass, how });
@@ -20,7 +20,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   rep(10, "Glitch tag '@' removed", !/glitchTags:\[[^\]]*@/.test(html), "no '@' in any glitchTags array");
 
   // ---- dynamic evidence
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' });
+  const browser = await chromium.launch(launchOpts);
   const page = await browser.newPage({ viewport: { width: 900, height: 900 } }); const errs = []; page.on('pageerror', e => errs.push(e.message));
   await page.goto('file://' + path.resolve(__dirname, 'dist/index.html')); await sleep(500);
   const cv = await page.$('#g'); const box = await cv.boundingBox(); const tp = (x, y) => [box.x + x * box.width / 256, box.y + y * box.height / 240];

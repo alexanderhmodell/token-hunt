@@ -1,8 +1,8 @@
 // Headless playtest: drives the game through its states and screenshots key frames.
-const { chromium } = require('/opt/npm-tools/node_modules/playwright');
+const { chromium, launchOpts } = require('./pw');
 const path = require('path');
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' });
+  const browser = await chromium.launch(launchOpts);
   const page = await browser.newPage({ viewport: { width: 1100, height: 1000 } });
   const errors = [];
   page.on('pageerror', e => errors.push('PAGEERROR ' + e.message));
@@ -149,4 +149,5 @@ const path = require('path');
 
   console.log('errors:', errors.length ? errors : 'none');
   await browser.close();
+  process.exit(errors.length ? 1 : 0); // CI: page errors fail the run
 })().catch(e => { console.error(e); process.exit(1); });

@@ -1,6 +1,6 @@
 // Elite pass (v3) tests. ONLY=E0,E1 runs a subset. Exit code 1 on any failure.
 //   E0 determinism + replay   E1 WebGL CRT   E2 speech + mouth   E3 mixed audio   E4 interpolation + trauma
-const { chromium } = require('/opt/npm-tools/node_modules/playwright');
+const { chromium, launchOpts } = require('./pw');
 const path = require('path');
 const url = 'file://' + path.resolve(__dirname, 'dist/index.html');
 const fails = []; const ok = (c, m) => { if (!c) fails.push(m); console.log((c ? 'PASS ' : 'FAIL ') + m); };
@@ -36,7 +36,7 @@ const newPage = async (browser, opts) => { const ctx = await browser.newContext(
 const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]) => { const mem = { restart: !until }; const t0 = performance.now(); while (performance.now() - t0 < ms) { await new Promise(r => setTimeout(r, 40)); if (until && eval(until)) return true; window.__bot(mode, mem); } return false; }, [mode, ms, until]);
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' });
+  const browser = await chromium.launch(launchOpts);
 
   // ---------------------------------------------------------------- E0 determinism + replay
   if (want('E0')) {
@@ -422,7 +422,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
   if (want('GATES')) {
     const size = require('fs').statSync(path.resolve(__dirname, 'dist/index.html')).size;
     ok(size <= 160 * 1024, `GATE 7: dist/index.html is ${(size / 1024).toFixed(1)} KB (<= 160 KB)`);
-    const { devices } = require('/opt/npm-tools/node_modules/playwright');
+    const { devices } = require('./pw');
     const ctx = await browser.newContext({ ...devices['iPhone 13'] }); const page = await ctx.newPage(); const errs = []; hookErrors(page, errs);
     await page.goto(url); await sleep(600);
     const box = await (await page.$('#g')).boundingBox(); const tp = (x, y) => [box.x + x * box.width / 256, box.y + y * box.height / 240];

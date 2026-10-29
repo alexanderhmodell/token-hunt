@@ -1,11 +1,11 @@
 // Stress battery. Runs many games fast by driving the state machine with real input events,
 // then checks invariants. Exit code 1 on any failure.
-const { chromium } = require('/opt/npm-tools/node_modules/playwright');
+const { chromium, launchOpts } = require('./pw');
 const path = require('path');
 const fails = [];
 const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? 'PASS ' : 'FAIL ') + msg); };
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' });
+  const browser = await chromium.launch(launchOpts);
   const ctx = await browser.newContext({ viewport: { width: 1000, height: 900 } });
   const page = await ctx.newPage();
   const errors = [];

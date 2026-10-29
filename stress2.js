@@ -1,5 +1,5 @@
 // Stress pass 2: touch emulation, keyboard fuzz, state-mutation fuzz, blur/focus cycling, long aimbot run.
-const { chromium, devices } = require('/opt/npm-tools/node_modules/playwright');
+const { chromium, devices, launchOpts } = require('./pw');
 const path = require('path');
 const fails = []; const ok = (c, m) => { if (!c) fails.push(m); console.log((c ? 'PASS ' : 'FAIL ') + m); };
 const url = 'file://' + path.resolve(__dirname, 'dist/index.html');
@@ -7,7 +7,7 @@ const hookErrors = (page, arr) => { page.on('pageerror', e => arr.push('PAGEERRO
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   const ONLY = process.env.ONLY || '';
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' });
+  const browser = await chromium.launch(launchOpts);
 
   // ---------- A. Touch emulation (iPhone-ish): real touch events through Chromium
   {
