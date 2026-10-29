@@ -47,6 +47,17 @@ Panel #1 (v2.3, earlier in the day) averaged 6.0; this panel averaged 6.1 on v2.
 - New critic characters or more weather: paint on the same loop. The panel's consistent ask was rules, which v2.9 adds from epoch 4.
 - The share card has no URL yet: it needs the Vercel URL from Alex.
 
+## Re-score on v2.9 (four new cold judges)
+
+| Judge | v2.8 | v2.9 | What they still want |
+|---|---|---|---|
+| Phone casual | 7 | 6 | bubbles readable (fixed in v2.9b), swarm too fast for a thumb (slowed on touch), playfield in the top half (now centered) |
+| Indie designer | 6.5 | 6 | bubble dwell (fixed), hallucination tell too obvious for the mimic rule (fixed), cliff at epoch 4 and breach snowball (softened) |
+| Organizer | 6 | 6.5 | 429 legibility (banner + red blink added), skip-taps burning VRAM (grace added), re-record the demo with audio (Alex) |
+| Score-chaser | 5 | 6 | assist code laundering the BEST (fixed), mode on card/brag (added), combo bank (capped at 5 after a miss), hold-fire incentive (EFFICIENT bonus) |
+
+Different cold agents score with ±0.5 noise, so the honest read is: 6.1 → 6.1 on the first re-score, with the remaining complaints now concrete and mostly fixed in v2.9b. The structural ceiling the panel keeps naming — a light-gun core and no runtime AI — is not something a night of fixes changes.
+
 ## Verification on v2.9
 
 `test.js`, `verify_v25.js`, `stress.js`, `stress2.js`: all pass, zero page errors. `v29_probe.js` (19 checks: touch mode row ×4, phone button placement, pause-aim lockout ×2, debounce, combo halving, perfect bonus per mode, per-mode BEST, swarm shots per mode, rule unlocks, bubble dwell, Daily determinism): 19/19.
