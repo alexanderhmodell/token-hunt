@@ -23,18 +23,14 @@ jobs:
         run: |
           python3 build.py
           git diff --exit-code -- dist/index.html dist/artifact.html
-      - run: node test.js
-      - run: node verify_v25.js
-      - run: node stress.js
-      - run: node stress2.js
-      - name: Run node elite_test.js
-        shell: bash
-        run: |
-          set -o pipefail
-          node elite_test.js 2>&1 | tee elite.txt || { grep -E '^FAIL' elite.txt | sed 's/^/::error::/'; exit 1; }
-      - run: node visual_test.js
-      - run: node adversary_test.js
-      - run: node ui_test.js
+      - run: bash ci_run.sh test.js
+      - run: bash ci_run.sh verify_v25.js
+      - run: bash ci_run.sh stress.js
+      - run: bash ci_run.sh stress2.js
+      - run: bash ci_run.sh elite_test.js
+      - run: bash ci_run.sh visual_test.js
+      - run: bash ci_run.sh adversary_test.js
+      - run: bash ci_run.sh ui_test.js
       - name: Screenshots
         if: always()
         uses: actions/upload-artifact@v4

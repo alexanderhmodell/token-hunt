@@ -5,3 +5,4 @@ video_tmp/
 .claude/
 __pycache__/
 dist/trailer.mp4
+ci_out.txt

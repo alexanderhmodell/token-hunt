@@ -31,7 +31,8 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
         if (real.length) { const t = real.find(x => x.tier === 'hi') || real[0]; G.lastShotF = -99; window.__click(t.x + 12, t.y + 10); } } }
     await __wait(5); return { state: G.state, update: G.adv.update, policy: G.adv.policy, ver: G.adv.ver }; });
   rep('epoch 1 trains model v2 and prints what it will do', r1.state === 'roundEnd' && r1.ver === 2 && r1.update && r1.update.length >= 2 && r1.update.every(l => l.includes('->')), JSON.stringify(r1.update));
-  rep('policy matches the card: colour 80/20, serve time 15..90 frames, glitch 60%', r1.policy && (r1.policy.tierHi === 0.8 || r1.policy.tierHi === 0.2) && r1.policy.hide >= 15 && r1.policy.hide <= 90 && r1.policy.duty === 0.6, JSON.stringify(r1.policy));
+  { const cl = (r1.update || []).find(l => /PURPLE|GREEN|NO COLOR HABIT/.test(l)) || ''; const colourOk = r1.policy && ((r1.policy.tierHi === 0.8 && /80% PURPLE/.test(cl)) || (r1.policy.tierHi === 0.2 && /80% GREEN/.test(cl)) || (r1.policy.tierHi === 0.5 && /NO COLOR HABIT -> FAKES 50\/50/.test(cl)));
+    rep('policy matches the card: colour 80/20 (or no habit, 50/50), serve time 18..90 frames, glitch 60%', colourOk && r1.policy.hide >= 18 && r1.policy.hide <= 90 && r1.policy.duty === 0.6, JSON.stringify({ policy: r1.policy, line: cl })); }
   // the card: a first tap shows every line, the second continues
   await p.evaluate(async () => { const G = window.__th; G.t = 45; await __wait(2); window.__click(128, 100); await __wait(2); });
   await p.screenshot({ path: SHOTS + '/adv_card_all.png' });
@@ -39,7 +40,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
   rep('epoch card: first tap shows all, second continues', r2.shown === true && r2.state === 'roundEnd' && r2.after === 'intro', JSON.stringify(r2));
   // epoch 2: a trained fake must spawn by the 2nd wave, in the printed colour, passing for real until its hide time
   const r3 = await p.evaluate(async () => { const G = window.__th; G.t = 999; await __wait(3); let f = 0, built = null, look = [];
-    while (f++ < 60 * 40 && !built) { await __wait(1); if (G.state === 'fox') G.fox.t = 999; if (G.state === 'intro') G.t = 999;
+    while (f++ < 60 * 40 && !built) { await __wait(1); if (G.state === 'fox') G.fox.t = 999; if (G.state === 'intro') G.t = 999; G.tally = []; G.wave = Math.min(G.wave, 2); G.quotaLost = false; // keep the epoch open: no shooting here, so it would end in a game over
       const h = G.birds.find(x => x.bad && x.adv && x.st === 'fly'); if (h) built = { tier: h.tier, hide: h.hide, duty: h.duty, ep: G.epochWaves, at: h.at }; }
     // watch its look for 80 frames: freeze the request in place so it stays on screen
     const h = G.birds.find(x => x.bad && x.adv); if (h) { for (let i = 0; i < 80; i++) { h.vx = 0; h.vy = 0; h.dirT = 1e9; G.flightT = 0; const at = h.at; await __wait(1); look.push([at, window.__render().birds.length]); } }
@@ -47,7 +48,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
   rep('epoch 2 builds a trained fake by its 2nd wave', r3.built && r3.built.ep <= 3 && r3.epochBuilt >= 1, JSON.stringify(r3.built) + ' epochBuilt ' + r3.epochBuilt);
   rep('the trained fake carries the learned hide/duty', r3.built && r3.built.hide === r3.policy.hide && r3.built.duty === r3.policy.duty, JSON.stringify({ b: r3.built, p: r3.policy }));
   // colour: sample many trained fakes under the learned policy; about 4 in 5 wear the printed colour
-  const rc = await p.evaluate(async () => { const G = window.__th; const want = G.adv.policy.tierHi > 0.5 ? 'hi' : 'lo'; let n = 0, same = 0; G.forceHalluc = true;
+  const rc = await p.evaluate(async () => { const G = window.__th; const t0 = G.adv.policy.tierHi; if (t0 === 0.5) G.adv.policy.tierHi = 0.8; /* a run with no colour habit samples 50/50: test the 80/20 path */ const want = G.adv.policy.tierHi > 0.5 ? 'hi' : 'lo'; let n = 0, same = 0; G.forceHalluc = true;
     for (let i = 0; i < 60; i++) { G.state = 'gap'; G.t = 99; G.round = 3; G.wave = 0; G.epochWaves = 2; G.tally = []; G.swarmDone = true; G.bossDone = true; G.birds = []; await __wait(2);
       const h = G.birds.find(x => x.bad && x.adv); if (h) { n++; if (h.tier === want) same++; } }
     G.forceHalluc = false; return { n, same, want }; });
