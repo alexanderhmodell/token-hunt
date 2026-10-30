@@ -268,7 +268,7 @@ function hush(){ if(!VOICE.utt&&!VOICE.talking) return; VOICE.utt=null; VOICE.ta
 const THEMES={
   gpu:{ id:'gpu', titleA:'TOKEN', titleB:'HUNT', titleColor:'#3cd0ff',
     tagline:['YOU ARE A GPU CLUSTER.','THE FAKES TRAIN ON YOU.'],
-    howto:['CLICK OR TAP TO SERVE','PURPLE PAYS 3X','NEVER SERVE A GREY GHOST'],
+    howto:['CLICK OR TAP TO SERVE','PURPLE PAYS 3X','FAKES NEVER FLAP'],
     start:'TAP TO BOOT', restart:'TAP TO REBOOT',
     spr:{ fly:['lo0','lo1','lo2'], flyHi:['hi0','hi1','hi2'], fall:'loFall', fallHi:'hiFall', fallBad:'badFall', amb:['req0','req1','req2'], critic:'bot', criticHappy:'botHappy', criticFlat:'botFlat', criticRoast:'botSmug' },
     ammoIcon:'vram',
@@ -335,7 +335,7 @@ const THEMES={
     },
     rules:{3:'NEW: ROGUE AGENTS. STOP ALL 4.', 6:'NEW: PROD DB FLOATS BY. DO NOT TOUCH.', 4:'NEW RULE: FAKES CAN LOOK PURPLE', 5:'NEW RULE: BURSTS OF THREE. +1 VRAM.', 7:'LOAD KEEPS CLIMBING FROM HERE.'}, rulesAdv:{2:'NEW: THE FAKES NOW TRAIN ON YOU', 4:null},
     adv:{ver:'MODEL V', head:'TRAINED ON YOU', gotYou:'FOOLED YOU', youFired:'YOU FIRED AT', lookedReal:'IT LOOKED REAL FOR', hi:'PURPLE', lo:'GREEN', fake:'FAKES', served:'SERVED', hide:'TAG ONLY FLICKERS NOW', keeps:'IT KEEPS TRYING', fooled:'MODEL FOOLED YOU', noHabit:'NO COLOR HABIT', rewind:'<< REWIND', learned:'IT LEARNED THIS FROM YOU', skip:'TAP TO SKIP', dodged:'DODGED'},
-    tips:{frontier:'PURPLE = FRONTIER. PAYS 3X.', fake:'IT GLITCHES = FAKE. LET IT GO.', frozen:'FROZEN = RATE LIMITED. WAIT.', fast:'SERVE EARLY = FAST BONUS X2', adv:'TRAINED FAKES LOOK REAL AT FIRST', firewall:'ICY BOX = ROTATING IPS. WAIT.', gotcha:'WAIT A BEAT LONGER. THE FAKES GLITCH.', prod:'PROD DB = DO NOT TOUCH. EVER.'},
+    tips:{frontier:'PURPLE = FRONTIER. PAYS 3X.', fake:"FAKES DON'T FLAP. LET THEM GO.", frozen:'FROZEN = RATE LIMITED. WAIT.', fast:'SERVE EARLY = FAST BONUS X2', adv:'FAKES LOOK REAL BUT NEVER FLAP.', firewall:'ICY BOX = ROTATING IPS. WAIT.', gotcha:"WATCH THE WINGS. FAKES DON'T FLAP.", prod:'PROD DB = DO NOT TOUCH. EVER.'},
     burstTxt:'AUTOSCALE +1 VRAM', lostTxt:' VRAM THIS WAVE',
     scenery:'datacenter', showCatch:true,
     boot:['TOKEN HUNT BIOS V2.3','6 GPUS DETECTED','VRAM ........... OK','LOADING WEIGHTS','CHATBOT ....... ONLINE'],
@@ -344,7 +344,7 @@ const THEMES={
   },
   duck:{ id:'duck', titleA:'FOWL', titleB:'WEATHER', titleColor:'#f0b22e',
     tagline:['SHOOT THE BIRDS.','THE DECOYS STUDY YOU.'],
-    howto:['CLICK OR TAP TO SHOOT','GOLD PAYS 3X','NEVER SHOOT A GREY DECOY'],
+    howto:['CLICK OR TAP TO SHOOT','GOLD PAYS 3X','DECOYS NEVER FLAP'],
     start:'TAP TO START', restart:'TAP TO PLAY AGAIN',
     spr:{ fly:['bird0','bird1','bird2'], flyHi:['gold0','gold1','gold2'], fall:'birdFall', fallHi:'goldFall', fallBad:'decoyFall', amb:['bird0','bird1','bird2'], critic:'fox', criticHappy:'foxLaugh', criticFlat:'fox', criticRoast:'foxLaugh' },
     ammoIcon:'shell',
@@ -408,7 +408,7 @@ const THEMES={
     },
     rules:{3:'NEW: HAWKS. DROP ALL 4.', 6:'NEW: A FEEDER FLOATS BY. DO NOT TOUCH.', 4:'NEW RULE: DECOYS CAN LOOK GOLDEN', 5:'NEW RULE: FLOCKS OF THREE. +1 SHELL.', 7:'THE WEATHER TURNS FROM HERE.'}, rulesAdv:{2:'NEW: THE DECOYS NOW STUDY YOU', 4:null},
     adv:{ver:'CARVER V', head:'STUDIED YOU', gotYou:'FOOLED YOU', youFired:'YOU FIRED AT', lookedReal:'IT LOOKED REAL FOR', hi:'GOLD', lo:'BROWN', fake:'DECOYS', served:'SHOT', hide:'TAG ONLY FLICKERS NOW', keeps:'IT KEEPS CARVING', fooled:'DECOYS FOOLED YOU', noHabit:'NO COLOR HABIT', rewind:'<< REWIND', learned:'IT STUDIED THIS ABOUT YOU', skip:'TAP TO SKIP', dodged:'DODGED'},
-    tips:{frontier:'GOLD BIRD = 3X. IT FLIES FAST.', fake:'IT GLITCHES = DECOY. LET IT GO.', frozen:'STUNNED BIRDS: WAIT.', fast:'SHOOT EARLY = FAST BONUS X2', adv:'CARVED DECOYS LOOK REAL AT FIRST', firewall:'ICE BOX = STORMWALL. WAIT.', gotcha:'WAIT A BEAT LONGER. DECOYS CRACK.', prod:'FEEDER = DO NOT TOUCH. EVER.'},
+    tips:{frontier:'GOLD BIRD = 3X. IT FLIES FAST.', fake:"DECOYS DON'T FLAP. LET THEM GO.", frozen:'STUNNED BIRDS: WAIT.', fast:'SHOOT EARLY = FAST BONUS X2', adv:'DECOYS LOOK REAL BUT NEVER FLAP.', firewall:'ICE BOX = STORMWALL. WAIT.', gotcha:"WATCH THE WINGS. DECOYS DON'T FLAP.", prod:'FEEDER = DO NOT TOUCH. EVER.'},
     burstTxt:'+1 SHELL', lostTxt:' SHELL THIS FLIGHT',
     scenery:'meadow', showCatch:false,
     boot:['FOWL WEATHER','FIELD GUIDE V2.3','SHELLS ........ OK','WIND .......... CHECK','FOX ........... AWAKE'],
@@ -949,7 +949,7 @@ function drawBird(b){ if(b.hold>0) return; const left=b.vx<0; let key, img; cons
     if(T.swarm.tag&&!(G.swarm&&G.swarm.boss)&&((b.at>>3)&3)!==3){ const tg=T.swarm.tag; textS(tg,clamp(Math.round(bx+6-textW(tg,1)/2),2,W-2-textW(tg,1)),Math.round(by-10),'#ff8a8a',1); } return; }
   if(b.st==='fall'||b.st==='landed'){ key=b.bad?T.spr.fallBad: hi?T.spr.fallHi:T.spr.fall; img=S[key];
     if(b.st==='fall') drawScaled(img, bx+4, by, Math.cos((b.at+ALPHA)*0.32), 1); else ctx.drawImage(img, Math.round(bx+4), Math.round(by)); return; } // coin-flip spin while falling
-  key=(hi?T.spr.flyHi:T.spr.fly)[b.st==='hit'?1:BIRD_FRAMES[b.f]];
+  key=(hi?T.spr.flyHi:T.spr.fly)[b.st==='hit'||b.bad?1:BIRD_FRAMES[b.f]]; // the tell: a fake never flaps, it glides with its wings level
   if(b.st==='hit'&&b.hitT<3) key+='W'; else if(b.frozen>0&&((G.t>>2)&1)) key+='I'; else if(b.bad){ const ph=fakePhase(b); if(ph===1||ph===3) key+='G'; else if(ph===2) key+='X'; } // ghost static, pale ghost or clean (fakePhase); a 429-frozen request blinks icy blue
   img=S[key+(left?'L':'')];
   if(b.st==='hit'){ const pop=1+0.3*(1-easeOutCubic(Math.min(1,b.hitT/10))); drawScaled(img,bx,by,pop,pop); } // 3-frame white flash + 1.3x pop
@@ -1016,7 +1016,7 @@ function drawRewind(g){ const t=g.t, n=g.n, tr=g.tr; // the fooled moment, rewou
   ctx.fillStyle='rgba(10,10,18,0.5)'; ctx.fillRect(0,0,W,SKY_H);
   ctx.fillStyle=GHOST; for(let i=0;i<n;i+=3) ctx.fillRect(Math.round(tr[i*5]+12),Math.round(tr[i*5+1]+10),1,1); // the path it flew
   const ps=t-GOT_PRE-GOT_RW, i= t<GOT_PRE? n-1 : ps<0? Math.round((n-1)*(1-(t-GOT_PRE)/GOT_RW)) : Math.min(n-1,ps), o=i*5, x=Math.round(tr[o]), y=Math.round(tr[o+1]), lf=tr[o+3]?'L':'';
-  const base=(g.tier==='hi'?T.spr.flyHi:T.spr.fly)[BIRD_FRAMES[tr[o+2]]];
+  const base=(g.tier==='hi'?T.spr.flyHi:T.spr.fly)[1]; // as it flew: wings level, never flapping
   if(ps<0){ const j= t<GOT_PRE? 0 : ((t>>1)&1? 2 : -2); ctx.drawImage(S[base+lf],x+j,y); if(t>=GOT_PRE) textS(T.adv.rewind,clamp(x-2,2,W-2-textW(T.adv.rewind,1)),Math.max(8,y-9),'#f7f4e9',1); return; } // as you saw it, rewinding
   ctx.drawImage(S[base+'G'+lf],x,y); dashedBox(x-1,y-1,26,22,GHOST,(t>>2)&3); // what it was all along
   const at=tr[o+4], clk=(at/60).toFixed(2)+'S'; textS(clk,clamp(x+2,2,W-2-textW(clk,1)),Math.max(8,y-9),at>=g.hide?'#ff8a8a':'#f7f4e9',1);

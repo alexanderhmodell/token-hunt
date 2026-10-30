@@ -57,7 +57,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
   const r4 = await p.evaluate(async () => { const G = window.__th; const res = []; G.state = 'fly'; G.flightT = 0; G.linger = null; G.tip = null;
     const h = { x: 20, y: 40, px: 20, py: 40, vx: 0.01, vy: 0, sp: 0, tier: 'hi', bad: true, adv: true, duty: 0.5, hide: 30, hideTag: false, ph0: 0, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 };
     G.birds = [h]; G.freeze = 1e9; const grab = () => Array.from(document.getElementById('g').getContext('2d').getImageData(14, 30, 36, 34).data).join(',');
-    for (let a = 0; a < 70; a++) { h.at = a; h.bad = true; await __wait(1); const fake = grab(); h.bad = false; await __wait(1); const real = grab(); h.bad = true; res.push(fake === real ? 0 : 1); }
+    for (let a = 0; a < 70; a++) { h.at = a; h.f = 1; h.bad = true; await __wait(1); const fake = grab(); h.bad = false; await __wait(1); const real = grab(); h.bad = true; res.push(fake === real ? 0 : 1); } // same wing frame: the only tell left is that a fake never flaps
     G.freeze = 0; G.birds = []; return res; });
   const early = r4.slice(0, 30), late = r4.slice(30, 70); const earlyGrey = early.filter(v => v).length, lateGrey = late.filter(v => v).length;
   rep('trained fake passes for real before its hide time, then glitches', earlyGrey === 0 && lateGrey >= 15 && lateGrey <= 25, 'glitch frames before hide ' + earlyGrey + '/30, after ' + lateGrey + '/40 (duty 0.5 -> ~20)');
