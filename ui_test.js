@@ -24,7 +24,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
     const B = o.btn, ry = B.y + 6; // the middle of the label text
     window.__tapAt((B.rep[0] + B.rep[1]) / 2, ry, 'touch'); await __wait(3); o.replay = !!G.replay;
     for (let i = 0; i < 2000 && G.replay; i++) { if (i === 5) window.__tapAt(128, 60); await __wait(1); } // skip the replay: back to the same game over
-    for (let i = 0; i < 200 && G.t <= 75; i++) await __wait(1); o.backOver = G.state;
+    for (let i = 0; i < 200 && (G.t <= 75 || G.goGuard > 0); i++) await __wait(1); o.backOver = G.state; // after a replay the panel takes taps again after 0.5 s
     window.__tapAt((B.menu[0] + B.menu[1]) / 2, ry, 'touch'); await __wait(3); o.menu = G.state;
     return o; });
   await p.screenshot({ path: SHOTS + '/ui_after_menu.png' });

@@ -62,13 +62,13 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
 
     // WATCH REPLAY from the game-over panel: end the run, play a fresh short run to game over, watch it back at 2x
     await runBot(page, 'miss', 90000, "window.__th.state==='gameOver'&&window.__th.t>80");
-    if (await page.evaluate(() => { if (!window.__th.entry) return false; document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); return true; })) await sleep(700); // a run that makes the top 5 asks for initials first: save them (Enter), then the panel's 0.5 s guard
+    if (await page.evaluate(() => { if (!window.__th.entry) return false; document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); return true; })) await sleep(100); await page.waitForFunction(() => !(window.__th.goGuard > 0), null, { timeout: 5000 }).catch(() => {}); // a run that makes the top 5 asks for initials first: save them (Enter), then the panel's 0.5 s guard
     await page.evaluate(() => window.__tap(128, 100)); // restart (recorded)
     const ended = await runBot(page, 'mix', 60000, "window.__th.state==='gameOver'&&window.__th.t>80");
     const lr = await page.evaluate(() => { const G = window.__th; return G.lastRun ? { score: G.score, round: G.round, frames: G.lastRun.frames, inputs: G.lastRun.rec.length, tally: G.tally.map(t => t[0]).join('') } : null; });
     ok(ended && lr && lr.frames > 300, `E0: short run ended in game over with a recording (${JSON.stringify(lr)})`);
     await page.screenshot({ path: path.resolve(__dirname, 'shots', 'e0_gameover_replay_button.png') });
-    if (await page.evaluate(() => { if (!window.__th.entry) return false; document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); return true; })) await sleep(700); // a run that makes the top 5 asks for initials first: save them (Enter), then the panel's 0.5 s guard
+    if (await page.evaluate(() => { if (!window.__th.entry) return false; document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); return true; })) await sleep(100); await page.waitForFunction(() => !(window.__th.goGuard > 0), null, { timeout: 5000 }).catch(() => {}); // a run that makes the top 5 asks for initials first: save them (Enter), then the panel's 0.5 s guard
     await page.evaluate(() => window.__tap(190, 121)); await sleep(100);
     const st = await page.evaluate(() => ({ replay: !!window.__th.replay, state: window.__th.state, frame: window.__th.frame, brag: !document.getElementById('brag').hidden }));
     ok(st.replay && st.state === 'intro' && !st.brag, `E0: WATCH REPLAY starts the replay (${JSON.stringify(st)})`);
