@@ -161,3 +161,23 @@ Real-input pass (Alex's Chrome, real clicks and keys): rewind, share/copy, pause
 - **Phone:** WATCH DEMO undoes the touch lift; epoch cards hold 150 frames (210 with a new rule; a tap skips); TRAFFIC FROM on a dark band; critic lines from a per-kind shuffle bag; the BIOS boot once a visit.
 - **PROD DB:** shows in the epoch that announces it; clears off for swarms and the boss; never throws under any skin.
 - **Glitches:** the rewind panel goes where the fake ended; a paused replay resumes on a tap (MENU quits) without a shot lockout; a replay restores the settings it found; initials save only on OK/Enter, taps count after 0.7 s, 0.5 s guard after saving; MENU clears the rewind's hold and tint; the copy-text fallback is a centred, selected box; a hidden tab is silent in every state; receipt counts every unserved fake as dodged; text spacing on the epoch card, game over, swarm and boss pops.
+
+## v4.4 round 2 (Oct 30, early; fresh seats on v4.4, plus a regression pass on v4.5)
+
+| Seat | Score | Placement | One line |
+|---|---|---|---|
+| Organizer stream sim | **8.5** | **TOP 3**, shortlist YES | "Probably yes" as his own pick: the opponent model prints what it learned and beats you with it; the rewind turns it into a clip. One change for a lock: claim only a habit the player can see, with the count |
+| Phone casual | 8 | TOP 10 | Rewind is the standout; small 3x5 text on a phone; game-over taps went dead for ~10 s after a replay (the post-initials guard ran on the run's frame clock) |
+| Score-chaser | **8** (was 7) | TOP 10 | Reading the card beats the adversary at the cost of the FAST bonus (fair); boss mashing now loses (13 bounces = -5,850); dropping PROD kept the perfect bonus; 2 of 2 was read as a habit |
+| Glitch hunter | 10 bugs | n/a | Stale tap guard across runs (HIGH), breach on a negative score added points, double-tap past a replay rebooted, replay pause icon skipped, mashing through a rewind burned VRAM |
+| Regression pass on v4.5 | 4 + 1 | n/a | Rewind playback over the panel text; caught requests on the floor; carried-over counts printed as made; demo music after a tab switch |
+
+## Applied (v4.5, v4.5b)
+
+- **Honest colour card** (the organizer's lock): only a first-served habit (n/m over your last two epochs, whole numbers) or the share of each colour you served when it clearly differs; otherwise NO COLOR HABIT -> FAKES 50/50; no serve-speed read; the first card never claims a colour it had no chance to see; three choices and a clear lead before it calls a habit.
+- **Taps never go dead:** the post-initials and post-replay guard is a 30-frame countdown; a double-tap past a replay stops at game over; replay icons always live; a paused replay resumes on a tap.
+- **Rewind:** a headline strip while the fake plays back, the full panel when it ends (1.5 s), placed away from where the fake ended; 0.4 s no-fire grace after skipping it.
+- **Scoring:** dropping PROD costs the epoch's uptime bonus; a splinter breach costs 300 below zero; top 5 seeds spread (BOT 90k x mode).
+- **Critic between waves:** holds a line by its length, no bubble jump at the hand-off, the caught requests leave with him, he slides away behind the new requests; a held game holds him too.
+- **Phone:** epoch-1 card 100 frames; NET TOKENS at game over; tip banners step aside for a request flying through; the fake tip says it glitches; share card text clear of the bubble tail.
+- **Silence:** the title and the demo stay silent through tab switches.
