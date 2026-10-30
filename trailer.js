@@ -208,11 +208,11 @@ async function record() {
     await G(() => { const g = window.__th; g.wave = 2; g.tally = ['hit', 'hit']; g.bossDone = false; }); // the boss arrives once 2 requests are in
     await waitFor(() => window.__th.birds.some(b => b.boss && b.st === 'fly'), null, 9000); mark('DDoS boss');
     await waitFor(() => { const b = window.__th.birds.find(b => b.boss); return b && b.x + 24 > 24 && b.x + 24 < 232; }, null, 6000);
-    for (let i = 0, t = Date.now(); i < 30 && Date.now() - t < 16000; i++) {
+    for (let i = 0, t = Date.now(); i < 60 && Date.now() - t < 16000; i++) {
       const s = await G(() => { const g = window.__th, b = g.birds.find(b => b.boss && b.st === 'fly'), a = g.birds.filter(b => b.agent && b.st === 'fly'); return { boss: !!b, hp: b ? b.hp : 0, agents: a.length, low: a.length ? Math.max(...a.map(x => x.y)) : -1, shots: g.shots }; });
       if ((!s.boss && !s.agents) || s.shots <= 0) break;
       if (s.boss && !s.agents && await G(() => { const b = window.__th.birds.find(b => b.boss && b.st === 'fly'); return b && (b.enter || ((b.fw || 0) % 60) >= 20); })) { await sleep(90); i--; continue; } // wait out the IP rotation
-      await fire(s.agents && (s.low > 105 || !s.boss) ? 'agent' : 'boss', { steps: 5, gain: 0.65 }); await sleep(280);
+      { const k = s.agents && (s.low > 105 || !s.boss) ? 'agent' : 'boss'; await fire(k, k === 'boss' ? { steps: 2, gain: 0.9 } : { steps: 4, gain: 0.7 }); await sleep(k === 'boss' ? 80 : 200); } // rapid fire into each opening
     }
     await waitState('fox', 10000); mark('boss down. critic: ' + await line()); await sleep(1500);
     // ---- 10  OUT OF MEMORY: receipt and roast
