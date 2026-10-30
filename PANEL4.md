@@ -66,3 +66,30 @@ Ten-judge average: **K 7.6, Q 6.4.** 13 of 13 seats would submit K. Side by side
 ## Left as is
 
 Jargon (VRAM, EPOCH) is the joke; the bot pops up every wave by design; a one-file 256×240 loop is still a light-gun homage underneath.
+
+---
+
+# Confirmation panel on v4.1 (Oct 29, 10:00–11:00 PM ET)
+
+Six cold seats on the v4.1 build (after the fixes above), single build, same harness.
+
+| Seat | Score | Placement | One line |
+|---|---|---|---|
+| Organizer stream sim | 8 | TOP 10, shortlist YES | "Narrowly no as his own pick, strong for the assisted pick." One change: make getting fooled the clip |
+| AI selector B (Claude) | 8 | **TOP 3** | "Feature it. Everything pitched exists and works... belongs on the podium" |
+| AI selector A (rubric) | 8.5 | TOP 10, strong top-3 contender | "Execution is top-3 calibre"; waiting past the 1.0 s cap beat the model |
+| ML engineer | 8 | TOP 10 | Adaptation real and causal: 67/67 trained fakes matched their card |
+| Score-chaser | 6 | TOP 25% | Boss a piñata, the card a free tell, no kill screen |
+| Phone casual | 8 | TOP 10 | Readable, rewarding; small text and stacked pops at peak moments |
+
+Average 7.75; both AI-selector simulations put it in or at the edge of the top 3.
+
+## Applied after the confirmation panel
+
+- **The gotcha** (organizer's one change): when a trained fake fools you the game holds 0.8 s and shows the trap: "MODEL V3 FOOLED YOU / YOU FIRED AT 0.42S / IT LOOKED REAL FOR 0.60S".
+- **Honest model:** dodges count only for fakes that glitched and were on screen 0.67 s; close serve rates go to the colour you serve faster; an unseen colour keeps the prior; SERVE TIME prints your real mean; the burst starts the frame the disguise ends.
+- **Arms race:** disguise follows your serve time up to 1.5 s; glitch shrinks to 30% by v6; 80% of trained fakes wear the printed colour ("FAKES 80% PURPLE"), so the card is exact but not a free tell; more trained fakes from epoch 12; the flight window keeps closing from epoch 17.
+- **Boss:** rotates IPs (hittable 20 of every 60 frames), splinters that reach the racks cost a VRAM, and it walks off fast once you can't hurt it.
+- **Scoring:** a fake costs twice the request it imitates; no free misses; FAST ×2 inside 0.6 s, ×1.5 inside 1.1 s; doubles spawn less predictably.
+- **Daily:** 429 strikes come from the seed per wave and tick only in flight.
+- Tips by priority and below the 429 banner; mixed waves never praised; game-over panel clears a two-line roast; touch drops keyboard hints; share dialog opaque; one-hand fixes; FINN twice; HUD best on the assisted board.

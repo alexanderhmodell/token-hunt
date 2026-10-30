@@ -618,7 +618,7 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return;
   { const fz=G.birds.find(b=>b.st==='fly'&&b.frozen>0&&!b.agent&&!b.boss&&inBox(b)); if(fz){ G.fx.push({type:'pts',x:clamp(x-6,2,W-18),y:Math.max(6,y-14),t:0,txt:T.boltLabel||'WAIT',col:'#ff4d4d',sc:1}); SFX.blip(); return; } }
   { const under=G.birds.some(b=>b.st==='fly'&&(b.boss? inBoss(b) : b.agent? inAgent(b) : inBox(b)));
     if(G.linger&&!under){ const L=G.linger, g=bubbleGeom(L.line,L.x,SKY_H-44,false,false); // a tap on the lingering critic or his bubble sends him off, free
-      if((x>=L.x-6&&x<=L.x+38&&y>=SKY_H-50)||(x>=g.bx-4&&x<=g.bx+g.tw+4&&y>=g.by-6&&y<=g.by+g.th+6)){ G.linger=null; return; } } }
+      if((x>=L.x-6&&x<=L.x+38&&y>=SKY_H-50)||(x>=g.bx-4&&x<=g.bx+g.tw+4&&y>=g.by-6&&y<=g.by+g.th+6)){ G.linger=null; hush(); return; } } } /* sending him off also stops him talking */
   G.shots--; G.cost+=COST; G.run.shots++; G.wf.shots++; SFX.shot(x); G.flash=2; G.muzzle={x,y,t:2};
   let hitAny=false, nearest=999, target=null, td=1e9;
   for(const b of G.birds){ if(b.st!=='fly') continue; if(b.boss? inBoss(b) : b.agent? inAgent(b) : inBox(b)){ const d=Math.hypot(x-(b.x+(b.boss?24:b.agent?6:12)),y-(b.y+(b.boss?20:b.agent?5:10))); if(d<td){ td=d; target=b; } } }
