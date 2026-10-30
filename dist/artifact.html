@@ -161,6 +161,7 @@ function seeded(n){ let s=n|0||1; return ()=>{ s=(s*1103515245+12345)&0x7fffffff
 let ac=null, master=null, comp=null, BUS=null, muted=false, noiseBuf=null, rainNode=null, quiet=false; // quiet: fast-forwarding a replay, no sound
 try{ muted=localStorage.getItem('th.muted')==='1'; }catch(e){}
 const DUCK=Math.pow(10,-8/20), LAYERS=['base','arp','drums','storm','boss'];
+try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){} // iOS 17+: play through the ring/silent switch, like a game, not like a ringtone
 function audioInit(){ if(ac) return; try{ ac=new (window.AudioContext||window.webkitAudioContext)(); master=ac.createGain(); master.gain.value=muted?0:0.5;
     comp=ac.createDynamicsCompressor(); comp.threshold.value=-18; comp.ratio.value=4; comp.knee.value=6; comp.attack.value=0.004; comp.release.value=0.2; master.connect(comp); comp.connect(ac.destination);
     const bus=(v,to)=>{ const g=ac.createGain(); g.gain.value=v; g.connect(to||master); return g; };
@@ -768,7 +769,11 @@ function handleTap(x,y){
 // 7 taps on the logo within 4 s opens the keyboard for code entry (mobile has no keys)
 const codeInput=document.getElementById('code');
 function logoTap(x,y){ const now=performance.now(); G.taps=G.taps.filter(t=>now-t<4000); G.taps.push(now);
-  if(G.taps.length>=7){ G.taps=[]; codeInput.style.pointerEvents='auto'; codeInput.value=''; codeInput.focus(); toast('TYPE A CODE'); setTimeout(()=>codeInput.blur(),6000); return true; } return false; }
+  if(G.taps.length>=7){ G.taps=[]; // phones: a real text box (a hidden input's keyboard never opened on iOS)
+    let v=null, t0=performance.now(); try{ v=window.prompt('TYPE A CODE'); }catch(e){}
+    if(v){ for(const ch of String(v).toLowerCase().replace(/[^a-z]/g,'')) feedKey(ch); return true; }
+    if(v===null&&performance.now()-t0<50){ codeInput.style.pointerEvents='auto'; codeInput.value=''; codeInput.focus(); toast('TYPE A CODE'); setTimeout(()=>codeInput.blur(),20000); } // no dialogs here (a sandboxed frame): the hidden input
+    return true; } return false; }
 codeInput.addEventListener('input',()=>{ const v=codeInput.value.toLowerCase().replace(/[^a-z]/g,''); codeInput.value=''; for(const ch of v) feedKey(ch); });
 codeInput.addEventListener('blur',()=>{ codeInput.style.pointerEvents='none'; });
 let ONEHAND=false; try{ ONEHAND=localStorage.getItem('th.onehand')==='1'; }catch(e){}
@@ -1197,7 +1202,7 @@ function draw(){ ctx.save(); ctx.imageSmoothingEnabled=false; { const [ox,oy]=sh
 const TOUCH_LIFT=8; // small finger offset; the touch hitbox below also extends down toward the thumb
 function pos(e){ const r=cv.getBoundingClientRect(); const touch=e.pointerType==='touch'; let u=(e.clientX-r.left)/r.width, v=(e.clientY-r.top)/r.height; if(crtActive()) [u,v]=barrel(u,v);
   return {x:u*W, y:v*H-(touch?TOUCH_LIFT:0), touch}; }
-cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===false) return; if(e.pointerType==='mouse'&&e.button!==0) return; document.body.classList.add('pointer'); if(e.pointerType==='touch') document.body.classList.add('touch'); cv.focus({preventScroll:true}); audioInit(); voiceGesture(); if(ac&&ac.state==='suspended') ac.resume(); const p=pos(e);
+cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===false) return; if(e.pointerType==='mouse'&&e.button!==0) return; document.body.classList.add('pointer'); if(e.pointerType==='touch') document.body.classList.add('touch'); cv.focus({preventScroll:true}); audioInit(); voiceGesture(); if(ac&&ac.state!=='running'&&!G.acHid) ac.resume(); const p=pos(e);
   const rawY=p.y+(p.touch?TOUCH_LIFT:0);
   const birdUnder= G.state==='fly'&&G.birds.some(b=>b.st==='fly'&&!(b.hold>0)&&p.x>=b.x-8&&p.x<=b.x+32&&p.y>=b.y-8&&p.y<=b.y+40);
   { const band= G.state==='title'? 24 : (!G.replay&&G.frame-(G.lastShotF||-99)<30? 0 : 14); // outside the title the icons take only a precise tap, and none right after a shot
@@ -1208,8 +1213,8 @@ cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===fals
   G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; handleTap(p.x,p.y); });
 cv.addEventListener('pointermove',e=>{ if(e.isPrimary===false||G.replay||(ONEHAND&&e.pointerType==='touch')) return; const p=pos(e); if(ONEHAND&&p.y>=SKY_H) return; G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; });
 cv.addEventListener('pointerleave',()=>{ G.mouse.on=false; });
-cv.addEventListener('pointerup',()=>{ audioInit(); if(ac&&ac.state==='suspended') ac.resume(); });
-cv.addEventListener('click',()=>{ if(ac&&ac.state==='suspended') ac.resume(); });
+cv.addEventListener('pointerup',()=>{ audioInit(); if(ac&&ac.state!=='running'&&!G.acHid) ac.resume(); });
+cv.addEventListener('click',()=>{ if(ac&&ac.state!=='running'&&!G.acHid) ac.resume(); });
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 if(!window.PointerEvent){ const fake=(ev,type,touch)=>{ const t=touch?ev.changedTouches[0]:ev; cv.dispatchEvent(Object.assign(new Event(type,{bubbles:true,cancelable:true}),{clientX:t.clientX,clientY:t.clientY,pointerType:touch?'touch':'mouse',button:0,isPrimary:true})); };
   cv.addEventListener('touchstart',e=>{ e.preventDefault(); fake(e,'pointerdown',true); },{passive:false}); cv.addEventListener('touchend',e=>{ fake(e,'pointerup',true); });
