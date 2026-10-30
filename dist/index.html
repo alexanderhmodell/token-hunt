@@ -70,7 +70,7 @@ body.cardopen #share,body.cardopen #brag{visibility:hidden}
 #cardclose:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
 #share{position:absolute; left:50%; bottom:-42px; transform:translateX(-112%); z-index:2; font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--ink); border:0; padding:8px 12px; cursor:pointer; border-radius:2px; box-shadow:0 2px 0 #000}
 #brag{position:absolute; left:50%; bottom:-42px; transform:translateX(12%); z-index:2; font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--accent); border:0; padding:8px 12px; cursor:pointer; border-radius:2px; box-shadow:0 2px 0 #000}
-#bragtxt{position:absolute; left:50%; bottom:-40px; transform:translateX(-50%); z-index:2; width:max(90%,280px)}
+#bragtxt{position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:6; width:min(88vw,420px); max-height:70vh; overflow:auto; background:var(--cab); border:2px solid var(--accent); padding:14px 16px; box-shadow:0 8px 40px rgba(0,0,0,.6); cursor:pointer}
 #brag:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
 #bragtxt{font:11px/1.8 var(--font-ui); color:var(--ink); user-select:text; -webkit-user-select:text; max-width:60ch; text-align:center; word-break:break-all}
 @media (prefers-reduced-motion:reduce){.crt{display:none}}
@@ -521,13 +521,14 @@ function recIn(type,a,b){ if(G.recOn&&!G.replay&&G.rec.length<60000) G.rec.push(
 function applyInput(e){ const ty=e[1]; if(ty==='k'){ feedKeyRaw(e[2]); return; } if(ty==='u'){ G.unpauseT=24; return; } G.mouse.touch= ty==='t'; G.mouse.x=e[2]; G.mouse.y=e[3]; G.mouse.on=true; handleTap(e[2],e[3]); }
 function restoreRun(s){ setDiff(s.diff); applyTheme(s.theme); G.assist=!!s.assist; G.daily=!!s.daily; G.seen=!!s.seen; G.firstMissDone=s.fmd; G.lastLine=s.lastLine; G.cheatPending=s.cheat; G.wavesStarted=s.ws; G.keys=s.keys; G.touchRun=!!s.touch;
   G.attract=false; G.recOn=false; resetRunState(); setWeather(); seedRun(s.seed); G.rng.set(s.r1); G.rng2.set(s.r2); G.windDir=s.windDir; G.nextLightning=s.nl; G.lightning=0; G.clouds=s.clouds.map(c=>({...c})); G.frame=0; }
-function startReplay(run,speed){ if(!run||!run.init) return false; hush(); hideBrag(); cardBox.hidden=true; music.stop(); rainStop();
+function unReplay(){ const s=G.preReplay; if(!s) return; G.preReplay=null; if(G.theme!==s.theme) applyTheme(s.theme); if(G.diff!==s.diff) setDiff(s.diff); G.assist=s.assist; G.cheatPending=s.cheat; G.keys=s.keys; if(ONEHAND!==s.one){ ONEHAND=s.one; try{ localStorage.setItem('th.onehand',ONEHAND?'1':'0'); }catch(e){} } } // codes typed in the run replay inside it, never after it
+function startReplay(run,speed){ if(!run||!run.init) return false; if(!G.preReplay) G.preReplay={theme:G.theme, diff:G.diff, assist:G.assist, cheat:G.cheatPending, keys:G.keys, one:ONEHAND}; hush(); hideBrag(); cardBox.hidden=true; music.stop(); rainStop();
   G.replay={rec:run.rec.map(e=>e.slice()), i:0, speed:speed||2, end:run.frames||0, run};
   restoreRun(run.init); G.state='intro'; G.t=0; if(G.wx.rain) rainStart(G.wx.rain); SFX.fanfare(); music.start(); return true; }
 function replayFeed(){ const R=G.replay; while(R.i<R.rec.length&&R.rec[R.i][0]<=G.frame) applyInput(R.rec[R.i++]);
   // ghost cursor: glide toward the next recorded tap so the replay reads like a person playing
   for(let j=R.i;j<R.rec.length&&j<R.i+4;j++){ const e=R.rec[j]; if(e[1]==='k'||e[1]==='u') continue; if(e[0]-G.frame<45){ G.mouse.x+=(e[2]-G.mouse.x)*0.18; G.mouse.y+=(e[3]-G.mouse.y)*0.18; G.mouse.on=true; } break; } }
-function endReplay(){ const R=G.replay; if(!R) return; G.replay=null; G.newRecord=!!R.run.newRecord; if(G.state==='gameOver'){ G.t=Math.max(G.t,71); showBrag(); } }
+function endReplay(){ const R=G.replay; if(!R) return; G.replay=null; unReplay(); G.newRecord=!!R.run.newRecord; if(G.state==='gameOver'){ G.t=Math.max(G.t,71); showBrag(); } }
 function skipReplay(){ if(!G.replay) return; const cap=G.replay.end+3600; G.paused=false; quiet=true; try{ let n=0; while(G.replay&&n<cap){ update(); n++; } } finally{ quiet=false; } if(G.replay) endReplay(); }
 function watchReplay(){ if(G.lastRun&&startReplay(G.lastRun,2)){ SFX.blip(); } }
 function beginFirstWave(){ if(!G.seen&&!G.attract){ G.seen=true; try{ localStorage.setItem('th.seen','1'); }catch(e){}
@@ -642,7 +643,7 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return;
     if(b===target&&b.boss){ hitAny=true; bossHit(b); continue; }
     if(b===target&&b.agent){ hitAny=true; b.st='gone'; G.swarm.stopped++; const p=200*D.mult*(G.assist?3:1); G.score+=p; G.run.hits++; G.freeze=2; addTrauma(0.25); buzz(12); SFX.hit(1,b.x+6);
       if(G.swarm.boss){ const tx='+'+p, k=G.fx.filter(f=>f.ag&&f.t<30).length; G.fx.push({type:'pts',x:clamp(b.x+6-textW(tx,1)/2,2,W-2-textW(tx,1)),y:Math.min(SKY_H-12,b.y+14+k*8),t:0,txt:tx,col:'#ffe98a',sc:1,ag:1}); } /* under the minion, stacked: the boss's labels stay clear */
-      else G.fx.push({type:'pts',x:clamp(b.x-6,2,W-2-textW(T.swarm.stop+' +'+p,1)),y:Math.max(6,b.y-8),t:0,txt:T.swarm.stop+' +'+p,col:'#ffe98a',sc:1}); for(let i=0;i<5;i++) G.fx.push({type:'feather',x:b.x+6,y:b.y+5,vx:rnd(-1.2,1.2),vy:rnd(-1.5,0),t:0,col:'#ff4d4d'});
+      else G.fx.push({type:'pts',x:clamp(b.x-6,2,W-2-textW(T.swarm.stop+' +'+p,1)),y:Math.max(14,b.y-8),t:0,txt:T.swarm.stop+' +'+p,col:'#ffe98a',sc:1}); for(let i=0;i<5;i++) G.fx.push({type:'feather',x:b.x+6,y:b.y+5,vx:rnd(-1.2,1.2),vy:rnd(-1.5,0),t:0,col:'#ff4d4d'});
       if(!G.swarm.boss&&G.swarm.stopped>=G.swarm.total){ const bonus=1000*D.mult*(G.assist?3:1); G.score+=bonus; G.fx.push({type:'pts',x:Math.round(W/2-textW(T.swarm.stopAll+' +'+bonus,1)/2),y:72,t:0,txt:T.swarm.stopAll+' +'+bonus,col:'#39d353',sc:1}); SFX.perfect(); } continue; }
     if(b===target){ hitAny=true; b.st='hit'; b.hitT=0; G.freeze=3;
       if(b.bad){ const fa=b.age||b.at, pen=Math.round(2*valueOf(b)*comboMult(G.combo+1)*(fa<=36? 2 : fa<=66? 1.5 : 1)*(G.assist?3:1)); G.score-=pen; /* a fake costs twice the request it pretends to be */ G.roundHalluc=(G.roundHalluc||0)+1; if(G.adv){ G.adv.obs.served++; if(b.adv){ G.adv.fooled++; G.advFooled=b.tier; const tr=(b.trail||[]).slice(), n=tr.length/5|0, full=n>=4&&G.adv.rewound!==G.adv.ver; if(full) G.adv.rewound=G.adv.ver; /* the first fool of each version gets the rewind */
@@ -721,7 +722,7 @@ function endRound(){ const hits=G.tally.filter(t=>t==='hit').length; const need=
       if(G.lastRun) G.lastRun.newRecord=G.newRecord;
       if(!(G.assist||G.runAssisted)&&topQualifies(net())) startEntry(net()); }
     if(!G.replay&&!G.entry) showBrag(); } }
-function toTitle(){ hush(); G.entry=null; G.topList=null; G.props=[]; G.attract=false; G.recOn=false; G.replay=null; G.swarm=null; G.vramLost=0; G.lostNow=0; G.swarmDone=false; G.state='title'; G.t=0; G.idle=0; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.combo=0; G.shots=G.assist?5:D.ammo; G.mouse.on=false; setWeather(); hideBrag(); }
+function toTitle(){ hush(); unReplay(); G.freeze=0; G.flash=0; G.flashA=0; G.muzzle=null; G.trauma=0; G.gotcha=null; G.entry=null; G.topList=null; G.props=[]; G.attract=false; G.recOn=false; G.replay=null; G.swarm=null; G.vramLost=0; G.lostNow=0; G.swarmDone=false; G.state='title'; G.t=0; G.idle=0; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.combo=0; G.shots=G.assist?5:D.ammo; G.mouse.on=false; setWeather(); hideBrag(); }
 function attractAI(){ if(G.state!=='fly') return; G.aim.t++; const b=G.birds.find(b=>b.st==='fly'&&!b.bad); if(!b) return;
   const tx=b.x+12+b.vx*6+Math.sin(G.aim.t/9)*6, ty=b.y+10+b.vy*6+Math.cos(G.aim.t/7)*5; G.aim.x+=(tx-G.aim.x)*0.25; G.aim.y+=(ty-G.aim.y)*0.25; G.mouse.x=G.aim.x; G.mouse.y=G.aim.y; G.mouse.on=true;
   if(G.aim.t%30===0&&G.shots>0&&G.flightT>20) shoot(G.aim.x+rnd(-4,4),G.aim.y+rnd(-4,4)); }
@@ -746,26 +747,26 @@ const topKey=()=> 'th.top.'+G.diff+(G.diff==='daily'? '.'+dailySeed() : '');
 function loadTop(){ let t=null; try{ t=JSON.parse(localStorage.getItem(topKey())||'null'); }catch(e){} if(!Array.isArray(t)||!t.length||!t.every(x=>x&&typeof x.n==='string'&&typeof x.s==='number')) t=TOP_SEED.map(([n,v])=>({n,s:Math.round(v*D.mult)})); return t.slice(0,5); }
 function topQualifies(sc){ const t=loadTop(); return sc>0&&(t.length<5||sc>t[t.length-1].s); }
 function startEntry(sc){ let last='AAA'; try{ last=localStorage.getItem('th.ini')||'AAA'; }catch(e){} last=(String(last).toUpperCase().replace(/[^A-Z]/g,'')+'AAA').slice(0,3); G.entry={c:[...last].map(ch=>INI_CH.indexOf(ch)),pos:0,score:sc}; }
-function confirmEntry(save){ const E=G.entry; if(!E) return; G.entry=null; const t=loadTop();
+function confirmEntry(save){ const E=G.entry; if(!E) return; G.entry=null; G.goGuard=G.frame+30; /* the next tap cannot reboot at once */ const t=loadTop();
   if(save){ const n=E.c.map(i=>INI_CH[i]).join(''); try{ localStorage.setItem('th.ini',n); }catch(e){} const row={n,s:E.score}; t.push(row); t.sort((a,b)=>b.s-a.s); const top=t.slice(0,5); G.topRank=top.indexOf(row); G.topList=top; try{ localStorage.setItem(topKey(),JSON.stringify(top)); }catch(e){} SFX.gold(); }
   else { G.topList=null; G.topRank=-1; SFX.blip(); } G.t=Math.max(G.t,71); if(!G.replay) showBrag(); }
-function entryTap(x,y){ const E=G.entry, ry=y+(G.mouse.touch?TOUCH_LIFT:0); for(let i=0;i<3;i++) if(Math.abs(x-INI_X[i])<=11&&ry>=58&&ry<=94){ E.pos=i; E.c[i]=(E.c[i]+(ry<79?1:25))%26; SFX.blip(); return; } confirmEntry(true); } // top half +1, bottom half -1; anywhere else saves
-function entryKey(k,e){ const E=G.entry; e.preventDefault(); if(G.t<24) return;
+function entryTap(x,y){ const E=G.entry, ry=y+(G.mouse.touch?TOUCH_LIFT:0); for(let i=0;i<3;i++) if(Math.abs(x-INI_X[i])<=11&&ry>=58&&ry<=94){ E.pos=i; E.c[i]=(E.c[i]+(ry<79?1:25))%26; SFX.blip(); return; } const ow=textW7('OK')+8, ox=Math.round(W/2-ow/2); if(x>=ox-6&&x<=ox+ow+6&&ry>=94&&ry<=114) confirmEntry(true); } // top half +1, bottom half -1; only OK saves (a mashed tap never does)
+function entryKey(k,e){ const E=G.entry; e.preventDefault(); if(G.t<40) return;
   if(/^[a-z]$/i.test(k)){ E.c[E.pos]=INI_CH.indexOf(k.toUpperCase()); E.pos=Math.min(2,E.pos+1); SFX.blip(); }
   else if(k==='ArrowUp'||k==='ArrowDown'){ E.c[E.pos]=(E.c[E.pos]+(k==='ArrowUp'?1:25))%26; SFX.blip(); } else if(k==='ArrowLeft'||k==='Backspace'){ E.pos=Math.max(0,E.pos-1); SFX.blip(); } else if(k==='ArrowRight'){ E.pos=Math.min(2,E.pos+1); SFX.blip(); }
-  else if(k==='Enter'||k===' ') confirmEntry(true); else if(k==='Escape') confirmEntry(false); }
+  else if(k==='Enter') confirmEntry(true); else if(k==='Escape') confirmEntry(false); } // Space fires in play: it never saves
 function big7(ch,x,y,col,sc){ const g=GLY7[ch]||GLY7[' ']; ctx.fillStyle=col; for(let r=0;r<7;r++) for(let c=0;c<5;c++) if(g[r][c]==='1') ctx.fillRect(x+c*sc,y+r*sc,sc,sc); }
 function arrow3(cx,y,dn,col){ ctx.fillStyle=col; for(let i=0;i<3;i++){ const w=dn? 5-2*i : 1+2*i; ctx.fillRect(cx-(w>>1),y+i,w,1); } }
 function drawEntry(){ const E=G.entry, tch=TOUCHY||document.body.classList.contains('touch'); text7C('NEW TOP 5. YOUR INITIALS',55,'#ffe98a',true);
   for(let i=0;i<3;i++){ const cx=INI_X[i], on=i===E.pos, col= on? (((G.t>>3)&1)?'#ffe98a':'#fff6c8') : '#f7f4e9'; arrow3(cx,63,false,on?'#ffe98a':'#5a5468'); big7(INI_CH[E.c[i]],cx-5,69,col,2); if(on){ ctx.fillStyle=col; ctx.fillRect(cx-6,85,12,1); } arrow3(cx,88,true,on?'#ffe98a':'#5a5468'); }
-  const w=textW7('OK')+8; btn7('OK',Math.round(W/2-w/2),97,'#f7f4e9'); textC(tch? 'TAP THE TOP OR BOTTOM OF A LETTER' : 'TYPE 3 LETTERS, THEN ENTER',113,'#8a8494',1); }
+  const w=textW7('OK')+8; btn7('OK',Math.round(W/2-w/2),97,'#f7f4e9'); textC(tch? 'TAP A LETTER TOP OR BOTTOM, THEN OK' : 'TYPE 3 LETTERS, THEN ENTER',113,'#8a8494',1); }
 function drawTop(){ const L=G.topList||[]; for(let i=0;i<L.length;i++){ const e=L[i], me=i===G.topRank, s=(i+1)+'  '+(e.n+'   ').slice(0,3)+'  '+pad(e.s,6); textC(s,55+i*7,me? (((G.t>>3)&1)?'#ffe98a':'#fff6c8') : '#cfc9dc',1); }
   if(G.adv&&G.adv.built) textC(T.adv.fooled+' '+G.adv.fooled+'/'+G.adv.built,90,'#e2ccff',1); }
 const GO_BTN={y:108, menu:[36,79], rep:[131,222]}; let PAUSE_Q=[0,0,0,0]; // game-over and pause buttons: drawn and hit-tested from the same boxes
 function btn7(s,x,y,col){ const w=textW7(s)+8; ctx.fillStyle='rgba(58,52,76,0.92)'; ctx.fillRect(x,y,w,13); ctx.fillStyle=col; ctx.fillRect(x,y,w,1); ctx.fillRect(x,y+12,w,1); ctx.fillRect(x,y,1,13); ctx.fillRect(x+w-1,y,1,13); text7(s,x+4,y+3,col); return w; }
 function quitToMenu(){ G.paused=false; G.gotcha=null; G.linger=null; toTitle(); } // from the pause menu: no need to lose first
 function setPaused(p){ if(p&&!PAUSABLE[G.state]) return; if(G.paused===p) return; G.paused=p; if(p) hush();
-  if(p){ music.stop(); rainStop(); } else { G.unpauseT=24; recIn('u'); music.start(); if(G.wx.rain) rainStart(G.wx.rain); } } // no pause-aim: 0.4 s of no shooting after resume
+  if(p){ music.stop(); rainStop(); } else { G.unpauseT= G.replay? G.unpauseT : 24; recIn('u'); music.start(); if(G.wx.rain) rainStart(G.wx.rain); } } // no pause-aim: 0.4 s of no shooting after resume
 
 function handleTap(x,y){
   if(G.paused){ const ry=y+(G.mouse.touch?TOUCH_LIFT:0); if(x>=PAUSE_Q[0]&&x<=PAUSE_Q[1]&&ry>=PAUSE_Q[2]&&ry<=PAUSE_Q[3]){ quitToMenu(); return; } setPaused(false); return; }
@@ -779,7 +780,7 @@ function handleTap(x,y){
     case 'fox': if(G.fox.mode==='tut') break; // first tap finishes the typing, second tap sends the critic away
       if(G.fox.t>16&&G.fox.t<foxTyped()) G.fox.t=foxTyped(); else if(G.fox.t>=foxTyped()&&G.fox.t<foxLeave()){ G.fox.t=foxLeave(); hush(); } break;
     case 'roundEnd': if(G.t>40){ if(!advTyped()) G.advShown=true; else nextRound(); } break; // first tap shows every line, the next one continues
-    case 'gameOver': if(G.entry){ if(G.t>24) entryTap(x,y); break; } if(G.t>70){ hideBrag(); const ry=y+(G.mouse.touch?TOUCH_LIFT:0), inB=r=> x>=r[0]-2&&x<=r[1]+2&&ry>=GO_BTN.y-4&&ry<=GO_BTN.y+17; /* buttons are targets you look at: undo the finger lift */ if(inB(GO_BTN.menu)) toTitle(); else if(G.lastRun&&!G.replay&&inB(GO_BTN.rep)) watchReplay(); else startGame(false,true); } break;
+    case 'gameOver': if(G.entry){ if(G.t>40) entryTap(x,y); break; } if(G.t>70&&G.frame>=(G.goGuard||0)){ hideBrag(); const ry=y+(G.mouse.touch?TOUCH_LIFT:0), inB=r=> x>=r[0]-2&&x<=r[1]+2&&ry>=GO_BTN.y-4&&ry<=GO_BTN.y+17; /* buttons are targets you look at: undo the finger lift */ if(inB(GO_BTN.menu)) toTitle(); else if(G.lastRun&&!G.replay&&inB(GO_BTN.rep)) watchReplay(); else startGame(false,true); } break;
   } }
 // 7 taps on the logo within 4 s opens the keyboard for code entry (mobile has no keys)
 const codeInput=document.getElementById('code');
@@ -829,9 +830,10 @@ function showCard(url){ cardImg.src=url; cardBox.hidden=false; document.body.cla
 function hideCard(){ cardBox.hidden=true; document.body.classList.remove('cardopen'); }
 document.getElementById('cardclose').addEventListener('click',hideCard);
 cardBox.addEventListener('click',e=>{ if(e.target===cardBox) hideCard(); });
+bragTxt.addEventListener('click',()=>{ bragTxt.hidden=true; if(G.state==='gameOver') bragBtn.hidden=false; });
 function showBrag(){ if(G.attract) return; bragBtn.hidden=false; shareBtn.hidden=false; bragTxt.hidden=true; document.body.classList.add('over'); }
 function hideBrag(){ bragBtn.hidden=true; shareBtn.hidden=true; bragTxt.hidden=true; document.body.classList.remove('over'); }
-bragBtn.addEventListener('click',()=>{ const t=bragText(); const fail=()=>{ bragTxt.textContent=t; bragTxt.hidden=false; bragBtn.hidden=true; };
+bragBtn.addEventListener('click',()=>{ const t=bragText(); const fail=()=>{ bragTxt.textContent=t+'  (SELECTED: COPY IT. TAP TO CLOSE)'; bragTxt.hidden=false; bragBtn.hidden=true; try{ const r=document.createRange(); r.selectNodeContents(bragTxt); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); }catch(e){} };
   try{ navigator.clipboard.writeText(t).then(()=>toast('COPIED'),fail); }catch(e){ fail(); } });
 
 // ------------------------------------------------------------------ update
@@ -1011,7 +1013,7 @@ const fmt=(s,m)=>s.replace('%R',pad(G.round,2)).replace('%P',G.wx.who||G.wx.name
 function drawBossBar(){ if(G.state!=='fly') return; const bo=G.birds.find(b=>b.boss&&b.st==='fly'); if(!bo) return;
   const n=bo.hp0||6, nm=T.boss.name+((bo.lv||1)>1?' LV'+bo.lv:''), room=202-4-(44+textW(nm,1)+6), cw=Math.max(3,Math.min(n>6?6:10,Math.floor(room/n))); ctx.fillStyle=SHADOW; ctx.fillRect(40,2,166,12); text(nm,44,5,'#f7f4e9',1); const x0=202-4-n*cw; /* the bar never runs over the name */
   for(let i=0;i<n;i++){ ctx.fillStyle= i<bo.hp? (bo.hitT>3&&i===bo.hp-1?'#ffffff':'#ff4d4d') : '#3a344c'; ctx.fillRect(x0+i*cw,5,cw-2,5); } }
-function panelTop(tr,n,fy){ let a=0, b=0; for(let i=0;i<n;i++){ const y=tr[i*5+1]; if(y<80&&y+20>16) a++; if(y+20>123&&y<186) b++; } return a===b? fy>=100 : a<b; } // the trap panel goes where the fake's path is not
+function panelTop(tr,n,fy){ const inT=y=>y<80&&y+20>16, inB=y=>y+20>123&&y<186, ey=n? tr[(n-1)*5+1] : fy; if(inT(ey)!==inB(ey)) return inB(ey); /* where it ended decides */ let a=0, b=0; for(let i=0;i<n;i++){ const y=tr[i*5+1], w= i>=n*0.6? 4 : 1; if(inT(y)) a+=w; if(inB(y)) b+=w; } return a===b? fy>=100 : a<b; } // the trap panel goes where the fake's path is not
 const GOT_PRE=12, GOT_RW=24, GOT_POST=54, gotHold=()=> !!(G.gotcha&&G.gotcha.t<G.gotcha.end&&G.freeze>0);
 function drawRewind(g){ const t=g.t, n=g.n, tr=g.tr; // the fooled moment, rewound: what you saw, then what it was
   ctx.fillStyle='rgba(10,10,18,0.5)'; ctx.fillRect(0,0,W,SKY_H);
@@ -1214,7 +1216,7 @@ cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===fals
   const birdUnder= G.state==='fly'&&G.birds.some(b=>b.st==='fly'&&!(b.hold>0)&&p.x>=b.x-8&&p.x<=b.x+32&&p.y>=b.y-8&&p.y<=b.y+40);
   { const band= G.state==='title'? 24 : (G.frame-(G.lastShotF||-99)<30? 0 : 14); // outside the title the icons take only a precise tap, and none right after a shot
     if(!birdUnder&&rawY<=band){ if(p.x>=240){ toggleMute(); return; } if(p.x>=228&&p.x<240){ setPaused(!G.paused); return; } if(p.x>=205&&p.x<228){ toggleCRT(); return; } } }
-  if(G.replay){ skipReplay(); return; } // tap during a replay jumps to its end
+  if(G.replay){ if(G.paused){ const ry=p.y+(p.touch?TOUCH_LIFT:0); if(p.x>=PAUSE_Q[0]&&p.x<=PAUSE_Q[1]&&ry>=PAUSE_Q[2]&&ry<=PAUSE_Q[3]) quitToMenu(); else setPaused(false); return; } skipReplay(); return; } // a paused replay resumes (or quits); otherwise a tap jumps to its end
   if(ONEHAND&&G.state==='fly'&&!G.paused&&rawY>=176&&G.mouse.on){ p.x=G.mouse.x; p.y=G.mouse.y; p.touch=false; } // one-hand: the fire zone shoots at the crosshair (recorded as that point)
   if(!G.paused) recIn(p.touch?'t':'m',p.x,p.y);
   G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; handleTap(p.x,p.y); });
@@ -1236,13 +1238,13 @@ window.addEventListener('keydown',e=>{ const k=e.key; if(k.startsWith('Arrow')&&
   if((k==='m'||k==='M')&&!/thu$/.test(prevKeys)) toggleMute(); // typing 'thumb' does not mute
   else if((k==='q'||k==='Q')&&G.paused){ quitToMenu(); e.preventDefault(); }
   else if(k==='p'||k==='P'||(k==='Escape'&&G.state!=='gameOver')){ setPaused(!G.paused); e.preventDefault(); }
-  else if(G.replay){ if(k===' '||k==='Enter'){ skipReplay(); e.preventDefault(); } }
+  else if(G.replay){ if(k===' '||k==='Enter'){ if(G.paused) setPaused(false); else skipReplay(); e.preventDefault(); } }
   else if((k==='r'||k==='R')&&G.state==='gameOver'&&G.t>70&&G.lastRun){ hideBrag(); watchReplay(); }
   else if(k==='Escape'&&G.state==='gameOver'&&G.t>70){ toTitle(); e.preventDefault(); } // Esc at game over: the menu
   else if(G.state==='fly'&&!G.paused&&(k==='Enter'||k==='z'||k==='Z'||k==='x'||k==='X')){ audioInit(); const x=Math.round(G.mouse.x), y=Math.round(G.mouse.y); G.mouse.on=true; G.mouse.touch=false; recIn('m',x,y); handleTap(x,y); e.preventDefault(); } // keyboard fire at the crosshair
   else if(k===' '&&G.state==='fly'&&!G.paused){ setPaused(true); e.preventDefault(); } // space pauses mid-flight; space or enter resumes
   else if(k===' '||k==='Enter'){ if(G.paused) setPaused(false); else if(G.state!=='fly'){ const ky=G.state==='gameOver'?60:100; audioInit(); recIn('m',128,ky); handleTap(128,ky); } e.preventDefault(); } });
-document.addEventListener('visibilitychange',()=>{ if(document.hidden) setPaused(true); else if(G.attract) setPaused(false); });
+document.addEventListener('visibilitychange',()=>{ if(document.hidden){ setPaused(true); hush(); if(ac&&ac.state==='running'){ ac.suspend(); G.acHid=true; } } else { if(G.acHid&&ac){ G.acHid=false; ac.resume(); } if(G.attract) setPaused(false); } }); // a hidden tab is silent in every state
 window.addEventListener('focus',()=>{ if(G.attract) setPaused(false); });
 window.addEventListener('blur',()=>{ for(const k in HELD) delete HELD[k]; setPaused(true); }); // a key released elsewhere must not keep aiming
 

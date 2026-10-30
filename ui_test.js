@@ -130,14 +130,14 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
   const ini = await p.evaluate(async () => { const G = window.__th, o = {}; try { localStorage.removeItem(window.__top().key); localStorage.removeItem('th.ini'); } catch (e) {}
     window.__tapAt(128, 100); await __wait(3); await __skipIntro(); G.tally = ['miss', 'miss', 'miss', 'miss', 'miss']; G.wave = 5; G.score = 30000; G.cost = 0;
     for (let i = 0; i < 60 * 40 && G.state !== 'gameOver'; i++) { if (G.state === 'fox') G.fox.t = 999; if (G.state === 'intro' || G.state === 'gap') G.t = Math.max(G.t, 999); await __wait(1); }
-    await __wait(30); o.entry = !!G.entry; o.brag = !document.getElementById('brag').hidden;
+    await __wait(45); o.entry = !!G.entry; o.brag = !document.getElementById('brag').hidden;
     for (const k of ['q', 'a', 'z']) document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true })); await __wait(2);
     window.__tapAt(152, 66, 'touch'); await __wait(2); // touch: top half of the third letter -> Z+1 = A
     o.letters = G.entry && G.entry.c.map(i => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]).join('');
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); await __wait(3);
     o.saved = !G.entry && G.topList && G.topList[G.topRank] && G.topList[G.topRank].n; o.rank = G.topRank; o.stored = window.__top().list.map(e => e.n + e.s).join(','); o.bragAfter = !document.getElementById('brag').hidden;
-    window.__tapAt(128, 60); await __wait(3); o.reboot = G.state; return o; });
-  rep('top 5: a run that makes the table asks for initials (keys and touch), saves them, then the share buttons', ini.entry && !ini.brag && ini.letters === 'QAA' && ini.saved === 'QAA' && ini.rank === 1 && /QAA45000|QAA/.test(ini.stored) && ini.bragAfter && ini.reboot !== 'gameOver', JSON.stringify(ini));
+    window.__tapAt(128, 60); await __wait(3); o.guarded = G.state === 'gameOver'; await __wait(30); window.__tapAt(128, 60); await __wait(3); o.reboot = G.state; return o; }); // a tap right after saving cannot reboot; one 0.5 s later does
+  rep('top 5: a run that makes the table asks for initials (keys and touch), saves them, then the share buttons', ini.entry && !ini.brag && ini.letters === 'QAA' && ini.saved === 'QAA' && ini.rank === 1 && /QAA45000|QAA/.test(ini.stored) && ini.bragAfter && ini.guarded && ini.reboot !== 'gameOver', JSON.stringify(ini));
   const ini2 = await p.evaluate(async () => { const G = window.__th, o = {}; await __skipIntro(); G.tally = ['miss', 'miss', 'miss', 'miss', 'miss']; G.wave = 5; G.score = 100; G.cost = 0;
     for (let i = 0; i < 60 * 40 && G.state !== 'gameOver'; i++) { if (G.state === 'fox') G.fox.t = 999; if (G.state === 'intro' || G.state === 'gap') G.t = Math.max(G.t, 999); await __wait(1); } await __wait(30); o.lowEntry = !!G.entry;
     window.__tapAt(128, 60); await __wait(3); await __skipIntro(); G.runAssisted = true; G.tally = ['miss', 'miss', 'miss', 'miss', 'miss']; G.wave = 5; G.score = 999999; G.cost = 0;
@@ -169,6 +169,15 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
     G.props = [{ x: 120, y0: 80, y: 80, vx: 0, t: 0, st: 'fly' }]; window.__applyTheme('duck'); await __wait(3); G.lastShotF = -99; const s0 = G.score; window.__tapAt(128, 88); await __wait(3);
     o.score = G.score - s0; o.still = (G.props || []).filter(q => q.st === 'fly').length; window.__applyTheme('gpu'); G.props = []; return o; });
   rep('a PROD DB under a skin without one is neither drawn nor billed', sk.score > -1000, JSON.stringify(sk));
+  // ---- v4.4: the glitch hunter's fixes (initials need OK, a paused replay resumes on a tap, MENU from it cleans up)
+  const gh = await p.evaluate(async () => { const G = window.__th, o = {}; const key = k => window.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+    G.state = 'title'; G.paused = false; G.replay = null; G.entry = null; window.__tapAt(128, 100); await __wait(3); await __skipIntro(); G.score = 999999; G.cost = 0;
+    await __toGameOver(); o.entry = !!G.entry;
+    if (G.entry) { window.__tapAt(40, 40); await __wait(2); o.offTapSaved = !G.entry; key('Enter'); await __wait(2); o.saved = !G.entry; }
+    await __wait(40); key('r'); await __wait(20); o.replay = !!G.replay; key('p'); await __wait(2); o.paused = G.paused;
+    window.__tapAt(128, 40); await __wait(2); o.resumed = !G.paused && !!G.replay;
+    key('p'); await __wait(2); const q = window.__pauseQ(); window.__tapAt((q[0] + q[1]) / 2, (q[2] + q[3]) / 2); await __wait(3); o.quit = G.state === 'title' && !G.replay; o.freeze = G.freeze; return o; });
+  rep('initials: a tap off the letters never saves, Enter does; a paused replay resumes on a tap and quits from MENU', gh.entry && !gh.offTapSaved && gh.saved && gh.replay && gh.paused && gh.resumed && gh.quit && !gh.freeze, JSON.stringify(gh));
   rep('no page errors', errs.length === 0, errs.join(' | ') || 'none');
   for (const r of out) console.log((r.ok ? 'PASS ' : 'FAIL ') + r.n + ' — ' + r.how);
   const bad = out.filter(r => !r.ok).length; console.log(bad ? bad + ' FAILED' : 'ALL PASS'); await b.close(); process.exit(bad ? 1 : 0);
