@@ -97,7 +97,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
     while (bo.enter) await __wait(1); bo.vx *= 0.1; while (((bo.fw || 0) % 60) < window.__fw.open + 2) await __wait(1);
     G.combo = 4; const s1 = G.shots, h1 = bo.hp, sc1 = G.score; G.lastShotF = -99; window.__tapAt(bo.x + 24, bo.y + 20); await __wait(2);
     o.vram = G.shots === s1; o.hp = bo.hp === h1; o.pen = sc1 - G.score; o.combo = G.combo; o.mult = { easy: 1, medium: 1.5, hard: 2, daily: 1.5 }[G.diff]; return o; });
-  rep('boss: a tap on the rotating IPs costs points and the combo, never VRAM', bs.vram && bs.hp && bs.pen === Math.round(100 * bs.mult) && bs.combo === 0, JSON.stringify(bs));
+  rep('boss: a tap on the rotating IPs costs points and the combo, never VRAM', bs.vram && bs.hp && bs.pen === Math.round(300 * bs.mult) && bs.combo === 0, JSON.stringify(bs));
 
   // ---- v4m: late arrivals, 429 freezes fakes, FAST by age, the closing window, disguise clamp
   const lm = await p.evaluate(async () => { const G = window.__th, o = {}; G.gotcha = null; G.freeze = 0; G.swarm = null; G.state = 'fly'; G.flightT = 30; G.shots = 3; G.round = 5; G.wx = window.__T().levels[0];
