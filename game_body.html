@@ -50,6 +50,11 @@ body.cardopen #share,body.cardopen #brag{visibility:hidden}
 .cardwrap{display:flex; flex-direction:column; align-items:center; gap:12px; max-width:100%}
 #cardimg{display:block; width:min(86vw,72vh,540px); height:auto; image-rendering:pixelated; border:3px solid var(--bezel); user-select:auto; -webkit-user-select:auto; -webkit-touch-callout:default}
 .cardhint{font:600 10px/1.6 var(--font-ui); letter-spacing:.08em; color:var(--dim); text-align:center}
+#codebox{position:fixed; inset:0; z-index:21; background:rgba(5,5,10,.88); display:flex; align-items:center; justify-content:center; padding:16px}
+.cbw{display:flex; flex-direction:column; align-items:center; gap:14px; background:var(--cab); border:3px solid var(--bezel); padding:20px 22px}
+.cbt{font:700 12px/1.4 var(--font-ui); letter-spacing:.12em; color:var(--accent)}
+#codefield{font:700 22px/1.2 var(--font-ui); letter-spacing:.2em; text-transform:uppercase; width:9ch; text-align:center; color:var(--ink); background:#000; border:2px solid var(--accent); border-radius:2px; padding:10px; -webkit-user-select:text; user-select:text; touch-action:manipulation}
+.cbb{display:flex; gap:10px} .cbb button{font:700 12px/1 var(--font-ui); letter-spacing:.1em; border:0; padding:10px 16px; border-radius:2px; cursor:pointer; touch-action:manipulation} #codeok{color:var(--cab); background:var(--accent)} #codex{color:var(--ink); background:#3a344c}
 #cardclose{font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--accent); border:0; padding:9px 16px; border-radius:2px; cursor:pointer}
 #cardclose:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
 #share{position:absolute; left:50%; bottom:-42px; transform:translateX(-112%); z-index:2; font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--ink); border:0; padding:8px 12px; cursor:pointer; border-radius:2px; box-shadow:0 2px 0 #000}
@@ -68,6 +73,7 @@ body.cardopen #share,body.cardopen #brag{visibility:hidden}
   <button id="brag" type="button" hidden>COPY TEXT</button>
   <div id="bragtxt" hidden></div>
 </div>
+<div id="codebox" hidden role="dialog" aria-label="Enter a code"><form class="cbw" id="codeform" autocomplete="off"><div class="cbt">TYPE A CODE</div><input id="codefield" type="text" inputmode="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go" maxlength="10" aria-label="Code"><div class="cbb"><button id="codeok" type="submit">OK</button><button id="codex" type="button">CANCEL</button></div></form></div>
 <div id="cardbox" hidden role="dialog" aria-label="Share card"><div class="cardwrap"><img id="cardimg" alt="Your Token Hunt result card"><div class="cardhint">LONG-PRESS OR RIGHT-CLICK THE CARD TO SAVE IT</div><button id="cardclose" type="button">CLOSE</button></div></div>
 <input id="code" tabindex="-1" type="text" inputmode="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Enter a code" style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none">
 <div class="foot" id="foot">TAP TO SERVE <span class="keys">&middot; <b>M</b> MUTE &middot; <b>P</b> PAUSE &middot; <b>C</b> CRT</span> &middot; ONE FILE. ZERO ASSETS. ZERO NETWORK REQUESTS.</div>
@@ -765,10 +771,13 @@ function handleTap(x,y){
 const codeInput=document.getElementById('code');
 function logoTap(x,y){ const now=performance.now(); G.taps=G.taps.filter(t=>now-t<4000); G.taps.push(now);
   if(G.taps.length>=7){ G.taps=[]; // phones: a real text box (a hidden input's keyboard never opened on iOS)
-    let v=null, t0=performance.now(); try{ v=window.prompt('TYPE A CODE'); }catch(e){}
-    if(v){ for(const ch of String(v).toLowerCase().replace(/[^a-z]/g,'')) feedKey(ch); return true; }
-    if(v===null&&performance.now()-t0<50){ codeInput.style.pointerEvents='auto'; codeInput.value=''; codeInput.focus(); toast('TYPE A CODE'); setTimeout(()=>codeInput.blur(),20000); } // no dialogs here (a sandboxed frame): the hidden input
-    return true; } return false; }
+    openCodeBox(); return true; } return false; }
+const codeBox=document.getElementById('codebox'), codeField=document.getElementById('codefield');
+function openCodeBox(){ codeBox.hidden=false; codeField.value=''; try{ codeField.focus({preventScroll:true}); }catch(e){} } // a visible field: if the keyboard does not open at once, a tap on the box opens it and it stays
+function closeCodeBox(){ codeBox.hidden=true; try{ codeField.blur(); }catch(e){} }
+document.getElementById('codeform').addEventListener('submit',e=>{ e.preventDefault(); const v=codeField.value.toLowerCase().replace(/[^a-z]/g,''); closeCodeBox(); G.keys=''; const before=G.toast; for(const ch of v) feedKey(ch); if(v&&G.toast===before) toast('NO SUCH CODE'); });
+document.getElementById('codex').addEventListener('click',closeCodeBox);
+codeBox.addEventListener('pointerdown',e=>{ if(e.target===codeBox) closeCodeBox(); });
 codeInput.addEventListener('input',()=>{ const v=codeInput.value.toLowerCase().replace(/[^a-z]/g,''); codeInput.value=''; for(const ch of v) feedKey(ch); });
 codeInput.addEventListener('blur',()=>{ codeInput.style.pointerEvents='none'; });
 let ONEHAND=false; try{ ONEHAND=localStorage.getItem('th.onehand')==='1'; }catch(e){}
@@ -1215,7 +1224,7 @@ if(!window.PointerEvent){ const fake=(ev,type,touch)=>{ const t=touch?ev.changed
   cv.addEventListener('touchstart',e=>{ e.preventDefault(); fake(e,'pointerdown',true); },{passive:false}); cv.addEventListener('touchend',e=>{ fake(e,'pointerup',true); });
   cv.addEventListener('mousedown',e=>fake(e,'pointerdown',false)); cv.addEventListener('mousemove',e=>fake(e,'pointermove',false)); cv.addEventListener('mouseup',e=>fake(e,'pointerup',false)); }
 const HELD={}; window.addEventListener('keyup',e=>{ delete HELD[e.key]; });
-window.addEventListener('keydown',e=>{ const k=e.key; if(k.startsWith('Arrow')&&G.state==='fly'){ HELD[k]=true; e.preventDefault(); } if(e.repeat) return; if(document.activeElement===codeInput) return; if(document.activeElement&&document.activeElement.tagName==='BUTTON'&&(k==='Enter'||k===' ')&&cardBox.hidden) return; /* a focused SHARE/COPY/CLOSE button owns Enter and Space */ if(k==='Tab') document.body.classList.remove('pointer'); /* the focus ring is for Tab navigation, not for game keys */ voiceGesture();
+window.addEventListener('keydown',e=>{ const k=e.key; if(k.startsWith('Arrow')&&G.state==='fly'){ HELD[k]=true; e.preventDefault(); } if(e.repeat) return; if(document.activeElement===codeInput||!codeBox.hidden) return; if(document.activeElement&&document.activeElement.tagName==='BUTTON'&&(k==='Enter'||k===' ')&&cardBox.hidden) return; /* a focused SHARE/COPY/CLOSE button owns Enter and Space */ if(k==='Tab') document.body.classList.remove('pointer'); /* the focus ring is for Tab navigation, not for game keys */ voiceGesture();
   if(!cardBox.hidden){ if(k==='Escape'||k==='Enter'||k===' '){ hideCard(); e.preventDefault(); } else if(k==='Tab'){ try{ document.getElementById('cardclose').focus(); }catch(e2){} e.preventDefault(); } return; } /* Tab stays in the dialog */ if(G.entry&&G.state==='gameOver'){ entryKey(k,e); return; } const prevKeys=G.keys; if(k.length===1&&/[a-z]/i.test(k)) feedKey(k.toLowerCase());
   if((k==='c'||k==='C')&&!/(vc?|du)$/.test(prevKeys)) toggleCRT(); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
   if(G.state==='title'&&(k==='1'||k==='2'||k==='3'||k==='4')){ setDiff(DIFF_ORDER[+k-1]); SFX.blip(); return; }
