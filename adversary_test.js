@@ -19,7 +19,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
       for (const k in (T.tips || {})) if (w7(T.tips[k]) > 240) bad.push(id + ' tip ' + k + ' ' + w7(T.tips[k]));
       if (w7(T.tagline[1]) > 150) bad.push(id + ' tagline ' + w7(T.tagline[1]));
       for (const l of T.howto) if (w7(l) > 146) bad.push(id + ' howto ' + l + ' ' + w7(l));
-      const X = T.adv; const worst = [X.served + ' 10/12 ' + X.hi + ' -> ' + X.fake + ' GO ' + X.hi, X.served + ' 10/12 ' + X.lo + ' -> ' + X.fake + ' GO ' + X.lo, 'SERVE TIME 9.9S -> ' + X.fake + ' LOOK REAL 1.5S', X.served + ' ' + X.hi + ' FASTER -> ' + X.fake + ' GO ' + X.hi, 'DODGED 10/12 -> ' + X.hide, X.served + ' 10/12 ' + X.fake + ' -> MORE ' + X.fake, X.fake + ' GLITCH LESS: 75% -> 60%', X.ver + '12 ' + X.head];
+      const X = T.adv; const worst = [X.served + ' 10/12 ' + X.hi + ' -> ' + X.fake + ' 80% ' + X.hi, X.served + ' 10/12 ' + X.lo + ' -> ' + X.fake + ' 80% ' + X.lo, 'SERVE TIME 9.9S -> ' + X.fake + ' LOOK REAL 1.5S', X.served + ' ' + X.hi + ' FASTER -> ' + X.fake + ' 80% ' + X.hi, 'DODGED 10/12 -> ' + X.hide, X.served + ' 10/12 ' + X.fake + ' -> MORE ' + X.fake, X.fake + ' GLITCH LESS: 75% -> 60%', X.ver + '12 ' + X.head];
       for (const l of worst) if (w7(l) > 240) bad.push(id + ' card ' + l + ' ' + w7(l)); }
     window.__applyTheme(th0); return bad; });
   rep('all rule cards, tips, title lines and card lines fit', widths.length === 0, widths.join('; ') || 'ok');
@@ -31,7 +31,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
         if (real.length) { const t = real.find(x => x.tier === 'hi') || real[0]; G.lastShotF = -99; window.__click(t.x + 12, t.y + 10); } } }
     await __wait(5); return { state: G.state, update: G.adv.update, policy: G.adv.policy, ver: G.adv.ver }; });
   rep('epoch 1 trains model v2 and prints what it will do', r1.state === 'roundEnd' && r1.ver === 2 && r1.update && r1.update.length >= 2 && r1.update.every(l => l.includes('->')), JSON.stringify(r1.update));
-  rep('policy matches the card: colour all-or-nothing, serve time 15..90 frames, glitch 60%', r1.policy && (r1.policy.tierHi === 1 || r1.policy.tierHi === 0) && r1.policy.hide >= 15 && r1.policy.hide <= 90 && r1.policy.duty === 0.6, JSON.stringify(r1.policy));
+  rep('policy matches the card: colour 80/20, serve time 15..90 frames, glitch 60%', r1.policy && (r1.policy.tierHi === 0.8 || r1.policy.tierHi === 0.2) && r1.policy.hide >= 15 && r1.policy.hide <= 90 && r1.policy.duty === 0.6, JSON.stringify(r1.policy));
   // the card: a first tap shows every line, the second continues
   await p.evaluate(async () => { const G = window.__th; G.t = 45; await __wait(2); window.__click(128, 100); await __wait(2); });
   await p.screenshot({ path: SHOTS + '/adv_card_all.png' });
@@ -45,7 +45,13 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
     const h = G.birds.find(x => x.bad && x.adv); if (h) { for (let i = 0; i < 80; i++) { h.vx = 0; h.vy = 0; h.dirT = 1e9; G.flightT = 0; const at = h.at; await __wait(1); look.push([at, window.__render().birds.length]); } }
     return { built, policy: G.adv.policy, epochBuilt: G.adv.epochBuilt, round: G.round }; });
   rep('epoch 2 builds a trained fake by its 2nd wave', r3.built && r3.built.ep <= 3 && r3.epochBuilt >= 1, JSON.stringify(r3.built) + ' epochBuilt ' + r3.epochBuilt);
-  rep('the trained fake wears the printed colour and carries the learned hide/duty', r3.built && r3.built.tier === (r3.policy.tierHi === 1 ? 'hi' : 'lo') && r3.built.hide === r3.policy.hide && r3.built.duty === r3.policy.duty, JSON.stringify({ b: r3.built, p: r3.policy }));
+  rep('the trained fake carries the learned hide/duty', r3.built && r3.built.hide === r3.policy.hide && r3.built.duty === r3.policy.duty, JSON.stringify({ b: r3.built, p: r3.policy }));
+  // colour: sample many trained fakes under the learned policy; about 4 in 5 wear the printed colour
+  const rc = await p.evaluate(async () => { const G = window.__th; const want = G.adv.policy.tierHi > 0.5 ? 'hi' : 'lo'; let n = 0, same = 0; G.forceHalluc = true;
+    for (let i = 0; i < 60; i++) { G.state = 'gap'; G.t = 99; G.round = 3; G.wave = 0; G.epochWaves = 2; G.tally = []; G.swarmDone = true; G.bossDone = true; G.birds = []; await __wait(2);
+      const h = G.birds.find(x => x.bad && x.adv); if (h) { n++; if (h.tier === want) same++; } }
+    G.forceHalluc = false; return { n, same, want }; });
+  rep('trained fakes wear the printed colour 4 times in 5', rc.n >= 40 && rc.same / rc.n > 0.65 && rc.same / rc.n < 0.95, JSON.stringify(rc));
   // phase check: freeze the sim (hit-stop), then compare the fake's pixels with the same request drawn as a real one; equal = clean
   const r4 = await p.evaluate(async () => { const G = window.__th; const res = []; G.state = 'fly'; G.flightT = 0; G.linger = null; G.tip = null;
     const h = { x: 20, y: 40, px: 20, py: 40, vx: 0.01, vy: 0, sp: 0, tier: 'hi', bad: true, adv: true, duty: 0.5, hide: 30, hideTag: false, ph0: 0, st: 'fly', f: 0, at: 0, dirT: 1e9, hitT: 0 };
@@ -75,9 +81,9 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
     const bo = G.birds.find(x => x.boss); if (!bo) return { none: true, state: G.state };
     o.enter = bo.enter; const s0 = G.shots; window.__click(Math.max(2, bo.x + 30), bo.y + 20); G.lastShotF = -99; await __wait(2); o.freeDeploy = G.shots === s0 && bo.hp === bo.hp0;
     while (bo.enter) await __wait(1); bo.vx *= 0.1; // slow it so the test fits on screen
-    while (((bo.fw || 0) % 80) < 52) await __wait(1); const s1 = G.shots, h1 = bo.hp; G.lastShotF = -99; window.__click(bo.x + 24, bo.y + 20); await __wait(2); o.freeFirewall = G.shots === s1 && bo.hp === h1;
-    while (((bo.fw || 0) % 80) >= 50 || ((bo.fw || 0) % 80) < 2) await __wait(1);
-    let guard = 0; while (bo.st === 'fly' && bo.hp > 0 && guard++ < 400) { if (!(((bo.fw || 0) % 80) >= 50) && G.freeze === 0) { G.lastShotF = -99; G.shots = Math.max(G.shots, 3); window.__click(bo.x + 24, bo.y + 20); } await __wait(4); }
+    while (((bo.fw || 0) % 60) < 22) await __wait(1); const s1 = G.shots, h1 = bo.hp; G.lastShotF = -99; window.__click(bo.x + 24, bo.y + 20); await __wait(2); o.freeFirewall = G.shots === s1 && bo.hp === h1;
+    while (((bo.fw || 0) % 60) >= 20 || ((bo.fw || 0) % 60) < 2) await __wait(1);
+    let guard = 0; while (bo.st === 'fly' && bo.hp > 0 && guard++ < 400) { if (!(((bo.fw || 0) % 60) >= 20) && G.freeze === 0) { G.lastShotF = -99; G.shots = Math.max(G.shots, 3); window.__click(bo.x + 24, bo.y + 20); } await __wait(4); }
     o.killed = G.swarm && G.swarm.killed; o.agentsLeft = G.birds.filter(x => x.agent && x.st === 'fly').length; o.hp0 = bo.hp0; return o; });
   rep('epoch-8 intro counts the real HP', r5.line && /NINE/.test(r5.line) === /HITS/.test(r5.line), JSON.stringify(r5.line));
   rep('boss: deploying and firewalled taps are free', r5.freeDeploy && r5.freeFirewall, JSON.stringify(r5));
