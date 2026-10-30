@@ -1,4 +1,4 @@
-# Token Hunt — blind A/B panel (v4 "K" vs v3.5 "Q", Oct 29, 6:20–8:10 PM ET)
+# Token Hunt — blind A/B panel (v4 "K" vs v3.5 "Q", Oct 29, early evening)
 
 Thirteen cold agents, each playing both builds in its own headless browser (no GPU, no audio) for 25–55 minutes with
 screenshots, not told which was newer. Ten judge personas, one organizer stream run-through, two "AI selector" simulations
@@ -69,7 +69,7 @@ Jargon (VRAM, EPOCH) is the joke; the bot pops up every wave by design; a one-fi
 
 ---
 
-# Confirmation panel on v4.1 (Oct 29, 10:00–11:00 PM ET)
+# Confirmation panel on v4.1 (Oct 29, evening)
 
 Six cold seats on the v4.1 build (after the fixes above), single build, same harness.
 
