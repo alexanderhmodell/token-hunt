@@ -141,3 +141,23 @@ Same three seats, cold, on v4.2 (the rewind build).
 - **Boss:** three hits per opening, then it rotates (the hit-stop no longer stretches an opening); openings by mode (Easy 32, Medium 26, Hard 22 of 60 frames); hit pops beside it in rows, BLOCKED under it, its label on a backing.
 - **Readability:** the trap panel goes where the fake's path is not; tips stay off a top panel; the 429 label only when something froze and clear of its tip; the swarm hint without a box over the agents; the lingering critic holds no envelopes; replay skip shows the buttons at once; epoch cards with news hold 2.7 s; IDLE reads LOW TRAFFIC. HIGH STANDARDS.; the signature line ("AS AN AI, I CAN'T HELP WITH THAT.") plays the first time a request gets away, even in a wave where another was served.
 - A reload snapshot of one mode's best no longer leaks into the others.
+
+## v4.3 round 1 (Oct 30, early; four seats on v4.3, plus a real-input pass in Chrome)
+
+| Seat | Score | Placement | One line |
+|---|---|---|---|
+| Organizer stream sim | 8 | TOP 10, shortlist YES | "Leaning yes, not locked": the rewind is the AI angle as a mechanic; the one change for a lock is getting the critic's bubble off the launch lane |
+| Phone casual | 8 | TOP 10 | Rewind "the best feedback moment"; epoch cards too fast to read; WATCH DEMO under a finger started a real game half the time |
+| Score-chaser | 7 (was 6) | TOP 25% | The trap wave was fixed (2nd wave, 36 of 40); serving instantly except on trap waves pinned the disguise at 0.3 s; Hard beat Medium for free; mashing the boss nearly matched timing |
+| Glitch hunter (new seat) | 8 bugs | n/a | Rewind panel covered a fake that ended high; a paused replay could not be resumed by touch; codes replayed after a replay; mashing saved AAA and rebooted in 0.6 s |
+
+Real-input pass (Alex's Chrome, real clicks and keys): rewind, share/copy, pause/menu, M/C, initials, PROD DB, boss all fine; found a PROD DB throw under a skin without one (state fuzz), a TO BEAT line on negative runs, the share-card host running off a long URL, AGENT tags piling under the boss.
+
+## Applied (v4.4)
+
+- **The launch lane is clear** (the organizer's one change): the critic holds a typed line half a second, then the bubble leaves as the next wave starts.
+- **Adversary:** the trap wave is drawn per epoch (2nd, 3rd or 4th wave start, or the last one left) and takes any clear spot; it learns how long you wait with a fake up (the longer of that and your overall serve time); the colour habit carries half its evidence into the next epoch.
+- **Balance:** a bounced boss tap costs 300 x mode; Hard runs at 1.3; past epoch 33 the window keeps closing to 0.5 s; the meadow skin has its own do-not-touch (a bird feeder).
+- **Phone:** WATCH DEMO undoes the touch lift; epoch cards hold 150 frames (210 with a new rule; a tap skips); TRAFFIC FROM on a dark band; critic lines from a per-kind shuffle bag; the BIOS boot once a visit.
+- **PROD DB:** shows in the epoch that announces it; clears off for swarms and the boss; never throws under any skin.
+- **Glitches:** the rewind panel goes where the fake ended; a paused replay resumes on a tap (MENU quits) without a shot lockout; a replay restores the settings it found; initials save only on OK/Enter, taps count after 0.7 s, 0.5 s guard after saving; MENU clears the rewind's hold and tint; the copy-text fallback is a centred, selected box; a hidden tab is silent in every state; receipt counts every unserved fake as dodged; text spacing on the epoch card, game over, swarm and boss pops.
