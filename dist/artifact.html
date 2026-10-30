@@ -901,11 +901,11 @@ function update1(){
   G.fx=G.fx.filter(f=> f.t< (f.type==='pts'?48: f.type==='feather'?40:22)); }
 
 // ------------------------------------------------------------------ draw
-function drawSky(){ const wx=G.wx; ctx.fillStyle=wx.sky; ctx.fillRect(0,0,W,SKY_H);
-  if(wx.dusk){ const d=T.dusk; ctx.fillStyle=d.band1; ctx.fillRect(0,0,W,70); ctx.fillStyle=d.band2; ctx.fillRect(0,70,W,40); fillEllipse(206,138,13,13,d.sun1); fillEllipse(206,138,10,10,d.sun2); }
+function drawSky(over){ const wx=G.wx; if(!over){ ctx.fillStyle=wx.sky; ctx.fillRect(0,0,W,SKY_H); }
+  if(wx.dusk&&!over){ const d=T.dusk; ctx.fillStyle=d.band1; ctx.fillRect(0,0,W,70); ctx.fillStyle=d.band2; ctx.fillRect(0,70,W,40); fillEllipse(206,138,13,13,d.sun1); fillEllipse(206,138,10,10,d.sun2); }
   if(G.lightning>0){ ctx.fillStyle=G.lightning>7?'rgba(255,255,255,0.35)':'rgba(255,255,255,0.12)'; ctx.fillRect(0,0,W,SKY_H); }
   if(G.state==='fly'&&G.birds.some(b=>b.st==='away'&&!b.bad)){ ctx.fillStyle=T.banners.escapedTint; ctx.fillRect(0,0,W,GROUND); }
-  for(const c of G.clouds){ const x=Math.round(ip(c.px,c.x)), y=c.y; const col=wx.cloud; fillEllipse(x,y+6,14*c.w/3+6,5,col); fillEllipse(x-8,y+5,8,6,col); fillEllipse(x+6,y+2,10,7,col); fillEllipse(x+14,y+6,7,5,col); }
+  if(!over) for(const c of G.clouds){ const x=Math.round(ip(c.px,c.x)), y=c.y; const col=wx.cloud; fillEllipse(x,y+6,14*c.w/3+6,5,col); fillEllipse(x-8,y+5,8,6,col); fillEllipse(x+6,y+2,10,7,col); fillEllipse(x+14,y+6,7,5,col); }
   if(G.lightning>0){ ctx.fillStyle=G.lightning>4?'#fff6c8':'#9fb6d8'; let x=G.boltX,y=0; const r=seeded(G.boltX*7+(G.lightning>4?G.boltX:G.t)); for(let i=0;i<7;i++){ const nx=x+(r()-0.5)*26, ny=y+rnd(14,24); const steps=Math.max(Math.abs(nx-x),Math.abs(ny-y))|0; for(let s=0;s<=steps;s++){ ctx.fillRect(Math.round(x+(nx-x)*s/steps),Math.round(y+(ny-y)*s/steps),2,2); } x=nx;y=ny; if(y>150) break; } } }
 
 function rack(x,y,w,h,rows,seed){ ctx.fillStyle=SHADOW; ctx.fillRect(x,y,w,h); ctx.fillStyle='#3a3550'; ctx.fillRect(x+1,y+1,w-2,h-2);
@@ -958,7 +958,8 @@ function drawProd(q){ if(!T.prod) return; const x=Math.round(q.x), y=Math.round(
   ctx.fillStyle='#1a1420'; ctx.fillRect(x+1,y,14,18); ctx.fillRect(x,y+1,16,16); ctx.fillStyle='#cfc9dc'; ctx.fillRect(x+1,y+1,14,16); ctx.fillStyle='#f7f4e9'; ctx.fillRect(x+2,y+1,12,3);
   ctx.fillStyle='#8a8494'; ctx.fillRect(x+1,y+6,14,1); ctx.fillRect(x+1,y+11,14,1); ctx.fillStyle=((q.t>>4)&1)?'#39d353':'#1e7a3a'; ctx.fillRect(x+11,y+8,2,2); ctx.fillRect(x+11,y+13,2,2);
   if(q.st==='fly'){ const n=T.prod.name, tg=T.prod.tag; textS(n,clamp(x+8-Math.round(textW(n,1)/2),2,W-2-textW(n,1)),y-15,'#f7f4e9',1); if((q.t>>4)&1) textS(tg,clamp(x+8-Math.round(textW(tg,1)/2),2,W-2-textW(tg,1)),y+21,'#ff8a8a',1); } }
-function drawBird(b){ if(b.hold>0) return; const left=b.vx<0; let key, img; const hi=b.tier==='hi'; const bx=ip(b.px,b.x), by=ip(b.py,b.y); RENDER.birds.push([bx,by,b.st]); if(G.gotcha&&G.gotcha.full&&G.gotcha.bird===b&&gotHold()) return; /* the rewind draws it */
+function drawBird(b){ if(b.hold>0) return; const left=b.vx<0; let key, img; const hi=b.tier==='hi'; const bx=ip(b.px,b.x), by=ip(b.py,b.y); const v3=V3.pass; if(v3!==1) RENDER.birds.push([bx,by,b.st]); if(G.gotcha&&G.gotcha.full&&G.gotcha.bird===b&&gotHold()) return; /* the rewind draws it */
+  if(v3===1&&(b.boss||b.agent)) return; /* the boss and the agents stay 2D for now */
   if(b.boss){ if(b.st!=='fly') return; const img=S[T.boss.spr+(b.hitT>3?'W':'')+(b.vx<0?'L':'')], pop=1+0.12*(b.hitT/6), wob=b.hp<=2? Math.sin(G.t*1.3)*1.2 : 0; drawScaled(img,bx+wob,by,pop,pop);
     if(b.enter||fwUp(b)){ const tx=b.enter? T.boss.deploy : T.boss.fwTxt; if(b.enter||((b.fw||0)%FW_CYCLE)<FW_CYCLE-8||((b.at>>1)&1)) dashedBox(Math.round(bx)-2,Math.round(by)-2,52,44,ICE,(b.at>>2)&3); /* blinks before it drops */ { const lx=clamp(Math.round(bx+24-textW(tx,1)/2),2,W-2-textW(tx,1)), ly=Math.max(16,Math.round(by-8)); ctx.fillStyle='rgba(10,10,18,0.75)'; ctx.fillRect(lx-2,ly-2,textW(tx,1)+5,9); textS(tx,lx,ly,ICE,1); } }
     else if(((b.fw||0)%FW_CYCLE)>=fwOpen()-6&&((b.at>>1)&1)) dashedBox(Math.round(bx)-2,Math.round(by)-2,52,44,ICE,(b.at>>2)&3); // a flicker warns it is about to close
@@ -967,12 +968,13 @@ function drawBird(b){ if(b.hold>0) return; const left=b.vx<0; let key, img; cons
     ctx.fillStyle='rgba(255,77,77,0.35)'; for(let i=1;i<=4;i++){ const tx=bx-i*2*(b.vx+Math.sin((b.at-i)/7)*0.9), ty=by-i*2*b.vy; ctx.fillRect(Math.round(tx+6-(4-i)/2),Math.round(ty+4),5-i,5-i); } // red trail
     drawScaled(S[k+(left?'L':'')],Math.round(bx+rnd(-1,1)),Math.round(by+rnd(-1,1)),1.5,1.5); // jitter, 1.5x so it reads on a phone
     if(T.swarm.tag&&!(G.swarm&&G.swarm.boss)&&((b.at>>3)&3)!==3){ const tg=T.swarm.tag; textS(tg,clamp(Math.round(bx+6-textW(tg,1)/2),2,W-2-textW(tg,1)),Math.round(by-10),'#ff8a8a',1); } return; }
-  if(b.st==='fall'||b.st==='landed'){ key=b.bad?T.spr.fallBad: hi?T.spr.fallHi:T.spr.fall; img=S[key];
+  if(b.st==='fall'||b.st==='landed'){ key=b.bad?T.spr.fallBad: hi?T.spr.fallHi:T.spr.fall; img=S[key]; if(v3===2) return; if(v3===1){ V3.q.push({key,img,x:bx+4,y:by,rot:b.st==='fall'?(b.at+ALPHA)*0.32:0,shadow:false}); return; } /* a falling request spins on its axis */
     if(b.st==='fall') drawScaled(img, bx+4, by, Math.cos((b.at+ALPHA)*0.32), 1); else ctx.drawImage(img, Math.round(bx+4), Math.round(by)); return; } // coin-flip spin while falling
   key=(hi?T.spr.flyHi:T.spr.fly)[b.st==='hit'||b.bad?1:BIRD_FRAMES[b.f]]; // the tell: a fake never flaps, it glides with its wings level
   if(b.st==='hit'&&b.hitT<3) key+='W'; else if(b.frozen>0&&((G.t>>2)&1)) key+='I'; else if(b.bad){ const ph=fakePhase(b); if(ph===1||ph===3) key+='G'; else if(ph===2) key+='X'; } // ghost static, pale ghost or clean (fakePhase); a 429-frozen request blinks icy blue
   img=S[key+(left?'L':'')];
-  if(b.st==='hit'){ const pop=1+0.3*(1-easeOutCubic(Math.min(1,b.hitT/10))); drawScaled(img,bx,by,pop,pop); } // 3-frame white flash + 1.3x pop
+  if(v3===1){ const e={key:key+(left?'L':''),img,x:bx,y:by,shadow:b.st==='fly'}; if(b.st==='hit'){ const pop=1+0.3*(1-easeOutCubic(Math.min(1,b.hitT/10))); e.sx=e.sy=pop; } else if(b.st==='fly'&&BIRD_FRAMES[b.f]===2) e.sy=0.9; V3.q.push(e); return; }
+  if(v3===2){} else if(b.st==='hit'){ const pop=1+0.3*(1-easeOutCubic(Math.min(1,b.hitT/10))); drawScaled(img,bx,by,pop,pop); } // 3-frame white flash + 1.3x pop
   else if(b.st==='fly'&&BIRD_FRAMES[b.f]===2) drawScaled(img,bx,by,1,0.9); // squash on the downstroke
   else ctx.drawImage(img, Math.round(bx), Math.round(by));
   // the dashed outline keeps pace with the tag, so the shape cue never says more than the look does
@@ -1126,7 +1128,8 @@ function drawCrosshair(){ if(G.tapMark&&G.tapMark.t>0){ const m=G.tapMark, x=Mat
   if(!G.mouse.on||G.state!=='fly'||G.paused) return; const x=Math.round(G.mouse.x), y=Math.round(G.mouse.y);
   ctx.fillStyle=SHADOW; ctx.fillRect(x-7,y-1,15,3); ctx.fillRect(x-1,y-7,3,15);
   ctx.fillStyle= G.shots?'#f7f4e9':'#ff4d4d'; ctx.fillRect(x-6,y,4,1); ctx.fillRect(x+3,y,4,1); ctx.fillRect(x,y-6,1,4); ctx.fillRect(x,y+3,1,4); }
-function drawIcons(){ // crt (215,2) + pause (229,2) + mute (243,2)
+function drawIcons(){ // 3d (191,2) + crt (215,2) + pause (229,2) + mute (243,2)
+  if(T.scenery==='datacenter'){ ctx.fillStyle=SHADOW; ctx.fillRect(190,2,19,9); const on=v3On(); text('3D',193,4,on?'#3cd0ff':'#8a8494',1); if(on){ ctx.fillStyle='#3cd0ff'; ctx.fillRect(192,10,15,1); } }
   ctx.fillStyle=SHADOW; ctx.fillRect(215,2,11,9); const on=crtActive(); ctx.fillStyle=on?'#f7f4e9':'#8a8494'; ctx.fillRect(217,3,7,1); ctx.fillRect(217,8,7,1); ctx.fillRect(217,3,1,6); ctx.fillRect(223,3,1,6); ctx.fillRect(219,9,3,1);
   ctx.fillStyle=on?'#3cd0ff':'#5a5468'; ctx.fillRect(218,5,5,1); ctx.fillRect(218,7,5,1);
   ctx.fillStyle=SHADOW; ctx.fillRect(229,2,11,9); ctx.fillStyle=PAUSABLE[G.state]?'#f7f4e9':'#8a8494'; ctx.fillRect(232,4,2,5); ctx.fillRect(236,4,2,5);
@@ -1220,7 +1223,9 @@ glc.addEventListener('webglcontextrestored',()=>{ CRT.lost=false; if(crtWant) cr
 try{ if(matchMedia('(hover: none) and (pointer: coarse)').matches) document.body.classList.add('touch'); }catch(e){}
 function draw(){ ctx.save(); ctx.imageSmoothingEnabled=false; { const [ox,oy]=shakeOffset(performance.now()); RENDER.shake=[ox,oy]; if(ox||oy) ctx.translate(Math.round(ox),Math.round(oy)); }
   const [back,front]=SCENERY[T.scenery];
-  drawSky(); back();
+  if(v3On()){ V3.q.length=0; V3.pass=1; const foxUp=G.state==='fox'||G.state==='gameOver'||G.state==='gap'; if(G.state!=='title') for(const b of G.birds) if(b.st!=='gone'&&!((foxUp||G.state==='roundEnd'||G.state==='intro')&&b.st==='landed')) drawBird(b); /* pass 1: the requests become voxels */
+    gpuNode(14,94,38,4,'GPU 0-3',11); gpuNode(204,126,42,2,'GPU 4-5',29); /* their live faces, copied onto the boxes */ v3Render(); V3.pass=2; ctx.drawImage(V3.cv,0,0,W,SKY_H,0,0,W,SKY_H); drawSky(true); }
+  else { drawSky(); back(); }
   if(G.state==='title') drawTitle();
   else if(G.paused){ ctx.fillStyle='rgba(10,10,18,0.7)'; ctx.fillRect(0,0,W,SKY_H); } // paused: the sky is hidden, so pausing cannot be used to aim
   else { const foxUp=G.state==='fox'||G.state==='gameOver'||G.state==='gap'; if(!G.paused&&!foxUp&&G.linger) withLinger(()=>{ drawFox(1); drawFox(0); }); /* leaving: behind the new requests */ for(const b of G.birds) if(b.st!=='gone'&&!((foxUp||G.state==='roundEnd'||G.state==='intro')&&b.st==='landed')) drawBird(b); for(const q of G.props||[]) drawProd(q); if(foxUp) drawFox(0); }
@@ -1228,6 +1233,91 @@ function draw(){ ctx.save(); ctx.imageSmoothingEnabled=false; { const [ox,oy]=sh
   if(G.flash>0){ ctx.fillStyle='rgba('+(G.flashCol||'255,255,255')+','+((G.flashA||0.18)*(REDUCED?0.35:1))+')'; ctx.fillRect(0,0,W,SKY_H); } // softer under reduced motion
   drawBanner(); drawGotcha(); drawHUD(); drawCrosshair(); drawIcons(); drawReplayBadge(); drawCaptions();
   if(ONEHAND&&G.state==='fly'&&!G.paused){ text('ONE-HAND',150,221,'#bdeeff',1); if((G.t>>5)&1) textC('TAP THE HUD TO FIRE',191,'#bdeeff',1); } }
+
+// ------------------------------------------------------------------ 3D mode: a voxel diorama behind the same game
+// The sim is untouched. Every request's front face sits on the z=0 plane, which is the plane the 2D hit test and the replays
+// live on, so a tap lands on exactly the pixels it always did. The scene renders at native 256x200 into an offscreen WebGL
+// canvas and is composited into the 2D frame where the sky used to be, so the CRT, the HUD, the critic and the text are the
+// same code. No library, no request: ~250 lines of WebGL1. Press G (or tap the 3D icon) to toggle; the duck skin stays 2D.
+let V3WANT=false; try{ V3WANT=localStorage.getItem('th.3d')==='1'; }catch(e){} try{ if(/[?&]3d\b/.test(location.search)) V3WANT=true; }catch(e){}
+const V3={ok:false, tried:false, gl:null, cv:null, prog:null, a:{}, u:{}, mesh:{}, env:null, pass:0, q:[], D:300, VY:116, DEPTH:4, nodes:null, cloudTex:{}, tex:{}, failed:0};
+const v3On=()=> V3WANT&&V3.ok&&T.scenery==='datacenter';
+
+const V3VS='attribute vec3 p;attribute vec3 n;attribute vec4 c;attribute vec2 t;uniform mat4 m;uniform vec3 sh;uniform float D,VY,W,H;varying vec4 vc;varying vec2 vt;varying float vz;varying vec3 vn;'+
+ 'void main(){vec4 q=m*vec4(p,1.);vn=mat3(m)*n;vc=c;vt=t;vz=q.z;float w=(D-q.z)/D;float x=(q.x-W*.5+sh.x)/(W*.5);float y=-(q.y-VY+sh.y)/(H*.5);float y0=-(VY-H*.5)/(H*.5);gl_Position=vec4(x,y+y0*w,(-q.z/1200.)*w,w);}';
+const V3FS='precision mediump float;uniform vec3 L;uniform vec3 fog;uniform float fogA;uniform sampler2D tx;uniform float useT;uniform float alpha;uniform float lit;varying vec4 vc;varying vec2 vt;varying float vz;varying vec3 vn;'+
+ 'void main(){vec4 col=vc;if(useT>.5){vec4 s=texture2D(tx,vt);if(s.a<.5)discard;col*=s;}float d=max(0.,dot(normalize(vn),L));float li=mix(1.,.52+.48*d,lit);col.rgb*=li;float f=clamp((-vz-120.)/520.,0.,fogA);col.rgb=mix(col.rgb,fog,f);col.a*=alpha;gl_FragColor=col;}';
+function v3Init(){ if(V3.tried) return V3.ok; V3.tried=true;
+  try{ const c=document.createElement('canvas'); c.width=W; c.height=H; const gl=c.getContext('webgl',{alpha:false,antialias:false,depth:true,preserveDrawingBuffer:false}); if(!gl) return false;
+    const sh=(ty,src)=>{ const s=gl.createShader(ty); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+    const pr=gl.createProgram(); gl.attachShader(pr,sh(gl.VERTEX_SHADER,V3VS)); gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,V3FS)); gl.linkProgram(pr); if(!gl.getProgramParameter(pr,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
+    gl.useProgram(pr); for(const k of ['p','n','c','t']) V3.a[k]=gl.getAttribLocation(pr,k); for(const k of ['m','sh','D','VY','W','H','L','fog','fogA','tx','useT','alpha','lit']) V3.u[k]=gl.getUniformLocation(pr,k);
+    gl.uniform1f(V3.u.D,V3.D); gl.uniform1f(V3.u.VY,V3.VY); gl.uniform1f(V3.u.W,W); gl.uniform1f(V3.u.H,H); gl.uniform1i(V3.u.tx,0); const l=[-0.38,-0.62,0.69], ln=Math.hypot(...l); gl.uniform3f(V3.u.L,l[0]/ln,l[1]/ln,l[2]/ln);
+    gl.enable(gl.DEPTH_TEST); gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA); 
+    V3.gl=gl; V3.cv=c; V3.prog=pr; V3.white=v3Tex(gl,(()=>{ const t=document.createElement('canvas'); t.width=t.height=1; const x=t.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,1,1); return t; })()); V3.ok=true;
+    c.addEventListener('webglcontextlost',e=>{ e.preventDefault(); V3.ok=false; }); }
+  catch(e){ V3.ok=false; V3.err=String(e&&e.message||e); }
+  return V3.ok; }
+function v3Tex(gl,src){ const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,src);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); return t; }
+// geometry builder: interleaved p3 n3 c4 t2 (12 floats), indexed quads
+function V3Geo(){ this.v=[]; this.i=[]; this.n=0; }
+V3Geo.prototype.quad=function(a,b,c,d,nrm,col,uv){ const u=uv||[0,0,1,0,1,1,0,1]; const P=[a,b,c,d]; for(let k=0;k<4;k++) this.v.push(P[k][0],P[k][1],P[k][2],nrm[0],nrm[1],nrm[2],col[0],col[1],col[2],col[3]==null?1:col[3],u[k*2],u[k*2+1]); const n=this.n; this.i.push(n,n+1,n+2,n,n+2,n+3); this.n+=4; return this; };
+// an axis-aligned box: x,y to x+w,y+h on screen, front face at z, extruded to z-d. Faces wound counter-clockwise as seen from outside (y grows down).
+V3Geo.prototype.box=function(x,y,z,w,h,d,col,faces){ const x2=x+w,y2=y+h,z2=z-d, f=faces||{};
+  if(f.front!==false) this.quad([x,y,z],[x,y2,z],[x2,y2,z],[x2,y,z],[0,0,1],col);
+  if(f.back!==false) this.quad([x2,y,z2],[x2,y2,z2],[x,y2,z2],[x,y,z2],[0,0,-1],col);
+  if(f.top!==false) this.quad([x,y,z2],[x,y,z],[x2,y,z],[x2,y,z2],[0,-1,0],col);
+  if(f.bottom!==false) this.quad([x,y2,z],[x,y2,z2],[x2,y2,z2],[x2,y2,z],[0,1,0],col);
+  if(f.left!==false) this.quad([x,y,z2],[x,y2,z2],[x,y2,z],[x,y,z],[-1,0,0],col);
+  if(f.right!==false) this.quad([x2,y,z],[x2,y2,z],[x2,y2,z2],[x2,y,z2],[1,0,0],col); return this; };
+V3Geo.prototype.upload=function(gl){ const b={vb:gl.createBuffer(), ib:gl.createBuffer(), n:this.i.length}; gl.bindBuffer(gl.ARRAY_BUFFER,b.vb); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(this.v),gl.STATIC_DRAW); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,b.ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(this.i),gl.STATIC_DRAW); return b; };
+const V3_ID=new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
+function v3Mat(tx,ty,tz,sx,sy,sz,cx,cy,rotY){ // scale about (cx,cy,0), optional spin about the vertical axis through cx, then translate
+  const c=Math.cos(rotY||0), s=Math.sin(rotY||0); // R*S then T; columns are the transformed basis
+  return new Float32Array([ sx*c,0,-sx*s,0,  0,sy,0,0,  sz*s,0,sz*c,0,  tx+cx-(cx*sx*c), ty+cy-cy*sy, tz+cx*sx*s, 1 ]); }
+function v3Draw(b,mat,tex,alpha,unlit){ const gl=V3.gl; gl.uniform1f(V3.u.lit,unlit?0:1); gl.uniformMatrix4fv(V3.u.m,false,mat||V3_ID); gl.bindTexture(gl.TEXTURE_2D,tex||V3.white); gl.uniform1f(V3.u.useT,tex?1:0); gl.uniform1f(V3.u.alpha,alpha==null?1:alpha);
+  gl.bindBuffer(gl.ARRAY_BUFFER,b.vb); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,b.ib); const S=48; gl.vertexAttribPointer(V3.a.p,3,gl.FLOAT,false,S,0); gl.vertexAttribPointer(V3.a.n,3,gl.FLOAT,false,S,12); gl.vertexAttribPointer(V3.a.c,4,gl.FLOAT,false,S,24); gl.vertexAttribPointer(V3.a.t,2,gl.FLOAT,false,S,40);
+  for(const k in V3.a) gl.enableVertexAttribArray(V3.a[k]); gl.drawElements(gl.TRIANGLES,b.n,gl.UNSIGNED_SHORT,0); }
+const v3Col=hex=>{ const n=parseInt(hex.slice(1),16); return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255,1]; };
+// a sprite canvas becomes a voxel slab: one cube per opaque pixel, only the exposed faces, the pixel colour on every face
+function v3Voxel(img){ const w=img.width, h=img.height, d=img.getContext('2d').getImageData(0,0,w,h).data, g=new V3Geo(), DP=V3.DEPTH; const at=(x,y)=> x>=0&&y>=0&&x<w&&y<h&&d[(y*w+x)*4+3]>0;
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const o=(y*w+x)*4; if(!d[o+3]) continue; const col=[d[o]/255,d[o+1]/255,d[o+2]/255,1];
+    g.box(x,y,0,1,1,DP,col,{left:!at(x-1,y), right:!at(x+1,y), top:!at(x,y-1), bottom:!at(x,y+1)}); }
+  return g.upload(V3.gl); }
+function v3Mesh(key,img){ return V3.mesh[key]||(V3.mesh[key]=v3Voxel(img)); }
+// the hall: raised floor with its grid and the two neon rails, the server skyline as boxes along the back wall, two GPU nodes standing on the floor
+function v3Env(){ const gl=V3.gl, wx=G.wx, dark=wx.storm||wx.rain||wx.dusk, g=new V3Geo(), FAR=-620, NEAR=110, fl=v3Col(wx.floor), gr=v3Col(dark?'#1c1f30':'#232739');
+  g.quad([-500,GROUND,NEAR],[500,GROUND,NEAR],[500,GROUND,FAR],[-500,GROUND,FAR],[0,-1,0],fl); // floor
+  for(let x=-496;x<=W+496;x+=16) g.quad([x,GROUND-0.3,NEAR],[x+1,GROUND-0.3,NEAR],[x+1,GROUND-0.3,FAR],[x,GROUND-0.3,FAR],[0,-1,0],gr); // tiles into the depth
+  for(let z=NEAR;z>FAR;z-=16) g.quad([-500,GROUND-0.3,z],[500,GROUND-0.3,z],[500,GROUND-0.3,z-1],[-500,GROUND-0.3,z-1],[0,-1,0],gr); // ...and across
+  g.quad([-500,GROUND-0.6,22],[500,GROUND-0.6,22],[500,GROUND-0.6,20],[-500,GROUND-0.6,20],[0,-1,0],v3Col('#3cd0ff')); g.quad([-500,GROUND-0.6,10],[500,GROUND-0.6,10],[500,GROUND-0.6,8],[-500,GROUND-0.6,8],[0,-1,0],v3Col('#8a5cf5')); // the rails
+  { const ZB=-300, k=(V3.D-ZB)/V3.D, cx=W/2, vy=V3.VY, r0=seeded(3), bc=v3Col(dark?'#1b1a2c':'#1f2340'), bc2=v3Col(dark?'#15142a':'#1a1d36'); let x=0; // the skyline, scaled so it keeps its 2D silhouette from the back wall
+    while(x<W){ const w=10+Math.floor(r0()*18), h=8+Math.floor(r0()*18); const X=cx+(x-cx)*k, Wd=w*k, Y=vy+(GROUND-h-vy)*k, Hh=GROUND-Y; g.box(X,Y,ZB,Wd,Hh,30+h*2,bc); if(w>14){ g.box(X+Wd*0.3,Y-Hh*0.25,ZB-4,Wd*0.4,Hh*0.25,22,bc2); } x+=w+1+Math.floor(r0()*3); }
+  }
+  const wg=new V3Geo(); wg.quad([-900,-400,FAR-1],[-900,GROUND,FAR-1],[900,GROUND,FAR-1],[900,-400,FAR-1],[0,0,1],v3Col(wx.sky)); // back wall in the sky colour, unlit
+  if(wx.dusk){ const d=T.dusk, g=wg; const far=FAR-0.5; g.quad([-900,-400,far],[-900,70,far],[900,70,far],[900,-400,far],[0,0,1],v3Col(d.band1)); g.quad([-900,70,far],[-900,110,far],[900,110,far],[900,70,far],[0,0,1],v3Col(d.band2)); }
+  V3.env=g.upload(gl); V3.wall=wg.upload(gl); V3.envKey=wx.name+(dark?1:0);
+  // the GPU nodes: their 2D faces (fans spin, bars rise) go on the front of a box each frame
+  V3.nodes=[{x:14,y:94,w:38,cards:4,label:'GPU 0-3',seed:11,z:-28},{x:204,y:126,w:42,cards:2,label:'GPU 4-5',seed:29,z:-16}];
+  for(const nd of V3.nodes){ nd.h=nd.cards*16+10; nd.c=document.createElement('canvas'); nd.c.width=nd.w; nd.c.height=nd.h; nd.tex=v3Tex(gl,nd.c); const k=(V3.D-nd.z)/V3.D, cx=W/2, vy=V3.VY; const X=cx+(nd.x-cx)*k, Y=vy+(nd.y-vy)*k, Wd=nd.w*k, Hh=GROUND-Y;
+    const bg=new V3Geo(); bg.box(X,Y,nd.z,Wd,Hh,26,v3Col('#2a2640'),{front:false}); nd.body=bg.upload(gl); const fg=new V3Geo(); fg.quad([X,Y,nd.z],[X,Y+Hh,nd.z],[X+Wd,Y+Hh,nd.z],[X+Wd,Y,nd.z],[0,0,1],[1,1,1,1],[0,0,0,1,1,1,1,0]); nd.face=fg.upload(gl); }
+  const sg=new V3Geo(); for(let i=0;i<16;i++){ const a=i/16*Math.PI*2, b=(i+1)/16*Math.PI*2; sg.quad([0,0,0],[Math.cos(a)*13,0,Math.sin(a)*7],[Math.cos(b)*13,0,Math.sin(b)*7],[0,0,0],[0,-1,0],[0,0,0,0.55]); } V3.shadow=sg.upload(gl); // a soft blob under each request
+}
+function v3Cloud(wk,col){ const ck=wk+col; if(V3.cloudTex[ck]) return V3.cloudTex[ck]; const c=document.createElement('canvas'); c.width=48; c.height=16; const x=c.getContext('2d'); const el=(cx,cy,rx,ry)=>{ x.fillStyle=col; for(let y=-ry;y<=ry;y++){ const t=1-(y*y)/(ry*ry); if(t<0) continue; const hw=Math.round(rx*Math.sqrt(t)); x.fillRect(cx-hw,cy+y,hw*2+1,1); } };
+  el(16,10,14*wk/3+6,5); el(8,9,8,6); el(22,6,10,7); el(30,10,7,5); const q=new V3Geo(); q.quad([0,0,0],[0,16,0],[48,16,0],[48,0,0],[0,0,1],[1,1,1,1],[0,0,0,1,1,1,1,0]); return V3.cloudTex[ck]={tex:v3Tex(V3.gl,c), geo:q.upload(V3.gl)}; }
+// called from draw() with the 2D frame's own fox/HUD untouched: the sky band is replaced by the diorama
+function v3Render(){ const gl=V3.gl, wx=G.wx; if(!V3.env||V3.envKey!==wx.name+((wx.storm||wx.rain||wx.dusk)?1:0)) v3Env();
+  const sk=v3Col(wx.sky); gl.viewport(0,0,W,H); gl.clearColor(sk[0],sk[1],sk[2],1); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT); gl.useProgram(V3.prog);
+  gl.uniform3f(V3.u.sh,0,0,0); gl.uniform3f(V3.u.fog,sk[0],sk[1],sk[2]); gl.uniform1f(V3.u.fogA,wx.storm||wx.rain?0.82:0.6);
+  v3Draw(V3.wall,null,null,1,true); v3Draw(V3.env);
+  for(const nd of V3.nodes){ // the 2D node is drawn to its canvas, uploaded, and shown on the box
+    const x=nd.c.getContext('2d'); x.clearRect(0,0,nd.w,nd.h); x.drawImage(cv,nd.x,nd.y,nd.w,nd.h,0,0,nd.w,nd.h); gl.bindTexture(gl.TEXTURE_2D,nd.tex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,nd.c); v3Draw(nd.body); v3Draw(nd.face,null,nd.tex); }
+  { const ZC=-420, k=(V3.D-ZC)/V3.D, cx=W/2, vy=V3.VY; for(const c of G.clouds){ const cl=v3Cloud(c.w,wx.cloud), X=cx+(ip(c.px,c.x)-24-cx)*k, Y=vy+(c.y-4-vy)*k; v3Draw(cl.geo,v3Mat(X,Y,ZC,k,k,1,0,0,0),cl.tex,1,true); } }
+  gl.depthMask(false); for(const e of V3.q){ if(e.shadow) v3Draw(V3.shadow,v3Mat(e.x+12,GROUND-1.2,-3,1,1,1,0,0,0),null,1,true); } gl.depthMask(true); // shadows first, under everything that flies
+  for(const e of V3.q){ const m=v3Mesh(e.key,e.img); v3Draw(m,v3Mat(e.x,e.y,0,e.sx==null?1:e.sx,e.sy==null?1:e.sy,1,e.img.width/2,e.img.height/2,e.rot||0),null,e.alpha==null?1:e.alpha); }
+  V3.q.length=0; }
+function toggle3D(){ if(!v3Init()){ toast('NO WEBGL FOR 3D'); return; } V3WANT=!V3WANT; try{ localStorage.setItem('th.3d',V3WANT?'1':'0'); }catch(e){} toast(V3WANT? '3D ON' : '3D OFF'); SFX.blip(); }
 
 // ------------------------------------------------------------------ input
 const TOUCH_LIFT=8; // small finger offset; the touch hitbox below also extends down toward the thumb
@@ -1237,7 +1327,7 @@ cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===fals
   const rawY=p.y+(p.touch?TOUCH_LIFT:0);
   const birdUnder= G.state==='fly'&&G.birds.some(b=>b.st==='fly'&&!(b.hold>0)&&p.x>=b.x-8&&p.x<=b.x+32&&p.y>=b.y-8&&p.y<=b.y+40);
   { const band= G.state==='title'? 24 : (!G.replay&&G.frame-(G.lastShotF||-99)<30? 0 : 14); // outside the title the icons take only a precise tap, and none right after a shot
-    if(!birdUnder&&rawY<=band){ if(p.x>=240){ toggleMute(); return; } if(p.x>=228&&p.x<240){ setPaused(!G.paused); return; } if(p.x>=205&&p.x<228){ toggleCRT(); return; } } }
+    if(!birdUnder&&rawY<=band){ if(p.x>=240){ toggleMute(); return; } if(p.x>=228&&p.x<240){ setPaused(!G.paused); return; } if(p.x>=205&&p.x<228){ toggleCRT(); return; } if(p.x>=186&&p.x<205){ toggle3D(); return; } } }
   if(G.replay){ if(G.paused){ const ry=p.y+(p.touch?TOUCH_LIFT:0); if(p.x>=PAUSE_Q[0]&&p.x<=PAUSE_Q[1]&&ry>=PAUSE_Q[2]&&ry<=PAUSE_Q[3]) quitToMenu(); else setPaused(false); return; } skipReplay(); return; } // a paused replay resumes (or quits); otherwise a tap jumps to its end
   if(ONEHAND&&G.state==='fly'&&!G.paused&&rawY>=176&&G.mouse.on){ p.x=G.mouse.x; p.y=G.mouse.y; p.touch=false; } // one-hand: the fire zone shoots at the crosshair (recorded as that point)
   if(!G.paused) recIn(p.touch?'t':'m',p.x,p.y);
@@ -1253,7 +1343,7 @@ if(!window.PointerEvent){ const fake=(ev,type,touch)=>{ const t=touch?ev.changed
 const HELD={}; window.addEventListener('keyup',e=>{ delete HELD[e.key]; });
 window.addEventListener('keydown',e=>{ const k=e.key; if(k.startsWith('Arrow')&&G.state==='fly'){ HELD[k]=true; e.preventDefault(); } if(e.repeat) return; if(!codeBox.hidden){ if(k==='Escape'){ closeCodeBox(); e.preventDefault(); } else if(k==='Tab'){ const b=[codeField,document.getElementById('codeok'),document.getElementById('codex')], i=b.indexOf(document.activeElement); try{ b[(i<0?0:i+(e.shiftKey?b.length-1:1))%b.length].focus(); }catch(e2){} e.preventDefault(); } return; } /* a real modal: Tab stays in, Escape cancels */ if(document.activeElement===codeInput) return; if(document.activeElement&&document.activeElement.tagName==='BUTTON'&&(k==='Enter'||k===' ')&&cardBox.hidden) return; /* a focused SHARE/COPY/CLOSE button owns Enter and Space */ if(k==='Tab') document.body.classList.remove('pointer'); /* the focus ring is for Tab navigation, not for game keys */ voiceGesture();
   if(!cardBox.hidden){ const ae=document.activeElement, onBtn=ae&&cardBox.contains(ae)&&(ae.tagName==='BUTTON'||ae.tagName==='A'); if(k==='Escape'||((k==='Enter'||k===' ')&&!onBtn)){ hideCard(); e.preventDefault(); } else if(k==='Tab'){ const b=[cardPost,cardCopy,document.getElementById('cardclose')]; const i=b.indexOf(ae); try{ b[(i<0?2:i+(e.shiftKey?b.length-1:1))%b.length].focus(); }catch(e2){} e.preventDefault(); } return; } /* Tab stays in the dialog */ if(G.entry&&G.state==='gameOver'){ entryKey(k,e); return; } const prevKeys=G.keys; if(k.length===1&&/[a-z]/i.test(k)) feedKey(k.toLowerCase());
-  if((k==='c'||k==='C')&&!/(vc?|du)$/.test(prevKeys)) toggleCRT(); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
+  if((k==='c'||k==='C')&&!/(vc?|du)$/.test(prevKeys)) toggleCRT(); if(k==='g'||k==='G') toggle3D(); if(G.state==='title') G.idle=0; if(G.attract&&(k===' '||k==='Enter')){ toTitle(); e.preventDefault(); return; }
   if(G.state==='title'&&(k==='1'||k==='2'||k==='3'||k==='4')){ setDiff(DIFF_ORDER[+k-1]); SFX.blip(); return; }
   if(G.state==='title'&&(k==='ArrowLeft'||k==='ArrowRight'||k==='ArrowUp'||k==='ArrowDown')){ const i=DIFF_ORDER.indexOf(G.diff); setDiff(DIFF_ORDER[clamp(i+((k==='ArrowRight'||k==='ArrowUp')?1:-1),0,3)]); SFX.blip(); e.preventDefault(); return; }
   if(G.state==='title'&&(k==='w'||k==='W')){ startGame(true); return; }
@@ -1278,7 +1368,7 @@ function fit(){ const foot=document.getElementById('foot'); const fh=foot?foot.o
   glc.style.width=cv.style.width; glc.style.height=cv.style.height; const dpr=Math.min(2,window.devicePixelRatio||1); let bw=Math.round(W*s*dpr), bh=Math.round(H*s*dpr);
   if(CRT.tier===1&&bw>2*W){ bw=2*W; bh=2*H; } if(glc.width!==bw||glc.height!==bh){ glc.width=bw; glc.height=bh; }
   const ratio=W*s/bw; glc.style.imageRendering= Math.abs(ratio-Math.round(ratio))<0.01? 'pixelated' : 'auto'; }
-window.addEventListener('resize',fit); fit();
+window.addEventListener('resize',fit); fit(); if(V3WANT) v3Init();
 
 // ------------------------------------------------------------------ loop (fixed 60 Hz)
 let last=performance.now(), acc=0; const STEP=1000/60;
@@ -1319,6 +1409,6 @@ window.__flowNote=flowNote; window.__flowOn=flowOn;
 window.__caps=()=>CAPS.map(c=>c.t); window.__oneHand=()=>ONEHAND;
 window.__mix=()=> ac&&BUS? {state:ac.state, chain:['layers','duck','music','master','compressor','destination'], comp:{threshold:comp.threshold.value, ratio:comp.ratio.value}, buses:{music:BUS.music.gain.value, sfx:BUS.sfx.gain.value, voice:BUS.voice.gain.value, master:master.gain.value}, duck:BUS.duck.gain.value, ducks:BUS.ducks, pans:BUS.pans, lastPan:BUS.lastPan, layers:Object.fromEntries(LAYERS.map(k=>[k,BUS.layer[k].gain.value])), tgt:{...music.tgt}, play:{...music.play}, on:music.on, panner:!!ac.createStereoPanner} : null;
 window.__voice=()=>({ok:VOICE.ok, voice:VOICE.voice&&VOICE.voice.name, gesture:VOICE.gesture, talking:voiceLive(), said:VOICE.said, open:VOICE.open}); window.__speechText=speechText; window.__criticY=criticY;
-window.__th=G; window.__applyTheme=applyTheme; window.__T=()=>T; window.__makeCard=makeCard; window.__goBtn=()=>GO_BTN; window.__props=()=>G.props||[]; window.__top=()=>({list:loadTop(),key:topKey()}); window.__fw={get open(){ return fwOpen(); },cycle:FW_CYCLE}; window.__flightLimit=()=>flightLimit(); window.__pauseQ=()=>PAUSE_Q; window.__line=line; window.__resetTips=()=>{ TIPS={}; }; window.__audio=()=>({ctx:!!ac,state:ac?ac.state:'none',muted,music:music.on,rain:!!rainNode}); // for tests
+window.__th=G; window.__v3=()=>({want:V3WANT,ok:V3.ok,tried:V3.tried,err:V3.err,meshes:Object.keys(V3.mesh).length,on:v3On()}); window.__toggle3D=toggle3D; window.__applyTheme=applyTheme; window.__T=()=>T; window.__makeCard=makeCard; window.__goBtn=()=>GO_BTN; window.__props=()=>G.props||[]; window.__top=()=>({list:loadTop(),key:topKey()}); window.__fw={get open(){ return fwOpen(); },cycle:FW_CYCLE}; window.__flightLimit=()=>flightLimit(); window.__pauseQ=()=>PAUSE_Q; window.__line=line; window.__resetTips=()=>{ TIPS={}; }; window.__audio=()=>({ctx:!!ac,state:ac?ac.state:'none',muted,music:music.on,rain:!!rainNode}); // for tests
 })();
 </script>
