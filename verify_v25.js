@@ -9,7 +9,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   // ---- static evidence
   rep(1, 'Space/Enter start the game', has("handleTap(128,100); } e.preventDefault();"), 'keyboard start taps open sky (128,100), not the difficulty row');
-  rep(2, 'Hallucination leaves when no real request is airborne', has("if(flying&&!G.birds.some(b=>b.st==='fly'&&!b.bad)){ for(const b of G.birds) if(b.st==='fly'&&b.bad){ b.st='away'"), 'early-exit branch present in updateBirds');
+  rep(2, 'Hallucination leaves when no real request is airborne', has("if(flying&&!G.birds.some(b=>b.st==='fly'&&!b.bad)){ for(const b of G.birds) if(b.st==='fly'&&b.bad){ b.flew=b.at; b.st='away'"), 'early-exit branch present in updateBirds');
   rep(3, '504 banner/tint ignore hallucinations', has("G.birds.some(b=>b.st==='away'&&!b.bad)) textC(B.escaped") && has("G.birds.some(b=>b.st==='away'&&!b.bad)){ ctx.fillStyle=T.banners.escapedTint"), 'both banner and tint filter !b.bad');
   rep(4, 'One shot hits only the nearest flyer', has("let hitAny=false, nearest=999, target=null, td=1e9;") && has("if(b===target){ hitAny=true;"), 'nearest-target selection before applying the hit');
   rep(5, 'Attract mode plays through epoch 3', has("else if(G.state==='roundEnd'&&G.t>90){ if(G.round<3) nextRound(); else toTitle(); }"), 'roundEnd in attract calls nextRound until round 3');

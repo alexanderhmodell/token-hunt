@@ -19,7 +19,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
       for (const k in (T.tips || {})) if (w7(T.tips[k]) > 240) bad.push(id + ' tip ' + k + ' ' + w7(T.tips[k]));
       if (w7(T.tagline[1]) > 150) bad.push(id + ' tagline ' + w7(T.tagline[1]));
       for (const l of T.howto) if (w7(l) > 146) bad.push(id + ' howto ' + l + ' ' + w7(l));
-      const X = T.adv; const worst = [X.served + ' 10/12 ' + X.hi + ' -> ' + X.fake + ' GO ' + X.hi, X.served + ' 10/12 ' + X.lo + ' -> ' + X.fake + ' GO ' + X.lo, 'FIRED IN 0.6S -> ' + X.fake + ' LOOK REAL 0.6S', 'DODGED 10/12 -> ' + X.hide, X.served + ' 10/12 ' + X.fake + ' -> MORE ' + X.fake, X.fake + ' GLITCH LESS: 75% -> 60%', X.ver + '12 ' + X.head];
+      const X = T.adv; const worst = [X.served + ' 10/12 ' + X.hi + ' -> ' + X.fake + ' GO ' + X.hi, X.served + ' 10/12 ' + X.lo + ' -> ' + X.fake + ' GO ' + X.lo, 'SERVE TIME 9.9S -> ' + X.fake + ' LOOK REAL 1.0S', X.served + ' ' + X.hi + ' FASTER -> ' + X.fake + ' GO ' + X.hi, 'DODGED 10/12 -> ' + X.hide, X.served + ' 10/12 ' + X.fake + ' -> MORE ' + X.fake, X.fake + ' GLITCH LESS: 75% -> 60%', X.ver + '12 ' + X.head];
       for (const l of worst) if (w7(l) > 240) bad.push(id + ' card ' + l + ' ' + w7(l)); }
     window.__applyTheme(th0); return bad; });
   rep('all rule cards, tips, title lines and card lines fit', widths.length === 0, widths.join('; ') || 'ok');
@@ -54,6 +54,20 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
     G.freeze = 0; G.birds = []; return res; });
   const early = r4.slice(0, 30), late = r4.slice(30, 70); const earlyGrey = early.filter(v => v).length, lateGrey = late.filter(v => v).length;
   rep('trained fake passes for real before its hide time, then glitches', earlyGrey === 0 && lateGrey >= 15 && lateGrey <= 25, 'glitch frames before hide ' + earlyGrey + '/30, after ' + lateGrey + '/40 (duty 0.5 -> ~20)');
+  // the gotcha: serving a trained fake holds the game and spells out the trap; a fake you never had time for is not a dodge
+  const rg = await p.evaluate(async () => { const G = window.__th; const o = {}; G.state = 'fly'; G.flightT = 30; G.shots = 3; G.freeze = 0; G.gotcha = null; G.linger = null;
+    const h = { x: 120, y: 80, vx: 0, vy: 0, sp: 0, tier: 'hi', bad: true, adv: true, duty: 0.5, hide: 36, hideTag: false, ph0: 0, st: 'fly', f: 0, at: 20, dirT: 1e9, hitT: 0 };
+    const r = { x: 60, y: 90, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 20, dirT: 1e9, hitT: 0 };
+    G.birds = [r, h]; const f0 = G.adv.fooled; G.lastShotF = -99; window.__click(h.x + 12, h.y + 10); await __wait(2);
+    o.gotcha = G.gotcha && { fired: G.gotcha.fired, hide: G.gotcha.hide }; o.freeze = G.freeze; o.fooled = G.adv.fooled - f0;
+    return o; });
+  await p.screenshot({ path: SHOTS + '/adv_gotcha.png' });
+  rep('gotcha: a served trained fake freezes the game and shows the trap', rg.gotcha && rg.gotcha.fired >= 20 && rg.gotcha.hide === 36 && rg.freeze >= 30 && rg.fooled === 1, JSON.stringify(rg));
+  const rd = await p.evaluate(async () => { const G = window.__th; await __wait(80); G.state = 'fly'; G.flightT = 30; G.shots = 3; G.freeze = 0; const d0 = G.run.hDodged, o0 = G.adv.obs.dodged;
+    const h = { x: 160, y: 60, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: true, adv: true, duty: 0.5, hide: 0, ph0: 0, st: 'fly', f: 0, at: 5, dirT: 1e9, hitT: 0 };
+    const r = { x: 60, y: 90, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 5, dirT: 1e9, hitT: 0 };
+    G.birds = [r, h]; G.lastShotF = -99; window.__click(r.x + 12, r.y + 10); await __wait(90); return { dodged: G.run.hDodged - d0, obs: G.adv.obs.dodged - o0, state: G.state }; });
+  rep('a fake you never had time for is not a dodge', rd.dodged === 0 && rd.obs === 0, JSON.stringify(rd));
   // boss: deploys shielded (free taps), firewall blocks damage for free, kill takes the splinters with it; intro counts real HP
   const r5 = await p.evaluate(async () => { const G = window.__th; const o = {};
     G.round = 8; G.wave = 2; G.tally = ['hit', 'hit']; G.bossDone = false; G.swarmDone = true; G.birds = []; G.state = 'gap'; G.t = 99; await __wait(3); o.line = G.fox.line;
