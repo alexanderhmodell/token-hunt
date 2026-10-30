@@ -13,10 +13,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   rep(3, '504 banner/tint ignore hallucinations', has("G.birds.some(b=>b.st==='away'&&!b.bad)) textC(B.escaped") && has("G.birds.some(b=>b.st==='away'&&!b.bad)){ ctx.fillStyle=T.banners.escapedTint"), 'both banner and tint filter !b.bad');
   rep(4, 'One shot hits only the nearest flyer', has("let hitAny=false, nearest=999, target=null, td=1e9;") && has("if(b===target){ hitAny=true;"), 'nearest-target selection before applying the hit');
   rep(5, 'Attract mode plays through epoch 3', has("else if(G.state==='roundEnd'&&G.t>90){ if(G.round<3) nextRound(); else toTitle(); }"), 'roundEnd in attract calls nextRound until round 3');
-  rep(6, 'Restart skips the BIOS crawl', has("else startGame(false,true); } break;") && has("if(skipBoot){ bootDone(); return; }"), 'game-over tap calls startGame(false,true) → bootDone()');
+  rep(6, 'Restart skips the BIOS crawl', has("else startGame(false,true); } break;") && has("if(skipBoot||G.bootedOnce){ bootDone(); return; }"), 'game-over tap calls startGame(false,true) → bootDone()');
   rep(7, 'iOS audio unlock on pointerup/click', has("cv.addEventListener('pointerup',()=>{ audioInit(); if(ac&&ac.state==='suspended') ac.resume(); });") && has("cv.addEventListener('click',()=>{ if(ac&&ac.state==='suspended') ac.resume(); });"), 'both listeners present (iOS behavior itself not verifiable headlessly)');
   rep(8, 'Attract auto-resumes on tab return; real play stays paused', has("else if(G.attract) setPaused(false); });") && has("window.addEventListener('focus',()=>{ if(G.attract) setPaused(false); });"), 'visibilitychange + focus handlers gate on G.attract');
-  rep(9, 'First intro shortened', has("case 'intro': if(G.t>=(G.round===1?70:ruleFor(G.round)?160:110)){"), 'epoch-1 intro is 70 frames; later epochs 110, or 160 when the card brings a new rule');
+  rep(9, 'First intro shortened', has("case 'intro': if(G.t>=introHold()){") && has("const introHold=()=> G.round===1? 70 : ruleFor(G.round)? 210 : 150;"), 'epoch-1 intro is 70 frames; later epochs 150, or 210 when the card brings a new rule (a tap skips)');
   rep(10, "Glitch tag '@' removed", !/glitchTags:\[[^\]]*@/.test(html), "no '@' in any glitchTags array");
 
   // ---- dynamic evidence

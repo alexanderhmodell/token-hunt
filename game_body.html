@@ -347,7 +347,7 @@ const THEMES={
     ],
     banners:{ escaped:'FLEW OFF', escapedTint:'rgba(90,110,160,0.28)', clear:'ROUND %R CLEAR', survived:'%L CONQUERED',
               perfect:'PERFECT!! +%B', over:'GAME OVER', overColor:'#f7f4e9', unit:'SCORE', load:'', quota:'HIT %N OF %E', served:'%H OF %E HIT' },
-    boltLabel:null, frozenTag:'STUNNED', swarm:{tag:'HAWK', name:'HAWKS INCOMING', spr:['hawk0','hawk1'], stop:'DROPPED', breach:'A HAWK GOT THROUGH. -1 SHELL NEXT FLIGHT', stopAll:'FLOCK SAFE', hint:'DROP ALL 4 BEFORE THEY REACH THE FLOCK. SHELLS:', count:'HAWKS DOWN'},
+    boltLabel:null, prod:{name:'BIRD FEEDER', tag:'DO NOT TOUCH', hit:'YOU SHOT THE FEEDER', from:6}, frozenTag:'STUNNED', swarm:{tag:'HAWK', name:'HAWKS INCOMING', spr:['hawk0','hawk1'], stop:'DROPPED', breach:'A HAWK GOT THROUGH. -1 SHELL NEXT FLIGHT', stopAll:'FLOCK SAFE', hint:'DROP ALL 4 BEFORE THEY REACH THE FLOCK. SHELLS:', count:'HAWKS DOWN'},
     boss:{name:'THUNDERHEAD', spr:'stormBoss', win:'STORM BROKEN', loss:'THE STORM ROLLED OVER. -1 SHELL', fwTxt:'STORMWALL', deploy:'GATHERING', blocked:'BOUNCED'},
     rainLo:'#cfe0f0', rainHi:'#9fb6d8', dusk:{band1:'#b4583f', band2:'#c86a46', sun1:'#ffd86a', sun2:'#fff0a0'},
     fx:{ hiPop:'#ffe98a', loPop:'#f7f4e9', badPop:'#ff4d4d', featherLo:'#caa05f', featherHi:'#fff0a0', puff:'#6fd36a', glitchTags:['DECOY','WOOD?','DECOY','FAKE!'] },
@@ -358,6 +358,7 @@ const THEMES={
       hitMixed:['ONE BAGGED. ONE GOT AWAY.','HALF A DINNER. THE OTHER HALF WAVED.'],
       hit3:["ALRIGHT, I'M IMPRESSED.",'THREE STRAIGHT. THE BIRDS ARE TALKING.'],
       miss:['THE WIND TOOK THAT ONE.','SHOOTING AT CLOUDS AGAIN?','I SAW THAT.','IT WAVED ON THE WAY OUT.','THE SKY IS VERY BIG. I KNOW.'],
+      prod:['THE FLOCK WILL REMEMBER THIS.','THAT WAS LUNCH. FOR EVERYONE.','YOU SHOT THE FEEDER. WHY.'],
       miss3:['MAYBE TRY EASY MODE.','THREE GONE. THE FLOCK IS RELAXED.'], miss3Easy:['THIS IS ALREADY THE EASY FLOCK.'],
       nearMiss:['A FEATHER. YOU GOT A FEATHER.','SO CLOSE IT FLINCHED.'],
       advServed:['THE DECOYS STUDIED YOU. IT SHOWS.','THEY LEARNED WHERE YOU AIM.'],
@@ -393,9 +394,9 @@ const THEMES={
       roastDeep:['ROUND {r}. NOT BAD. FOR A PERSON.','ROUND {r}. THE BIRDS RESPECT YOU. A LITTLE.'],
       receipt:['ACCURACY','BEST STREAK','DECOYS','GOLDEN BAGGED'],
     },
-    rules:{3:'NEW: HAWKS. DROP ALL 4.', 4:'NEW RULE: DECOYS CAN LOOK GOLDEN', 5:'NEW RULE: FLOCKS OF THREE. +1 SHELL.', 7:'THE WEATHER TURNS FROM HERE.'}, rulesAdv:{2:'NEW: THE DECOYS NOW STUDY YOU', 4:null},
+    rules:{3:'NEW: HAWKS. DROP ALL 4.', 6:'NEW: A FEEDER FLOATS BY. DO NOT TOUCH.', 4:'NEW RULE: DECOYS CAN LOOK GOLDEN', 5:'NEW RULE: FLOCKS OF THREE. +1 SHELL.', 7:'THE WEATHER TURNS FROM HERE.'}, rulesAdv:{2:'NEW: THE DECOYS NOW STUDY YOU', 4:null},
     adv:{ver:'CARVER V', head:'STUDIED YOU', gotYou:'FOOLED YOU', youFired:'YOU FIRED AT', lookedReal:'IT LOOKED REAL FOR', hi:'GOLD', lo:'BROWN', fake:'DECOYS', served:'SHOT', hide:'TAG ONLY FLICKERS NOW', keeps:'IT KEEPS CARVING', fooled:'DECOYS FOOLED YOU', noHabit:'NO COLOR HABIT', rewind:'<< REWIND', learned:'IT STUDIED THIS ABOUT YOU', skip:'TAP TO SKIP', dodged:'DODGED'},
-    tips:{frontier:'GOLD BIRD = 3X. IT FLIES FAST.', fake:'GREY GHOST = DECOY. LET IT GO.', frozen:'STUNNED BIRDS: WAIT.', fast:'SHOOT EARLY = FAST BONUS X2', adv:'CARVED DECOYS LOOK REAL AT FIRST', firewall:'ICE BOX = STORMWALL. WAIT.', gotcha:'WAIT A BEAT LONGER. DECOYS CRACK.'},
+    tips:{frontier:'GOLD BIRD = 3X. IT FLIES FAST.', fake:'GREY GHOST = DECOY. LET IT GO.', frozen:'STUNNED BIRDS: WAIT.', fast:'SHOOT EARLY = FAST BONUS X2', adv:'CARVED DECOYS LOOK REAL AT FIRST', firewall:'ICE BOX = STORMWALL. WAIT.', gotcha:'WAIT A BEAT LONGER. DECOYS CRACK.', prod:'FEEDER = DO NOT TOUCH. EVER.'},
     burstTxt:'+1 SHELL', lostTxt:' SHELL THIS FLIGHT',
     scenery:'meadow', showCatch:false,
     boot:['FOWL WEATHER','FIELD GUIDE V2.3','SHELLS ........ OK','WIND .......... CHECK','FOX ........... AWAKE'],
@@ -415,7 +416,7 @@ const NEED=[3,4,4,4,4,5,5,5]; // epoch 5 brings bursts, so the step to 5 of 6 wa
 const DIFFS={
   easy:  {label:'EASY',   tag:'E', ammo:4, speed:0.85, need:-1, doublesFrom:2, doubleP:0.35, halluc:1/9, mult:1, gentleStart:true},
   medium:{label:'MEDIUM', tag:'M', ammo:3, speed:1.0,  need:0,  doublesFrom:1, doubleP:0.35, halluc:1/7, mult:1.5},
-  hard:  {label:'HARD',   tag:'H', ammo:3, speed:1.2,  need:1,  doublesFrom:1, doubleP:0.5,  halluc:1/5, mult:2},
+  hard:  {label:'HARD',   tag:'H', ammo:3, speed:1.3,  need:1,  doublesFrom:1, doubleP:0.5,  halluc:1/5, mult:2},
   daily: {label:'DAILY',  tag:'D', ammo:3, speed:1.05, need:0,  doublesFrom:1, doubleP:0.4,  halluc:1/6, mult:1.5, daily:true},
 };
 const DIFF_ORDER=['easy','medium','hard','daily'];
@@ -447,8 +448,10 @@ function resetRun(){ G.run={shots:0,hits:0,timeouts:0,hServed:0,hDodged:0,bestCo
 try{ G.hiA=parseInt(localStorage.getItem('th.hiAssist')||'0',10)||0; G.seen=localStorage.getItem('th.seen')==='1'; }catch(e){}
 try{ G.hi=parseInt(localStorage.getItem('th.hi')||'0',10)||0; }catch(e){}
 const pick=a=>a[Math.floor(G.rng2()*a.length)];
-function line(kind){ let pool=T.lines[kind]||T.lines.miss; const R=G.recent||(G.recent=[]); if(kind==='miss3'&&G.diff==='easy'&&T.lines.miss3Easy) pool=pool.filter(x=>!/EASY/.test(x)).concat(T.lines.miss3Easy); let s=pick(pool); // never one of the last six lines when the pool has another
-  if(pool.length>1&&(R.includes(s)||s===G.lastLine)){ const fresh=pool.filter(x=>!R.includes(x)&&x!==G.lastLine); s= fresh.length? fresh[Math.floor(G.rng2()*fresh.length)] : pool[(pool.indexOf(s)+1)%pool.length]; }
+const introHold=()=> G.round===1? 70 : ruleFor(G.round)? 210 : 150; // long enough to read on a phone; a tap skips
+function line(kind){ let pool=T.lines[kind]||T.lines.miss; const R=G.recent||(G.recent=[]); if(kind==='miss3'&&G.diff==='easy'&&T.lines.miss3Easy) pool=pool.filter(x=>!/EASY/.test(x)).concat(T.lines.miss3Easy); const U=(G.used||(G.used={}))[kind]||(G.used[kind]=[]); // a bag per kind: no line twice until its pool has played; never one of the last six
+  let fresh=pool.filter(x=>!U.includes(x)&&!R.includes(x)&&x!==G.lastLine); if(!fresh.length){ U.length=0; fresh=pool.filter(x=>!R.includes(x)&&x!==G.lastLine); } if(!fresh.length) fresh=pool.filter(x=>x!==G.lastLine); if(!fresh.length) fresh=pool;
+  const s=fresh[Math.floor(G.rng2()*fresh.length)]; U.push(s);
   R.push(s); if(R.length>6) R.shift(); G.lastLine=s; return s; }
 function toast(txt,big){ G.toast={txt,t:0,big:!!big}; }
 
@@ -469,7 +472,7 @@ function shakeOffset(now){ const tr=G.trauma||0; if(tr<=0||G.paused||REDUCED) re
 function resetRunState(){ resetRun(); G.flow={speed:1,halluc:0,hist:[]}; G.bossDone=false; G.swarmDone=false; G.vramLost=0; G.swarm=null; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.comboFlash=0; G.streak={hit:0,miss:0}; G.nearMiss=false;
   G.freeze=0; G.flash=0; G.flashA=0; G.flashCol=null; G.trauma=0; G.muzzle=null; G.tapMark=null; G.flightT=0; G.hallucServed=false; G.hallucEscaped=false; G.realEscaped=false; G.perfect=false; G.needFlash=0; G.paused=false;
   G.shots=G.assist?5:D.ammo; G.fox={mode:null,t:0,x:112,count:0,line:''};
-  G.prevHi=false; G.prevHallucServed=false; G.wf=newFacts(); G.unpauseT=0; G.lastShotF=-99; G.lostNow=0; G.runAssisted=G.assist||ONEHAND; G.quotaLost=false; G.linger=null; G.firstMissDone=false; G.roundHalluc=0; G.roundBreach=false; G.boltSeen=false; G.runFinn=G.assist; G.runOne=ONEHAND; G.adv=newAdv(); G.gotcha=null; G.tip=null; G.tipQ=[]; G.props=[]; G.entry=null; G.topList=null; G.topRank=-1; G.epochWaves=0; G.advShown=false; G.recent=[]; }
+  G.prevHi=false; G.prevHallucServed=false; G.wf=newFacts(); G.unpauseT=0; G.lastShotF=-99; G.lostNow=0; G.runAssisted=G.assist||ONEHAND; G.quotaLost=false; G.linger=null; G.firstMissDone=false; G.roundHalluc=0; G.roundBreach=false; G.boltSeen=false; G.runFinn=G.assist; G.runOne=ONEHAND; G.adv=newAdv(); G.gotcha=null; G.tip=null; G.tipQ=[]; G.props=[]; G.entry=null; G.topList=null; G.topRank=-1; G.epochWaves=0; G.advShown=false; G.recent=[]; G.used={}; }
 // E6 flow channel (Easy/Medium only; Hard, Daily, assisted and demo runs stay fixed so they remain fair and comparable): a wave
 // succeeds when every real request in it is served; over the last 8 waves, above 75% nudges speed +6% and hallucinations +1/20,
 // below 65% nudges them back down. Pure sim state, so replays and the seed stay deterministic.
@@ -481,7 +484,7 @@ const flowSpeed=()=> flowOn()&&G.flow? G.flow.speed : 1, flowHalluc=()=> flowOn(
 function seedRun(seed){ G.seed=seed>>>0; G.rng=makeRng(G.seed); G.rng2=makeRng(G.seed^0x5bd1e995); }
 function startGame(attract,skipBoot){ G.attract=!!attract; if(!attract) G.seenSound=true; G.idle=0; G.taps=[]; G.recOn=false; if(!attract) G.wavesStarted=0; G.touchRun=document.body.classList.contains('touch'); seedRun(G.daily? dailySeed()*7919 : Math.random()*4294967296); resetRunState(); setWeather();
   if(G.attract){ G.state='intro'; G.t=0; return; }
-  if(skipBoot){ bootDone(); return; }
+  if(skipBoot||G.bootedOnce){ bootDone(); return; } G.bootedOnce=true; // the BIOS plays once a visit
   G.state='boot'; G.t=0; G.boot={t:0,line:-1}; }
 function bootDone(){ G.state='intro'; G.t=0; SFX.fanfare(); music.start(); if(!G.attract&&!G.replay) recStart(); }
 
@@ -513,7 +516,7 @@ const newFacts=()=>({prod:false,hi:0,lastShot:false,firstShot:false,frozen:false
 // that long), and whether you read its tag (then the tag only flickers). Each model version also glitches less. Running
 // statistics, not a neural net, and every number it acts on is printed on the epoch card. Pure sim state with no rng, so
 // replays reproduce it exactly. Off in Daily (everyone gets the same requests) and in the demo.
-const newObs=()=>({firstHi:0,firstLo:0,lo:0,hi:0,seenLo:0,seenHi:0,tts:0,ttsN:0,ttsHi:0,ttsLo:0,dodged:0,served:0});
+const newObs=()=>({ttsT:0,ttsTN:0,firstHi:0,firstLo:0,lo:0,hi:0,seenLo:0,seenHi:0,tts:0,ttsN:0,ttsHi:0,ttsLo:0,dodged:0,served:0});
 const newAdv=()=>({on:!G.daily&&!G.attract, obs:newObs(), policy:null, update:null, fooled:0, built:0, ver:1, epochBuilt:0});
 const DUTY=[0.75,0.6,0.5,0.42,0.35,0.3]; // how much of the time a fake shows its glitch: untrained, then model v2, v3, v4 and up
 function advTrain(){ const A=G.adv; if(!A||!A.on) return; const o=A.obs, prev=A.policy||{tierHi:-1, hide:0, hideTag:false, rateUp:false, duty:DUTY[0]};
@@ -523,7 +526,7 @@ function advTrain(){ const A=G.adv; if(!A||!A.on) return; const o=A.obs, prev=A.
     let none=false; if(first) hi= fH>fL; else if(o.hi&&o.lo&&Math.abs(rH-rL)<0.15){ const dT=o.ttsLo/o.lo-o.ttsHi/o.hi; if(Math.abs(dT)<9) none=true; else { hi= dT>=0; faster=true; } } else hi= rH>=0&&(rL<0||rH>=rL); // under 0.15 s apart is noise, not a habit // close rates: the colour you serve faster decides
     P.tierHi= none? 0.5 : hi? 0.8 : 0.2; const C=hi?X.hi:X.lo; // 4 in 5 wear your colour: the card is exact, but colour alone no longer clears a request
     A.colorLine= none? X.noHabit+' -> '+X.fake+' 50/50' : first? C+' FIRST '+Math.max(fH,fL)+'/'+(fH+fL)+' -> '+X.fake+' 80% '+C : faster? X.served+' '+C+' FASTER -> '+X.fake+' 80% '+C : X.served+' '+(hi? o.hi+'/'+o.seenHi : o.lo+'/'+o.seenLo)+' '+C+' -> '+X.fake+' 80% '+C; U.push(A.colorLine); }
-  if(o.ttsN>=2){ const m=o.tts/o.ttsN, sv=Math.round(m), f=clamp(sv,18,90); P.hide=f; A.hideLine='SERVE TIME '+Math.min(9.9,sv/60).toFixed(1)+'S -> '+X.fake+' LOOK REAL '+(f/60).toFixed(1)+'S'; U.push(A.hideLine); } // the window is your mean, capped at 1.5 s
+  if(o.ttsN>=2){ const m=Math.max(o.tts/o.ttsN, o.ttsTN? o.ttsT/o.ttsTN : 0) /* how long you wait when a fake is up, if that is longer */, sv=Math.round(m), f=clamp(sv,18,90); P.hide=f; A.hideLine='SERVE TIME '+Math.min(9.9,sv/60).toFixed(1)+'S -> '+X.fake+' LOOK REAL '+(f/60).toFixed(1)+'S'; U.push(A.hideLine); } // the window is your mean, capped at 1.5 s
   P.rateUp=false; const seen=o.served+o.dodged; if(seen){ const dodged=o.dodged; // only fakes you could have fallen for count
     if(seen>=2&&dodged/seen>=0.75){ P.hideTag=true; U.push('DODGED '+dodged+'/'+seen+' -> '+X.hide); }
     else if(o.served/seen>=0.5){ P.rateUp=true; U.push(X.served+' '+o.served+'/'+seen+' '+X.fake+' -> MORE '+X.fake); }
@@ -552,9 +555,10 @@ function startWave(){ G.state='fly'; const lost=G.vramLost||0; G.shots=G.assist?
   G.birds=[]; for(let i=0;i<n;i++) G.birds.push(spawnBird(i,n,false)); G.wave+=n; if(G.adv) for(const b of G.birds) G.adv.obs[b.tier==='hi'?'seenHi':'seenLo']++;
   G.wavesStarted=(G.wavesStarted||0)+1;
   { const P=advLive()? G.adv.policy : null, A=G.adv, must=G.forceHalluc||(G.round===1&&G.wavesStarted===2&&!G.attract);
-    const want=1+(P&&P.rateUp?1:0)+(G.round>=12? Math.floor((G.round-8)/4) : 0), force= P&&!G.attract&&G.epochWaves>=2&&A.epochBuilt<want&&(A.epochBuilt<1||G.epochWaves>=3); // more of them as the run goes long // a trained fake every epoch from epoch 2, two if you fell for the last ones
-    if(must||force||G.rng()<Math.min(0.4,D.halluc+late()*0.03+flowHalluc())){ const h=spawnBird(n,n+1,true); let bx=h.x, bd=-1;
-    for(let k=0;k<10;k++){ const x=58+G.rng()*116; const d=Math.min(...G.birds.map(b=>Math.abs(b.x-x))); if(d>bd){ bd=d; bx=x; } }
+    const want=1+(P&&P.rateUp?1:0)+(G.round>=12? Math.floor((G.round-8)/4) : 0), ta=(P&&G.epochWaves===1)? (A.trapAt=2+Math.floor(G.rng2()*3)) : ((A&&A.trapAt)||2), last=EPOCH_LEN-G.wave<=1, force= P&&!G.attract&&G.epochWaves>=2&&A.epochBuilt<want&&(G.epochWaves>=ta||last)&&(A.epochBuilt<1||G.epochWaves>=ta+1||last); // more of them as the run goes long // a trained fake every epoch from epoch 2, two if you fell for the last ones
+    if(must||force||G.rng()<Math.min(0.4,D.halluc+late()*0.03+flowHalluc())){ const h=spawnBird(n,n+1,true); let bx=h.x, bd=-1; const cs=[];
+    for(let k=0;k<10;k++){ const x=58+G.rng()*116; const d=Math.min(...G.birds.map(b=>Math.abs(b.x-x))); if(d>bd){ bd=d; bx=x; } if(d>=24) cs.push(x); }
+    if(P&&cs.length>1) bx=cs[Math.floor(G.rng2()*cs.length)]; /* a trained fake takes any clear spot: not always the gap between the real ones */
     if(bd>=(force?24:30)||must){ h.x=bx; if(P){ h.adv=true; { const tr=TIERS[h.tier]; h.dirT=tr.dirT[0]+h.r()*(tr.dirT[1]-tr.dirT[0]); } /* steers like a real one */ h.duty=P.duty; h.hide=P.hide; h.hideTag=P.hideTag; h.ph0=(G.frame*7)&15; A.built++; A.epochBuilt++; tip('adv'); } else tip('fake'); if(must&&G.round===1&&G.wavesStarted===2) h.tut=true; G.birds.push(h); } } } // never spawn the fake on top of a real one
   if(advLive()&&!G.attract&&G.birds.length>=2&&G.rng()<0.5){ const k=Math.floor(G.rng()*G.birds.length); G.birds[k].hold=18+Math.floor(G.rng()*24); } // one arrives late: a lone request may be the trap
   for(const b of G.birds) if(b.adv) b.hide=Math.min(b.hide||0,Math.floor(flightLimit()*0.6)); // a disguise never outlasts its wave
@@ -599,7 +603,7 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return;
   const inBox=b=> x>=b.x-padX&&x<=b.x+24+padX&&y>=b.y-padUp&&y<=b.y+20+padDn;
   const inAgent=b=> x>=b.x-padX-4&&x<=b.x+12+padX+4&&y>=b.y-padUp-3&&y<=b.y+10+padDn+1; // agents are small: a generous box
   const inBoss=b=> x>=b.x-padX&&x<=b.x+48+padX&&y>=b.y-padUp&&y<=b.y+40+padDn;
-  { const eb=G.birds.find(b=>b.boss&&b.st==='fly'&&(b.enter||fwUp(b))&&inBoss(b)); if(eb&&!G.birds.some(b=>b.st==='fly'&&!b.boss&&(b.agent?inAgent(b):inBox(b)))){ let tx=T.boss.deploy; if(!eb.enter){ const pen=Math.round(100*D.mult); G.score-=pen; G.combo=0; G.run.blocked=(G.run.blocked||0)+1; tx=T.boss.blocked+' -'+pen; } G.fx.push({type:'pts',x:clamp(Math.round(x-textW(tx,1)/2),2,W-2-textW(tx,1)),y:Math.min(SKY_H-12,Math.round(eb.y+48)),t:0,txt:tx,col:ICE,sc:1,box:1}); SFX.blip(); return; } } /* under the boss, never across its face */ // icy = wait: taps on a deploying or firewalled boss are free
+  { const eb=G.birds.find(b=>b.boss&&b.st==='fly'&&(b.enter||fwUp(b))&&inBoss(b)); if(eb&&!G.birds.some(b=>b.st==='fly'&&!b.boss&&(b.agent?inAgent(b):inBox(b)))){ let tx=T.boss.deploy; if(!eb.enter){ const pen=Math.round(300*D.mult); G.score-=pen; G.combo=0; G.run.blocked=(G.run.blocked||0)+1; tx=T.boss.blocked+' -'+pen; } G.fx.push({type:'pts',x:clamp(Math.round(x-textW(tx,1)/2),2,W-2-textW(tx,1)),y:Math.min(SKY_H-12,Math.round(eb.y+48)),t:0,txt:tx,col:ICE,sc:1,box:1}); SFX.blip(); return; } } /* under the boss, never across its face */ // icy = wait: taps on a deploying or firewalled boss are free
   { const fz=G.birds.find(b=>b.st==='fly'&&b.frozen>0&&!b.agent&&!b.boss&&inBox(b)); if(fz){ G.fx.push({type:'pts',x:clamp(x-6,2,W-18),y:Math.max(6,y-14),t:0,txt:T.boltLabel||'WAIT',col:'#ff4d4d',sc:1}); SFX.blip(); return; } }
   { const under=G.birds.some(b=>b.st==='fly'&&!(b.hold>0)&&(b.boss? inBoss(b) : b.agent? inAgent(b) : inBox(b)));
     if(G.linger&&!under){ const L=G.linger, g=bubbleGeom(L.line,L.x,SKY_H-44,false,false); // a tap on the lingering critic or his bubble sends him off, free
@@ -614,14 +618,15 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return;
   for(const b of G.birds){ if(b.st!=='fly'||b.hold>0) continue;
     if(b===target&&b.boss){ hitAny=true; bossHit(b); continue; }
     if(b===target&&b.agent){ hitAny=true; b.st='gone'; G.swarm.stopped++; const p=200*D.mult*(G.assist?3:1); G.score+=p; G.run.hits++; G.freeze=2; addTrauma(0.25); buzz(12); SFX.hit(1,b.x+6);
-      G.fx.push({type:'pts',x:clamp(b.x-6,2,W-2-textW(T.swarm.stop+' +'+p,1)),y:Math.max(6,b.y-8),t:0,txt:T.swarm.stop+' +'+p,col:'#ffe98a',sc:1}); for(let i=0;i<5;i++) G.fx.push({type:'feather',x:b.x+6,y:b.y+5,vx:rnd(-1.2,1.2),vy:rnd(-1.5,0),t:0,col:'#ff4d4d'});
+      if(G.swarm.boss){ const tx='+'+p, k=G.fx.filter(f=>f.ag&&f.t<30).length; G.fx.push({type:'pts',x:clamp(b.x+6-textW(tx,1)/2,2,W-2-textW(tx,1)),y:Math.min(SKY_H-12,b.y+14+k*8),t:0,txt:tx,col:'#ffe98a',sc:1,ag:1}); } /* under the minion, stacked: the boss's labels stay clear */
+      else G.fx.push({type:'pts',x:clamp(b.x-6,2,W-2-textW(T.swarm.stop+' +'+p,1)),y:Math.max(6,b.y-8),t:0,txt:T.swarm.stop+' +'+p,col:'#ffe98a',sc:1}); for(let i=0;i<5;i++) G.fx.push({type:'feather',x:b.x+6,y:b.y+5,vx:rnd(-1.2,1.2),vy:rnd(-1.5,0),t:0,col:'#ff4d4d'});
       if(!G.swarm.boss&&G.swarm.stopped>=G.swarm.total){ const bonus=1000*D.mult*(G.assist?3:1); G.score+=bonus; G.fx.push({type:'pts',x:Math.round(W/2-textW(T.swarm.stopAll+' +'+bonus,1)/2),y:72,t:0,txt:T.swarm.stopAll+' +'+bonus,col:'#39d353',sc:1}); SFX.perfect(); } continue; }
     if(b===target){ hitAny=true; b.st='hit'; b.hitT=0; G.freeze=3;
       if(b.bad){ const fa=b.age||b.at, pen=Math.round(2*valueOf(b)*comboMult(G.combo+1)*(fa<=36? 2 : fa<=66? 1.5 : 1)*(G.assist?3:1)); G.score-=pen; /* a fake costs twice the request it pretends to be */ G.roundHalluc=(G.roundHalluc||0)+1; if(G.adv){ G.adv.obs.served++; if(b.adv){ G.adv.fooled++; G.advFooled=b.tier; const tr=(b.trail||[]).slice(), n=tr.length/5|0, full=n>=4&&G.adv.rewound!==G.adv.ver; if(full) G.adv.rewound=G.adv.ver; /* the first fool of each version gets the rewind */
           G.gotcha={t:0,fired:b.at,hide:b.hide||0,ver:G.adv.ver,pen,tier:b.tier,tr,n,tx:x,ty:y,top:panelTop(tr,n,y),bird:b,full,ln:G.adv.hideLine||G.adv.colorLine||null,end:full? GOT_PRE+GOT_RW+n+GOT_POST : 48}; G.freeze=Math.max(G.freeze,G.gotcha.end); } /* the trap, shown while the game holds */ } G.combo=0; G.hallucServed=true; G.run.hServed++; buzz(40); addTrauma(0.5); G.flash=5; G.flashA=0.3; G.flashCol='255,77,77';
         if(!(G.gotcha&&G.gotcha.bird===b)) G.fx.push({type:'pts',x:clamp(b.x-2,2,W-2-textW('-'+pen,2)),y:Math.max(6,b.y-4),t:0,txt:'-'+pen,col:T.fx.badPop,sc:2,box:1}); SFX.wrong(b.x+12); continue; } /* a trap shows its bill in its own panel */
       const hi=b.tier==='hi'; if(G.adv&&!G.wf.firstServed){ G.wf.firstServed=true; const ot=hi?'lo':'hi'; if(G.birds.some(x=>x!==b&&x.st==='fly'&&!x.bad&&!x.agent&&!x.boss&&!(x.hold>0)&&x.tier===ot)) G.adv.obs[hi?'firstHi':'firstLo']++; } /* both colours up: which did you trust first */ G.combo++; const m=comboMult(G.combo); if(m!==comboMult(G.combo-1)){ G.comboFlash=10; const ct='COMBO X'+m+(m===2?'  3 IN A ROW':'  6 IN A ROW'); G.fx.push({type:'pts',x:clamp(Math.round(b.x-2),2,W-2-textW(ct,1)),y:Math.min(SKY_H-12,Math.max(6,b.y-4)+13),t:0,txt:ct,col:'#ffe98a',sc:1}); } /* under its own score pop, never across another */
-      const ft=b.age||b.at, tt= ft<=36? 2 : ft<=66? 1.5 : 1; /* served inside 0.6 s pays x2, inside 1.1 s x1.5 */ if(tt>1&&G.round===1) tip('fast'); /* FAST is an epoch-1 lesson: later it would argue with the trained fakes */ if(G.adv){ const o=G.adv.obs; o[b.tier==='hi'?'hi':'lo']++; o[b.tier==='hi'?'ttsHi':'ttsLo']+=b.at; o.tts+=b.at; o.ttsN++; }
+      const ft=b.age||b.at, tt= ft<=36? 2 : ft<=66? 1.5 : 1; /* served inside 0.6 s pays x2, inside 1.1 s x1.5 */ if(tt>1&&G.round===1) tip('fast'); /* FAST is an epoch-1 lesson: later it would argue with the trained fakes */ if(G.adv){ const o=G.adv.obs; o[b.tier==='hi'?'hi':'lo']++; o[b.tier==='hi'?'ttsHi':'ttsLo']+=b.at; o.tts+=b.at; o.ttsN++; if(G.birds.some(x=>x.bad&&x.st==='fly')){ o.ttsT+=b.at; o.ttsTN++; } }
       const p=Math.round(valueOf(b)*m*tt*(G.assist?3:1)); G.score+=p; G.tally.push('hit'); G.run.hits++; if(hi){ G.run.frontier++; G.wf.hi++; } if(G.shots===0) G.wf.lastShot=true; if(G.wf.shots===1) G.wf.firstShot=true; if(G.combo>G.run.bestCombo) G.run.bestCombo=G.combo; buzz(hi?25:12); addTrauma(hi?0.4:0.25); if(hi){ G.freeze=5; G.flash=4; G.flashA=0.35; }
       { const sc=(hi||m>1)?2:1, txt='+'+p+(tt>1?' FAST':''); G.fx.push({type:'pts',x:clamp(b.x-2,2,W-2-textW(txt,sc)),y:Math.max(6,b.y-4),t:0,txt,col:hi?T.fx.hiPop:T.fx.loPop,sc}); } // one pop, not two
       for(let i=0;i<6;i++) G.fx.push({type:'feather',x:b.x+12,y:b.y+10,vx:rnd(-1,1),vy:rnd(-1.5,0),t:0,col:hi?T.fx.featherHi:T.fx.featherLo});
@@ -630,7 +635,7 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return;
   if(!hitAny){ if(nearest<24) G.nearMiss=true; if(G.combo>0){ G.combo=Math.min(5,Math.floor(G.combo/2)); G.comboFlash=8; }
     G.fx.push({type:'pts',x:clamp(Math.round(x)-8,2,W-2-textW('MISS',1)),y:clamp(Math.round(y)-12,6,SKY_H-20),t:0,txt:'MISS',col:'#ff4d4d',sc:1}); } } // a wasted shot costs half the combo: x3 has to be earned clean
 
-function flightLimit(){ let limit=Math.max(Math.max(48,150-6*Math.max(0,G.round-16)),460-G.round*18); if(G.wx.shortFlight) limit=Math.round(limit*0.7); return limit; } // from epoch 17 the window keeps closing, to 0.8 s by epoch 33: runs end
+function flightLimit(){ let limit=Math.max(Math.max(Math.max(30,48-2*Math.max(0,G.round-33)),150-6*Math.max(0,G.round-16)),460-G.round*18); if(G.wx.shortFlight) limit=Math.round(limit*0.7); return limit; } // from epoch 17 the window keeps closing, to 0.8 s by epoch 33: runs end
 function updateBirds(){ const limit=flightLimit(); let flying=0;
   for(const b of G.birds){
     if(b.boss){ if(b.st!=='fly') continue; flying++; b.at++; b.y=b.y0+Math.sin(b.at/38)*7; if(b.hitT>0) b.hitT--;
@@ -731,8 +736,8 @@ function arrow3(cx,y,dn,col){ ctx.fillStyle=col; for(let i=0;i<3;i++){ const w=d
 function drawEntry(){ const E=G.entry, tch=TOUCHY||document.body.classList.contains('touch'); text7C('NEW TOP 5. YOUR INITIALS',55,'#ffe98a',true);
   for(let i=0;i<3;i++){ const cx=INI_X[i], on=i===E.pos, col= on? (((G.t>>3)&1)?'#ffe98a':'#fff6c8') : '#f7f4e9'; arrow3(cx,63,false,on?'#ffe98a':'#5a5468'); big7(INI_CH[E.c[i]],cx-5,69,col,2); if(on){ ctx.fillStyle=col; ctx.fillRect(cx-6,85,12,1); } arrow3(cx,88,true,on?'#ffe98a':'#5a5468'); }
   const w=textW7('OK')+8; btn7('OK',Math.round(W/2-w/2),97,'#f7f4e9'); textC(tch? 'TAP THE TOP OR BOTTOM OF A LETTER' : 'TYPE 3 LETTERS, THEN ENTER',113,'#8a8494',1); }
-function drawTop(){ const L=G.topList||[]; for(let i=0;i<L.length;i++){ const e=L[i], me=i===G.topRank, s=(i+1)+'  '+(e.n+'   ').slice(0,3)+'  '+pad(e.s,6); textC(s,56+i*7,me? (((G.t>>3)&1)?'#ffe98a':'#fff6c8') : '#cfc9dc',1); }
-  if(G.adv&&G.adv.built) textC(T.adv.fooled+' '+G.adv.fooled+'/'+G.adv.built,91,'#e2ccff',1); }
+function drawTop(){ const L=G.topList||[]; for(let i=0;i<L.length;i++){ const e=L[i], me=i===G.topRank, s=(i+1)+'  '+(e.n+'   ').slice(0,3)+'  '+pad(e.s,6); textC(s,55+i*7,me? (((G.t>>3)&1)?'#ffe98a':'#fff6c8') : '#cfc9dc',1); }
+  if(G.adv&&G.adv.built) textC(T.adv.fooled+' '+G.adv.fooled+'/'+G.adv.built,90,'#e2ccff',1); }
 const GO_BTN={y:108, menu:[36,79], rep:[131,222]}; let PAUSE_Q=[0,0,0,0]; // game-over and pause buttons: drawn and hit-tested from the same boxes
 function btn7(s,x,y,col){ const w=textW7(s)+8; ctx.fillStyle='rgba(58,52,76,0.92)'; ctx.fillRect(x,y,w,13); ctx.fillStyle=col; ctx.fillRect(x,y,w,1); ctx.fillRect(x,y+12,w,1); ctx.fillRect(x,y,1,13); ctx.fillRect(x+w-1,y,1,13); text7(s,x+4,y+3,col); return w; }
 function quitToMenu(){ G.paused=false; G.gotcha=null; G.linger=null; toTitle(); } // from the pause menu: no need to lose first
@@ -744,7 +749,7 @@ function handleTap(x,y){
   if(G.attract){ toTitle(); return; } // the demo opens the menu, so the difficulty you tap is the one you get
   G.idle=0;
   switch(G.state){
-    case 'title': if(y<70){ logoTap(x,y); return; } if(y>=184){ startGame(true); return; } if(!titleTap(x,y)) startGame(); break;
+    case 'title': if(y<70){ logoTap(x,y); return; } if(y+(G.mouse.touch?TOUCH_LIFT:0)>=184){ startGame(true); return; } /* undo the finger lift, like the row above */ if(!titleTap(x,y)) startGame(); break;
     case 'boot': if(G.boot.t>10) bootDone(); break;
     case 'fly': if(gotHold()){ if(G.gotcha.full&&G.gotcha.t>=20){ G.gotcha.t=G.gotcha.end; G.freeze=0; } break; } shoot(x,y,G.mouse.touch); break; // while the trap holds, a tap skips it: never a free shot into a frozen sky
     case 'intro': if(G.t>(ruleFor(G.round)?70:20)) G.t=999; break; // an epoch that brings a new rule holds its card a little longer
@@ -837,7 +842,7 @@ function update1(){
     case 'title': G.amb.x+=1.1; if(G.amb.x>W+10){ G.amb.x=-40; G.amb.y=rnd(20,90); } G.amb.t++; G.titleFox=(G.titleFox+1)%420;
       G.idle++; if(G.idle>=1200&&!G.attract) startGame(true); break;
     case 'boot': G.boot.t++; { const li=Math.min(T.boot.length-1,Math.floor(G.boot.t/22)); if(li!==G.boot.line){ G.boot.line=li; SFX.tick(); } if(G.boot.t>=T.boot.length*22+40) bootDone(); } break;
-    case 'intro': if(G.t>=(G.round===1?70:ruleFor(G.round)?160:110)){ if(G.wave===0&&G.round===1) beginFirstWave(); else startWave(); } break;
+    case 'intro': if(G.t>=introHold()){ if(G.wave===0&&G.round===1) beginFirstWave(); else startWave(); } break;
     case 'fly': updateBirds(); break;
     case 'fox': G.fox.t++; if(G.fox.t===16) say(G.fox.line); { const k=(G.fox.t-16)*2; if(k>=0&&k<G.fox.line.length&&G.fox.line[k]!==' '&&!voiceLive()) SFX.chirp(G.fox.x+16); }
       if(G.fox.mode==='tut'){ if(G.fox.t>=foxTyped()+40) startWave(); break; }
@@ -846,7 +851,7 @@ function update1(){
       // non-blocking critic: once the line is typed the next wave starts and the bubble lingers over play
       if(!G.swarm&&G.wave<EPOCH_LEN&&G.fox.t>=foxTyped()+10){ G.linger={line:G.fox.line,x:G.fox.x,mode:G.fox.mode,count:G.fox.count,t:G.fox.t,len:foxLen()}; G.state='gap'; G.t=0; break; }
       if(G.fox.t>=foxLen()){ if(G.wave>=EPOCH_LEN) endRound(); else { G.state='gap'; G.t=0; } } break;
-    case 'gap': if(G.t>=12){ startWave(); if(G.linger) G.linger.len=Math.min(G.linger.len,G.linger.t+18); } break; // the bubble leaves ~0.3 s into the next wave, and sits behind the requests
+    case 'gap': if(G.t>=12){ startWave(); if(G.linger) G.linger.len=G.linger.t; } break; // the bubble leaves as the wave starts: the spawn lane stays clear // the bubble leaves ~0.3 s into the next wave, and sits behind the requests
     case 'roundEnd': { const U=G.adv&&G.adv.update; if(U&&G.t>=40&&(G.t-40)%22===0&&(G.t-40)/22<U.length&&!G.advShown) SFX.blip(); if(G.t>=(U?60+22*U.length+220:200)) nextRound(); } break;
     case 'gameOver': G.fox.t++; if(G.fox.t===16) say(G.fox.line); break;
   }
@@ -1007,7 +1012,7 @@ function drawGotcha(){ const g=G.gotcha; if(!g||G.state==='gameOver'||G.paused) 
   if(g.full&&hold&&g.t>=20) textS(T.adv.skip,x+w-textW(T.adv.skip,1),y+h+3,'#8a8494',1);
   ctx.globalAlpha=1; }
 function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
-  if(G.state==='intro'){ if(t<110||(t&4)){ textC(T.hud.round+' '+pad(G.round,2),52,'#f7f4e9',2,true); if(G.wx.who) textC(T.trafficFrom+G.wx.who+': '+G.wx.whoTag,64,'#c4a9ff',1,true); textC(B.load+G.wx.name,74,'#ffe98a',1,true); textC(G.wx.tag,84,'#bdeeff',1,true); textC(fmt(B.quota),96,'#f7f4e9',1,true);
+  if(G.state==='intro'){ if(t<introHold()-30||(t&4)){ textC(T.hud.round+' '+pad(G.round,2),52,'#f7f4e9',2,true); if(G.wx.who){ const ws=T.trafficFrom+G.wx.who+': '+G.wx.whoTag, ww=textW(ws,1); ctx.fillStyle='rgba(10,10,18,0.6)'; ctx.fillRect(Math.round(W/2-ww/2)-3,62,ww+6,9); textC(ws,64,'#e2ccff',1,true); } textC(B.load+G.wx.name,74,'#ffe98a',1,true); textC(G.wx.tag,84,'#bdeeff',1,true); textC(fmt(B.quota),96,'#f7f4e9',1,true);
       const rule=ruleFor(G.round); if(rule&&!G.attract&&t>=10){ ctx.fillStyle='rgba(10,10,18,0.8)'; ctx.fillRect(4,107,W-8,14); text7C(rule,110,'#ffe98a'); } } }
   if(G.tip&&((G.tip.id==='fast'&&G.round>1)||(G.tip.id==='firewall'&&!(G.swarm&&G.swarm.boss)))) dropTip(); /* never late: FAST after epoch 1, the firewall tip after the fight */
   if(G.tip&&!G.paused&&!(G.gotcha&&G.gotcha.top)&&(!G.swarm||(G.swarm.boss&&G.tip.id==='firewall'))&&(G.state==='fly'||G.state==='fox'||G.state==='gap')){ G.tip.t++; if(G.tip.t>170) nextTip(); else { const tw=textW(G.tip.txt,1)+12; const ty=(G.swarm&&G.swarm.boss)? 88 : (G.state==='fly'&&T.boltLabel&&G.birds.some(b=>b.st==='fly'&&b.frozen>0))? 46 : 16; /* in the fight: under the boss, clear of its label */ ctx.fillStyle='rgba(10,10,18,0.85)'; ctx.fillRect(Math.round(W/2-(textW7(G.tip.txt)+12)/2),ty,textW7(G.tip.txt)+12,13); text7C(G.tip.txt,ty+3,'#bdeeff',true); } }
@@ -1028,7 +1033,7 @@ function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
     text(rc[2]+' '+R.hServed+' SERVED / '+R.hDodged+' DODGED',40,70,'#8a8494');
     text((G.adv&&G.adv.built)? T.adv.fooled+' '+G.adv.fooled+'/'+G.adv.built : rc[3]+' '+R.frontier,40,80,(G.adv&&G.adv.built)?'#e2ccff':'#8a8494'); { const got=G.tally.filter(x=>x==='hit').length; text(T.hud.served+' '+got+' '+T.hud.need+' '+req(G.round),136,80,'#ff8a8a'); } // why it ended
     if(G.newRecord){ if((t>>2)&1) textC('NEW BEST!',89,'#ffe98a',1); } else { const hi=(G.assist||G.runAssisted)?G.hiA:G.hi, gap=hi-net(); textC(T.hud.best+' '+pad(hi,6)+(gap>0&&hi>0?'   '+gap.toLocaleString()+' TO BEAT':''),89,'#8a8494',1); } } // the one-more-run number
-    if(t>70&&!G.entry){ text7C(T.restart,98,'#cfc9dc',true); const mt=(TOUCHY||document.body.classList.contains('touch'))? '< MENU' : '< MENU ESC'; GO_BTN.menu=[36,36+btn7(mt,36,GO_BTN.y,'#f7f4e9')]; if(G.lastRun&&!G.replay){ const rt='WATCH REPLAY >', w=textW7(rt)+8; GO_BTN.rep=[222-w,222]; btn7(rt,222-w,GO_BTN.y,'#bdeeff'); } } }
+    if(t>70&&!G.entry){ if(G.topList) textC(T.restart,99,'#cfc9dc',1,true); else text7C(T.restart,98,'#cfc9dc',true); const mt=(TOUCHY||document.body.classList.contains('touch'))? '< MENU' : '< MENU ESC'; GO_BTN.menu=[36,36+btn7(mt,36,GO_BTN.y,'#f7f4e9')]; if(G.lastRun&&!G.replay){ const rt='WATCH REPLAY >', w=textW7(rt)+8; GO_BTN.rep=[222-w,222]; btn7(rt,222-w,GO_BTN.y,'#bdeeff'); } } }
   if(G.state==='boot'){ ctx.fillStyle='#07070c'; ctx.fillRect(0,0,W,SKY_H); const n=Math.min(T.boot.length,Math.floor(G.boot.t/22)+1);
     for(let i=0;i<n;i++){ const full=i<n-1||G.boot.t%22>14; const ln=T.boot[i]; text(full?ln:ln.slice(0,Math.floor((G.boot.t%22)/14*ln.length)),16,20+i*14,i===n-1?'#f7f4e9':'#8a8494',1); }
     if((G.boot.t>>3)&1) text('_',16+textW(T.boot[Math.min(n-1,T.boot.length-1)],1)+2,20+(n-1)*14,'#f7f4e9',1);
