@@ -156,12 +156,12 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       ok(w1 === !w0 && after.want === w0 && after.assist === !a0, `E1: C toggles the CRT; typing VCC toggles assist without flipping the CRT (${w0}->${w1}->${after.want}, assist ${a0}->${after.assist})`);
       if (after.assist) await page.keyboard.type('vcc');
       // the third HUD icon toggles it too
-      await page.evaluate(() => { window.__th.state = 'fly'; window.__th.birds = []; }); const i0 = await page.evaluate(() => window.__crt().want);
+      await page.evaluate(() => { window.__th.state = 'fly'; window.__th.birds = []; window.__th.lastShotF = -999; }); const i0 = await page.evaluate(() => window.__crt().want); // the icons ignore taps for 0.5 s after a shot (the click test above fired some)
       await page.evaluate(() => window.__tap(220, 6)); await sleep(50); const i1 = await page.evaluate(() => window.__crt().want);
       await page.evaluate(() => window.__tap(220, 6)); await sleep(50);
       ok(i1 === !i0, `E1: CRT icon (215,2) toggles (${i0}->${i1})`);
       // context loss -> 2D fallback -> restore
-      const lost = await page.evaluate(async () => { const gl = document.getElementById('crtgl').getContext('webgl'); const ext = gl.getExtension('WEBGL_lose_context'); ext.loseContext(); await new Promise(r => setTimeout(r, 200)); const a = window.__crt(); ext.restoreContext(); await new Promise(r => setTimeout(r, 400)); return { a, b: window.__crt() }; });
+      const lost = await page.evaluate(async () => { const gl = document.getElementById('crtgl').getContext('webgl'); const ext = gl.getExtension('WEBGL_lose_context'); ext.loseContext(); await new Promise(r => setTimeout(r, 200)); const a = window.__crt(); ext.restoreContext(); for (let i = 0; i < 25 && !window.__crt().ok; i++) await new Promise(r => setTimeout(r, 100)); /* a slow software GL restores late */ return { a, b: window.__crt() }; });
       ok(lost.a.lost && !lost.a.active && lost.a.overlay && !lost.a.canvasShown && lost.b.ok && !lost.b.lost, `E1: webglcontextlost falls back to 2D, restored re-initialises (lost: active=${lost.a.active}; restored: ok=${lost.b.ok}, tier ${lost.b.tier}, err ${lost.b.err})`);
       await sleep(300);
       ok(errs.length === 0, 'E1: zero page errors' + (errs.length ? ' ' + errs[0] : ''));
