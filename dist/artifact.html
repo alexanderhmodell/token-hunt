@@ -529,7 +529,7 @@ function advTrain(){ const A=G.adv; if(!A||!A.on) return; const o=A.obs, prev=A.
   const P=Object.assign({},prev), U=[], X=T.adv; A.ver++; A.epochBuilt=0;
   if(prev.tierHi<0&&o.hi+o.lo>=1&&!(o.seenHi&&o.seenLo)){ P.tierHi=0.5; A.colorLine=X.noHabit+' -> '+X.fake+' 50/50'; U.push(A.colorLine); } // one colour all epoch: nothing to choose between, so no habit
   else if(o.hi+o.lo>=1&&o.seenHi&&o.seenLo){ const rH= o.seenHi? o.hi/o.seenHi : -1, rL= o.seenLo? o.lo/o.seenLo : -1; let hi, faster=false; /* a colour it never saw this epoch is no evidence: it keeps what it had */
-    const fH=o.firstHi||0, fL=o.firstLo||0, first= fH+fL>=3&&Math.abs(fH-fL)>=1.5; // three choices and a clear lead: 2 of 2 is noise // your habit first: the colour you serve first when both are up
+    const fH=(o.firstHi||0)+(A.prevFH||0), fL=(o.firstLo||0)+(A.prevFL||0), first= fH+fL>=3&&Math.abs(fH-fL)>=1.5; // three choices and a clear lead: 2 of 2 is noise // your habit first: the colour you serve first when both are up
     let none=false; if(first) hi= fH>fL; else if(Math.abs(rH-rL)<0.15) none=true; else hi= rH>=0&&(rL<0||rH>=rL); // only a habit you can see, with its count: never a speed read // under 0.15 s apart is noise, not a habit // close rates: the colour you serve faster decides
     P.tierHi= none? 0.5 : hi? 0.8 : 0.2; const C=hi?X.hi:X.lo; // 4 in 5 wear your colour: the card is exact, but colour alone no longer clears a request
     A.colorLine= none? X.noHabit+' -> '+X.fake+' 50/50' : first? C+' FIRST '+Math.round(Math.max(fH,fL))+'/'+Math.round(fH+fL)+' -> '+X.fake+' 80% '+C : faster? X.served+' '+C+' FASTER -> '+X.fake+' 80% '+C : X.served+' '+(hi? o.hi+'/'+o.seenHi : o.lo+'/'+o.seenLo)+' '+C+' -> '+X.fake+' 80% '+C; U.push(A.colorLine); }
@@ -539,7 +539,7 @@ function advTrain(){ const A=G.adv; if(!A||!A.on) return; const o=A.obs, prev=A.
     else if(o.served/seen>=0.5){ P.rateUp=true; U.push(X.served+' '+o.served+'/'+seen+' '+X.fake+' -> MORE '+X.fake); }
     else U.push('DODGED '+dodged+'/'+seen+' -> '+X.keeps); }
   const d1=DUTY[Math.min(DUTY.length-1,A.ver-1)]; if(d1<prev.duty) U.push(X.fake+' GLITCH LESS: '+Math.round(prev.duty*100)+'% -> '+Math.round(d1*100)+'%'); P.duty=d1;
-  A.policy=P; A.update= U.length? U : null; { const c=newObs(); c.firstHi=(o.firstHi||0)*0.5; c.firstLo=(o.firstLo||0)*0.5; A.obs=c; } /* half the habit evidence carries over: one thin epoch does not flip it */ G.advShown=false; }
+  A.policy=P; A.update= U.length? U : null; A.prevFH=o.firstHi||0; A.prevFL=o.firstLo||0; A.obs=newObs(); /* the habit counts your last two epochs, in whole numbers: one thin epoch does not flip it */ G.advShown=false; }
 const advLive=()=> G.adv&&G.adv.on&&G.adv.policy;
 const advTyped=()=>{ const U=G.adv&&G.adv.update; return !U||G.advShown||G.t>=40+22*(U.length-1)+16; };
 function ruleFor(r){ if(G.adv&&G.adv.on&&!G.attract&&T.rulesAdv&&(r in T.rulesAdv)) return T.rulesAdv[r]; return T.rules&&T.rules[r]; } // the adversary's own cards replace the fixed rules it supersedes
@@ -749,7 +749,7 @@ const GO_BTN={y:108, menu:[36,79], rep:[131,222]}; let PAUSE_Q=[0,0,0,0]; // gam
 function btn7(s,x,y,col){ const w=textW7(s)+8; ctx.fillStyle='rgba(58,52,76,0.92)'; ctx.fillRect(x,y,w,13); ctx.fillStyle=col; ctx.fillRect(x,y,w,1); ctx.fillRect(x,y+12,w,1); ctx.fillRect(x,y,1,13); ctx.fillRect(x+w-1,y,1,13); text7(s,x+4,y+3,col); return w; }
 function quitToMenu(){ G.paused=false; G.gotcha=null; G.linger=null; toTitle(); } // from the pause menu: no need to lose first
 function setPaused(p){ if(p&&!PAUSABLE[G.state]) return; if(G.paused===p) return; G.paused=p; if(p) hush();
-  if(p){ music.stop(); rainStop(); } else { G.unpauseT= G.replay? G.unpauseT : 24; recIn('u'); music.start(); if(G.wx.rain) rainStart(G.wx.rain); } } // no pause-aim: 0.4 s of no shooting after resume
+  if(p){ music.stop(); rainStop(); } else { G.unpauseT= G.replay? G.unpauseT : 24; recIn('u'); if(!G.attract) music.start(); if(G.wx.rain) rainStart(G.wx.rain); } } // the demo stays silent // no pause-aim: 0.4 s of no shooting after resume
 
 function handleTap(x,y){
   if(G.paused){ const ry=y+(G.mouse.touch?TOUCH_LIFT:0); if(x>=PAUSE_Q[0]&&x<=PAUSE_Q[1]&&ry>=PAUSE_Q[2]&&ry<=PAUSE_Q[3]){ quitToMenu(); return; } setPaused(false); return; }
@@ -827,7 +827,7 @@ function update(){
   if(G.state==='fly'&&!G.replay&&!G.attract){ const dx=(HELD.ArrowRight?1:0)-(HELD.ArrowLeft?1:0), dy=(HELD.ArrowDown?1:0)-(HELD.ArrowUp?1:0); // keyboard aim: the crosshair accelerates while an arrow is held
     if(dx||dy){ G.kbAim=(G.kbAim||0)+1; const sp=Math.min(4.5,1.5+G.kbAim*0.1); G.mouse.x=clamp(G.mouse.x+dx*sp,0,W-1); G.mouse.y=clamp(G.mouse.y+dy*sp,0,SKY_H-1); G.mouse.on=true; G.mouse.touch=false; } else G.kbAim=0; }
   if(G.gotcha){ const g=G.gotcha; ++g.t; if(g.full&&G.freeze>0){ if(g.t===GOT_PRE) SFX.rewind(); else if(g.t===GOT_PRE+GOT_RW) SFX.tick(); } if(g.t>(g.full? g.end+20 : 104)){ G.gotcha=null; if(g.full) tip('gotcha'); } }
-  G.frame++; if(G.unpauseT>0) G.unpauseT--; if(G.goGuard>0) G.goGuard--; if(G.linger&&(++G.linger.t>=G.linger.len||G.state==='fox'||G.state==='gameOver'||G.state==='roundEnd'||G.state==='title'||G.state==='intro')) G.linger=null; snapPrev();
+  G.frame++; if(G.unpauseT>0) G.unpauseT--; if(G.goGuard>0) G.goGuard--; if(G.linger&&((G.freeze>0? G.linger.t : ++G.linger.t)>=G.linger.len||G.state==='fox'||G.state==='gameOver'||G.state==='roundEnd'||G.state==='title'||G.state==='intro')) G.linger=null; snapPrev();
   update1();
   if(G.replay&&(G.state==='gameOver'||G.frame>G.replay.end+3600)) endReplay(); }
 function snapPrev(){ for(const b of G.birds){ b.px=b.x; b.py=b.y; } for(const f of G.fx){ f.px=f.x; f.py=f.y; } for(const c of G.clouds) c.px=c.x; for(const d of G.rain){ d.px=d.x; d.py=d.y; } G.amb.px=G.amb.x; G.amb.py=G.amb.y; }
@@ -967,7 +967,7 @@ function drawFox(part){ const f=G.fox; const t=f.t; const tut=f.mode==='tut', ov
   const face= over? (T.spr.criticRoast||T.spr.criticFlat) : tut? T.spr.critic : (miss||f.mode==='warn')? T.spr.criticFlat : T.spr.criticHappy;
   const talk= mouthOpen(t,f.line||'')&&S[face+'O']; if(talk) VOICE.open++;
   ctx.drawImage(S[face+(talk?'O':'')]||S[T.spr.critic], f.x, y+bob);
-  if(catchUp){ const lift=Math.min(8,t-14); const py=y-12-lift; ctx.drawImage(S[T.spr.fall], f.x+8, py); if(f.count>=2) ctx.drawImage(S[T.spr.fall], f.x+22, py+2); }
+  if(catchUp){ const lift=Math.min(8,t-14); const py=y-12-lift+(f.leaveAt!==undefined? 2*Math.max(0,y-(SKY_H-44)) : 0); /* leaving: they sink with him */ ctx.drawImage(S[T.spr.fall], f.x+8, py); if(f.count>=2) ctx.drawImage(S[T.spr.fall], f.x+22, py+2); }
 }
 function drawBubble(f,y,t,leave,tut,catchUp){
   if(t>=16&&(t<leave||tut)||G.state==='gameOver'){ const over=G.state==='gameOver'; const g=bubbleGeom(f.line,f.x,y,catchUp,over); let left= over? 1e9 : Math.max(1,(t-16)*2);
@@ -997,7 +997,7 @@ function drawBossBar(){ if(G.state!=='fly') return; const bo=G.birds.find(b=>b.b
   const n=bo.hp0||6, nm=T.boss.name+((bo.lv||1)>1?' LV'+bo.lv:''), room=202-4-(44+textW(nm,1)+6), cw=Math.max(3,Math.min(n>6?6:10,Math.floor(room/n))); ctx.fillStyle=SHADOW; ctx.fillRect(40,2,166,12); text(nm,44,5,'#f7f4e9',1); const x0=202-4-n*cw; /* the bar never runs over the name */
   for(let i=0;i<n;i++){ ctx.fillStyle= i<bo.hp? (bo.hitT>3&&i===bo.hp-1?'#ffffff':'#ff4d4d') : '#3a344c'; ctx.fillRect(x0+i*cw,5,cw-2,5); } }
 function panelTop(tr,n,fy){ const inT=y=>y<80&&y+20>16, inB=y=>y+20>123&&y<186, ey=n? tr[(n-1)*5+1] : fy; if(inT(ey)!==inB(ey)) return inB(ey); /* where it ended decides */ let a=0, b=0; for(let i=0;i<n;i++){ const y=tr[i*5+1], w= i>=n*0.6? 4 : 1; if(inT(y)) a+=w; if(inB(y)) b+=w; } return a===b? fy>=100 : a<b; } // the trap panel goes where the fake's path is not
-const GOT_PRE=12, GOT_RW=24, GOT_POST=54, gotHold=()=> !!(G.gotcha&&G.gotcha.t<G.gotcha.end&&G.freeze>0);
+const GOT_PRE=12, GOT_RW=24, GOT_POST=90, gotHold=()=> !!(G.gotcha&&G.gotcha.t<G.gotcha.end&&G.freeze>0);
 function drawRewind(g){ const t=g.t, n=g.n, tr=g.tr; // the fooled moment, rewound: what you saw, then what it was
   ctx.fillStyle='rgba(10,10,18,0.5)'; ctx.fillRect(0,0,W,SKY_H);
   ctx.fillStyle=GHOST; for(let i=0;i<n;i+=3) ctx.fillRect(Math.round(tr[i*5]+12),Math.round(tr[i*5+1]+10),1,1); // the path it flew
@@ -1008,16 +1008,18 @@ function drawRewind(g){ const t=g.t, n=g.n, tr=g.tr; // the fooled moment, rewou
   const at=tr[o+4], clk=(at/60).toFixed(2)+'S'; textS(clk,clamp(x+2,2,W-2-textW(clk,1)),Math.max(8,y-9),at>=g.hide?'#ff8a8a':'#f7f4e9',1);
   if(i>=n-1){ const cx=Math.round(g.tx), cy=Math.round(g.ty); ctx.fillStyle='#ff4d4d'; ctx.fillRect(cx-7,cy,5,1); ctx.fillRect(cx+3,cy,5,1); ctx.fillRect(cx,cy-7,1,5); ctx.fillRect(cx,cy+3,1,5); } } // your shot
 function drawGotcha(){ const g=G.gotcha; if(!g||G.state==='gameOver'||G.paused) return; const hold=gotHold();
+  const playing=g.full&&hold&&g.t<GOT_PRE+GOT_RW+g.n; if(g.full&&hold&&!playing) drawRewind(g); // after the playback the panel may cover the old trail, never the fake
   const a= Math.min(1, g.full? (hold? 1 : 1-(g.t-g.end)/20) : (g.t<84? 1 : 1-(g.t-84)/20)); if(a<=0) return; ctx.globalAlpha=a; // the trap, spelled out
   const L1=T.adv.ver+g.ver+' '+T.adv.gotYou, P1='-'+g.pen, L2=T.adv.youFired+' '+(g.fired/60).toFixed(2)+'S', L3=T.adv.lookedReal+' '+(g.hide/60).toFixed(2)+'S';
   const lrn= g.full&&g.ln&&(!hold||g.t>=GOT_PRE+GOT_RW+g.n)? g.ln : null; // after the replay: the card line that built it
-  const w=Math.max(textW7(L1+'  '+P1),textW7(L2),textW7(L3),g.ln&&g.full?textW7(g.ln):0)+16, h=lrn? 63 : 43, x=Math.round(W/2-w/2), y=g.top? 16 : SKY_H-14-(g.full?63:43);
+  const mov=g.full&&hold&&g.t<GOT_PRE+GOT_RW+g.n; // while the fake plays back: only the headline, at the far edge
+  const w= mov? textW7(L1+'  '+P1)+16 : Math.max(textW7(L1+'  '+P1),textW7(L2),textW7(L3),g.ln&&g.full?textW7(g.ln):0)+16, h= mov? 17 : lrn? 63 : 43, x=Math.round(W/2-w/2), y=g.top? 16 : SKY_H-14-(mov? 17 : g.full?63:43);
   ctx.fillStyle='rgba(10,10,18,0.92)'; ctx.fillRect(x,y,w,h); ctx.fillStyle='#b99cff'; ctx.fillRect(x,y,w,1); ctx.fillRect(x,y+h-1,w,1); ctx.fillRect(x,y,1,h); ctx.fillRect(x+w-1,y,1,h);
   { const lx=Math.round(W/2-textW7(L1+'  '+P1)/2); text7S(L1,lx,y+5,'#b99cff'); text7S(P1,lx+6*(L1.length+2),y+5,'#ff4d4d'); } // the bill rides with the trap
-  text7C(L2,y+18,'#f7f4e9',true); text7C(L3,y+30,GHOST,true);
-  if(lrn){ ctx.fillStyle='#3a344c'; ctx.fillRect(x+6,y+41,w-12,1); textC(T.adv.learned,y+44,'#8a8494',1); text7Split(lrn,y+52); }
-  if(g.full&&hold&&g.t>=20) textS(T.adv.skip,x+w-textW(T.adv.skip,1),y+h+3,'#8a8494',1);
-  ctx.globalAlpha=1; if(g.full&&hold) drawRewind(g); } // the rewound fake rides over the panel: never hidden by it
+  if(!mov){ text7C(L2,y+18,'#f7f4e9',true); text7C(L3,y+30,GHOST,true); }
+  if(lrn&&!mov){ ctx.fillStyle='#3a344c'; ctx.fillRect(x+6,y+41,w-12,1); textC(T.adv.learned,y+44,'#8a8494',1); text7Split(lrn,y+52); }
+  if(g.full&&hold&&g.t>=20) textS(T.adv.skip,x+w-textW(T.adv.skip,1),g.top? y+h+3 : y-9,'#8a8494',1);
+  ctx.globalAlpha=1; if(playing) drawRewind(g); } // while it plays back, the fake rides over the headline strip
 function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
   if(G.state==='intro'){ if(t<introHold()-30||(t&4)){ textC(T.hud.round+' '+pad(G.round,2),50,'#f7f4e9',2,true); if(G.wx.who){ const ws=T.trafficFrom+G.wx.who+': '+G.wx.whoTag, ww=textW(ws,1); ctx.fillStyle='rgba(10,10,18,0.6)'; ctx.fillRect(Math.round(W/2-ww/2)-3,63,ww+6,9); textC(ws,65,'#e2ccff',1,true); } textC(B.load+G.wx.name,74,'#ffe98a',1,true); textC(G.wx.tag,84,'#bdeeff',1,true); textC(fmt(B.quota),96,'#f7f4e9',1,true);
       const rule=ruleFor(G.round); if(rule&&!G.attract&&t>=10){ ctx.fillStyle='rgba(10,10,18,0.8)'; ctx.fillRect(4,107,W-8,14); text7C(rule,110,'#ffe98a'); } } }
@@ -1185,7 +1187,7 @@ function draw(){ ctx.save(); ctx.imageSmoothingEnabled=false; { const [ox,oy]=sh
   drawSky(); back();
   if(G.state==='title') drawTitle();
   else if(G.paused){ ctx.fillStyle='rgba(10,10,18,0.7)'; ctx.fillRect(0,0,W,SKY_H); } // paused: the sky is hidden, so pausing cannot be used to aim
-  else { const foxUp=G.state==='fox'||G.state==='gameOver'||G.state==='gap'; if(!G.paused&&!foxUp&&G.linger) withLinger(()=>{ drawFox(1); drawFox(0); }); /* leaving: behind the new requests */ for(const b of G.birds) if(b.st!=='gone'&&!(foxUp&&b.st==='landed')) drawBird(b); for(const q of G.props||[]) drawProd(q); if(foxUp) drawFox(0); }
+  else { const foxUp=G.state==='fox'||G.state==='gameOver'||G.state==='gap'; if(!G.paused&&!foxUp&&G.linger) withLinger(()=>{ drawFox(1); drawFox(0); }); /* leaving: behind the new requests */ for(const b of G.birds) if(b.st!=='gone'&&!((foxUp||G.state==='roundEnd'||G.state==='intro')&&b.st==='landed')) drawBird(b); for(const q of G.props||[]) drawProd(q); if(foxUp) drawFox(0); }
   front(); if(G.state==='title') drawTitleFront(); drawRain(); if(!G.paused&&(G.state==='fox'||G.state==='gameOver'||G.state==='gap')) drawFox(1); drawFx(); ctx.restore();
   if(G.flash>0){ ctx.fillStyle='rgba('+(G.flashCol||'255,255,255')+','+((G.flashA||0.18)*(REDUCED?0.35:1))+')'; ctx.fillRect(0,0,W,SKY_H); } // softer under reduced motion
   drawBanner(); drawGotcha(); drawHUD(); drawCrosshair(); drawIcons(); drawReplayBadge(); drawCaptions();
