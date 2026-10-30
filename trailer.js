@@ -96,8 +96,9 @@ function installShooter() {
     fake: () => G.birds.find(b => b.st === 'fly' && b.bad),
     agent: () => G.birds.filter(b => b.st === 'fly' && b.agent).sort((a, b) => b.y - a.y)[0], // the one closest to the racks
     boss: () => G.birds.find(b => b.st === 'fly' && b.boss),
+    prod: () => (G.props || []).find(q => q.st === 'fly'),
   };
-  const centre = b => b.boss ? [b.x + 24, b.y + 20] : b.agent ? [b.x + 6, b.y + 5] : [b.x + 12, b.y + 10];
+  const centre = b => (b.y0 !== undefined && b.tier === undefined) ? [b.x + 8, b.y + 8] : b.boss ? [b.x + 24, b.y + 20] : b.agent ? [b.x + 6, b.y + 5] : [b.x + 12, b.y + 10];
   window.__tr = {
     count: kind => G.birds.filter(b => b.st === 'fly' && (kind === 'real' ? isReal(b) : kind === 'fake' ? b.bad : kind === 'agent' ? b.agent : kind === 'boss' ? b.boss : false)).length,
     async fire(kind, o = {}) {
@@ -204,6 +205,9 @@ async function record() {
     await sleep(1200);
     for (let i = 0; i < 3; i++) { await waitFor(() => { const a = window.__th.birds.filter(b => b.st === 'fly' && b.agent); return a.length && Math.max(...a.map(b => b.y)) > 30; }, null, 3000); await fire('agent', { steps: 5, gain: 0.6 }); await sleep(380); }
     await waitState('fox', 8000); mark('critic: ' + await line()); await sleep(1100);
+    // ---- 8b  PROD DB drifts by on its drone: shoot it
+    if (await waitState('fly', 6000)) { await G(() => { window.__th.props = [{ x: -18, y0: 64, y: 64, vx: 0.45, t: 0, st: 'fly' }]; }); mark('PROD DB'); await sleep(2300);
+      await fire('prod', { steps: 8, gain: 0.5 }); await sleep(900); await fireAll('real'); await waitState('fox', 8000); mark('critic: ' + await line()); await sleep(1300); }
     // ---- 9  epoch 4, the DDoS boss fight, to the kill
     await clearEpoch(3, ['hit', 'hit', 'miss', 'hit', 'hit', 'hit']); mark('epoch 4: boss intro');
     await G(() => { const g = window.__th; g.wave = 2; g.tally = ['hit', 'hit']; g.bossDone = false; }); // the boss arrives once 2 requests are in
@@ -218,7 +222,8 @@ async function record() {
     await waitState('fox', 10000); mark('boss down. critic: ' + await line()); await sleep(1500);
     // ---- 10  OUT OF MEMORY: receipt and roast
     await G(() => { const g = window.__th; g.round = 4; g.wave = 6; g.tally = ['hit', 'hit', 'miss', 'miss', 'miss', 'miss']; g.state = 'fox'; g.fox.t = 109; g.fox.mode = 'miss'; g.fox.line = 'TRY REPHRASING YOUR REQUEST.'; g.birds = []; g.linger = null; g.swarm = null; });
-    await waitState('gameOver', 4000); mark('game over. roast: ' + await line()); await sleep(4200); // jingle, receipt, roast, NEW BEST
+    await waitState('gameOver', 4000); mark('game over. roast: ' + await line()); await sleep(2200); // jingle, roast
+    if (await G(() => !!window.__th.entry)) { for (const k of 'YOU') { await page.keyboard.press(k); await sleep(260); } await sleep(500); await page.keyboard.press('Enter'); mark('initials: top 5 rank ' + await G(() => window.__th.topRank)); await sleep(2600); } else await sleep(2000);
     // ---- 11  the share card, held for 4 s
     mark('share card'); await page.click('#share');
     if (!await waitFor(() => { const b = document.getElementById('cardbox'), i = document.getElementById('cardimg'); return !b.hidden && i.complete && i.naturalWidth > 0; }, null, 4000)) mark('WARN share card did not open');

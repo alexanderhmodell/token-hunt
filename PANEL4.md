@@ -120,3 +120,24 @@ Three cold seats on the build that made the trailer, same harness: the organizer
 ## Left as is
 
 Card-reading still beats snap-shooting (the score-chaser's best line): reading the card and breaking your habit is the counterplay the game teaches, and the model answers by moving the disguise to your new timing up to its cap. Daily keeps Medium's multiplier (each mode has its own best). Touch keeps its larger hit box.
+
+---
+
+# Re-check on v4.2 (Oct 29, late night) and v4.3
+
+Same three seats, cold, on v4.2 (the rewind build).
+
+| Seat | Score | Placement | One line |
+|---|---|---|---|
+| Organizer stream sim | 8 | **TOP 3**, shortlist YES | "Leaning yes" as his own pick: the rewind landed at 0:35 without the pitch; chat caught the colour line misreading him ("SERVED GREEN FASTER? I shot purple four times") |
+| Phone casual | 8 (was 7) | TOP 10 | "That rewind is excellent"; IDLE promised a rest and was the hardest epoch; small 3x5 text; a few overlaps |
+| Score-chaser (new seat) | 6 | TOP 25% | Snap-shooting out-earned the adversary (a fake cost 2x its base value, FAST doubled everything); fakes turned sooner than real requests; the boss's hit-stop held its openings open |
+
+## Applied (v4.3)
+
+- **Alex's asks:** a local **top 5 with initials** per mode (seeded, the critic holds the top score as BOT; type or tap the letters; assisted runs never enter; browser only, still zero network); every epoch's traffic comes from a **parody model provider** (CHADGPT 6, GRAWK 5, LOCAL 70B Q4, GEMMY 3 ULTRA, CLAWD 5, WRAPPER.AI) named on the epoch card, in the clear line and in two critic quips each; **PROD DB** from epoch 6, a database on a drone tagged DO NOT TOUCH (shoot it: YOU DROPPED PROD, a big bill, combo reset, the critic asks for the incident commander); **rogue agents** drawn 1.5x with an AGENT tag and a warning card on epoch 3.
+- **An honest colour read** (the organizer's one change): the colour it learns is the one you serve first when both are up; with no habit and serve times under 0.15 s apart it prints NO COLOR HABIT -> FAKES 50/50 instead of guessing.
+- **Score:** a fake bills twice what it pretended to be worth with combo and FAST included; trained fakes steer like real requests (no early-turn tell); disguises are at least 0.30 s (the card and the rewind agree).
+- **Boss:** three hits per opening, then it rotates (the hit-stop no longer stretches an opening); openings by mode (Easy 32, Medium 26, Hard 22 of 60 frames); hit pops beside it in rows, BLOCKED under it, its label on a backing.
+- **Readability:** the trap panel goes where the fake's path is not; tips stay off a top panel; the 429 label only when something froze and clear of its tip; the swarm hint without a box over the agents; the lingering critic holds no envelopes; replay skip shows the buttons at once; epoch cards with news hold 2.7 s; IDLE reads LOW TRAFFIC. HIGH STANDARDS.; the signature line ("AS AN AI, I CAN'T HELP WITH THAT.") plays the first time a request gets away, even in a wave where another was served.
+- A reload snapshot of one mode's best no longer leaks into the others.

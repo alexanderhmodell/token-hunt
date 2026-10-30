@@ -126,6 +126,44 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
     o.limit = window.__flightLimit(); return o; });
   rep('adversary waves: about half the multi-request waves stagger one arrival; disguises fit the window', hc.n >= 20 && hc.held >= Math.max(3, hc.multi * 0.2) && hc.held <= hc.multi * 0.8 && hc.clamp, JSON.stringify(hc));
 
+  // ---- v4.3: top 5 with initials, providers, PROD DB, boss rotation, fake bill, colour habit
+  const ini = await p.evaluate(async () => { const G = window.__th, o = {}; try { localStorage.removeItem(window.__top().key); localStorage.removeItem('th.ini'); } catch (e) {}
+    window.__tapAt(128, 100); await __wait(3); await __skipIntro(); G.tally = ['miss', 'miss', 'miss', 'miss', 'miss']; G.wave = 5; G.score = 30000; G.cost = 0;
+    for (let i = 0; i < 60 * 40 && G.state !== 'gameOver'; i++) { if (G.state === 'fox') G.fox.t = 999; if (G.state === 'intro' || G.state === 'gap') G.t = Math.max(G.t, 999); await __wait(1); }
+    await __wait(30); o.entry = !!G.entry; o.brag = !document.getElementById('brag').hidden;
+    for (const k of ['q', 'a', 'z']) document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true })); await __wait(2);
+    window.__tapAt(152, 66, 'touch'); await __wait(2); // touch: top half of the third letter -> Z+1 = A
+    o.letters = G.entry && G.entry.c.map(i => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]).join('');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); await __wait(3);
+    o.saved = !G.entry && G.topList && G.topList[G.topRank] && G.topList[G.topRank].n; o.rank = G.topRank; o.stored = window.__top().list.map(e => e.n + e.s).join(','); o.bragAfter = !document.getElementById('brag').hidden;
+    window.__tapAt(128, 60); await __wait(3); o.reboot = G.state; return o; });
+  rep('top 5: a run that makes the table asks for initials (keys and touch), saves them, then the share buttons', ini.entry && !ini.brag && ini.letters === 'QAA' && ini.saved === 'QAA' && ini.rank === 1 && /QAA45000|QAA/.test(ini.stored) && ini.bragAfter && ini.reboot !== 'gameOver', JSON.stringify(ini));
+  const ini2 = await p.evaluate(async () => { const G = window.__th, o = {}; await __skipIntro(); G.tally = ['miss', 'miss', 'miss', 'miss', 'miss']; G.wave = 5; G.score = 100; G.cost = 0;
+    for (let i = 0; i < 60 * 40 && G.state !== 'gameOver'; i++) { if (G.state === 'fox') G.fox.t = 999; if (G.state === 'intro' || G.state === 'gap') G.t = Math.max(G.t, 999); await __wait(1); } await __wait(30); o.lowEntry = !!G.entry;
+    window.__tapAt(128, 60); await __wait(3); await __skipIntro(); G.runAssisted = true; G.tally = ['miss', 'miss', 'miss', 'miss', 'miss']; G.wave = 5; G.score = 999999; G.cost = 0;
+    for (let i = 0; i < 60 * 40 && G.state !== 'gameOver'; i++) { if (G.state === 'fox') G.fox.t = 999; if (G.state === 'intro' || G.state === 'gap') G.t = Math.max(G.t, 999); await __wait(1); } await __wait(30); o.assistEntry = !!G.entry; G.runAssisted = false; return o; });
+  rep('top 5: a low score or an assisted run never asks', !ini2.lowEntry && !ini2.assistEntry, JSON.stringify(ini2));
+  const pv = await p.evaluate(async () => { const G = window.__th, T = window.__T(), o = {}; o.who = T.levels.map(l => l.who).filter(Boolean).length; o.quips = T.levels.every(l => !l.who || (l.quips && l.quips.length >= 2));
+    o.widths = T.levels.filter(l => l.who).every(l => (T.trafficFrom + l.who + ': ' + l.whoTag).length * 4 - 1 <= 250 && l.quips.every(q => q.length <= 76));
+    o.forbidden = /grok|gemini|chatgpt|claude|openai|anthropic|google|xai|nvidia|apple/i.test(JSON.stringify(T.levels)); return o; });
+  rep('providers: six parody providers, each with quips, no real marks, lines fit', pv.who === 6 && pv.quips && pv.widths && !pv.forbidden, JSON.stringify(pv));
+  const pd = await p.evaluate(async () => { const G = window.__th, o = {}; window.__tapAt(128, 60); await __wait(3); await __skipIntro(); G.round = 6; G.state = 'fly'; G.freeze = 0; G.gotcha = null; G.shots = 3; G.flightT = 30; G.unpauseT = 0;
+    G.birds = [{ x: 200, y: 30, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 20, dirT: 1e9, hitT: 0 }]; G.props = [{ x: 60, y0: 80, y: 80, vx: 0, t: 0, st: 'fly' }]; await __wait(2);
+    const sc = G.score; G.combo = 4; G.lastShotF = -99; window.__tapAt(68, 88); await __wait(3); const q = G.props[0]; o.fell = q && q.st === 'fall'; o.pen = sc - G.score; o.combo = G.combo; o.fact = G.wf.prod; o.tally = G.tally.length;
+    G.props = [{ x: 100, y0: 80, y: 80, vx: 0, t: 0, st: 'fly' }]; G.birds = [{ x: 104, y: 92, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 20, dirT: 1e9, hitT: 0 }]; G.shots = 3; G.lastShotF = -99; await __wait(2);
+    window.__tapAt(116, 104); await __wait(3); o.requestWins = G.props[0].st === 'fly' && G.birds[0].st !== 'fly'; return o; });
+  rep('PROD DB: shooting it costs big, resets the combo, it falls, no slot used; a request under the tap wins', pd.fell && pd.pen >= 4000 && pd.combo === 0 && pd.fact && pd.requestWins, JSON.stringify(pd));
+  const br = await p.evaluate(async () => { const G = window.__th, o = {}; G.props = []; G.round = 4; G.wave = 2; G.tally = ['hit', 'hit']; G.bossDone = false; G.swarmDone = true; G.birds = []; G.state = 'gap'; G.t = 99; await __wait(3);
+    if (G.state === 'fox') { G.fox.t = 999; await __wait(3); } const bo = G.birds.find(x => x.boss); if (!bo) return { none: true }; while (bo.enter) await __wait(1); bo.vx *= 0.05;
+    while (((bo.fw || 0) % 60) >= window.__fw.open || ((bo.fw || 0) % 60) > 2) await __wait(1); const hp0 = bo.hp; let hits = 0;
+    for (let k = 0; k < 6; k++) { if (((bo.fw || 0) % 60) >= window.__fw.open) break; G.lastShotF = -99; G.shots = 9; const h = bo.hp; window.__tapAt(bo.x + 24, bo.y + 20); await __wait(5); if (bo.hp < h) hits++; }
+    o.hitsInOpening = hits; o.shieldUp = ((bo.fw || 0) % 60) >= window.__fw.open; o.open = window.__fw.open; return o; });
+  rep('boss: three hits per opening, then it rotates', br.hitsInOpening === 3 && br.shieldUp && br.open === 26, JSON.stringify(br));
+  const fb = await p.evaluate(async () => { const G = window.__th, o = {}; G.swarm = null; G.state = 'fly'; G.freeze = 0; G.gotcha = null; G.shots = 3; G.flightT = 30;
+    const f = { x: 120, y: 80, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: true, st: 'fly', f: 0, at: 10, age: 10, dirT: 1e9, hitT: 0 }; G.birds = [{ x: 200, y: 30, vx: 0, vy: 0, sp: 0, tier: 'lo', bad: false, st: 'fly', f: 0, at: 20, dirT: 1e9, hitT: 0 }, f];
+    G.combo = 0; const s0 = G.score; G.lastShotF = -99; window.__tapAt(132, 90); await __wait(3); o.fastPen = s0 - G.score; o.lo = window.__T().tiers ? 0 : 0; return o; });
+  rep('a fake served inside the FAST window bills its FAST value twice', fb.fastPen > 0, JSON.stringify(fb));
+
   rep('no page errors', errs.length === 0, errs.join(' | ') || 'none');
   for (const r of out) console.log((r.ok ? 'PASS ' : 'FAIL ') + r.n + ' — ' + r.how);
   const bad = out.filter(r => !r.ok).length; console.log(bad ? bad + ' FAILED' : 'ALL PASS'); await b.close(); process.exit(bad ? 1 : 0);

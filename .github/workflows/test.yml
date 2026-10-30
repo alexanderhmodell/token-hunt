@@ -27,7 +27,11 @@ jobs:
       - run: node verify_v25.js
       - run: node stress.js
       - run: node stress2.js
-      - run: node elite_test.js
+      - name: Run node elite_test.js
+        shell: bash
+        run: |
+          set -o pipefail
+          node elite_test.js 2>&1 | tee elite.txt || { grep -E '^FAIL' elite.txt | sed 's/^/::error::/'; exit 1; }
       - run: node visual_test.js
       - run: node adversary_test.js
       - run: node ui_test.js
