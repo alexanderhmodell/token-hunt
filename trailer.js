@@ -146,12 +146,14 @@ async function record() {
   const line = () => G(() => window.__th.fox.line);
   // finish the current epoch with a rigged tally (the epoch-clear panel plays for real), tap it away, land on the next epoch's intro card
   // hold: how long the EPOCH COMPLETE panel stays up before the tap (the first one carries the adversary's MODEL UPDATE, so it gets time to be read)
-  const clearEpoch = async (round, tally, hold = 1000) => {
-    await G(a => { const g = window.__th; g.round = a.round; g.wave = 6; g.tally = a.tally; g.state = 'fox'; g.fox.t = 109; g.fox.mode = 'hit'; g.fox.line = 'HAPPY TO HELP!'; g.birds = []; g.linger = null; g.swarm = null; }, { round, tally });
+  const clearEpoch = async (round, tally, hold = 1000, setup = null) => {
+    await G(a => { const g = window.__th; g.score += a.tally.filter(t => t === 'hit').length * 900 * (g.diff === 'hard' ? 2 : g.diff === 'easy' ? 1 : 1.5); /* the waves the cut skips pay what a clean player earns */ g.round = a.round; g.wave = 6; g.tally = a.tally; g.state = 'fox'; g.fox.t = 109; g.fox.mode = 'hit'; g.fox.line = 'HAPPY TO HELP!'; g.birds = []; g.linger = null; g.swarm = null; }, { round, tally });
     if (!await waitState('roundEnd', 4000)) mark('WARN no roundEnd');
     const upd = await G(() => window.__th.adv && window.__th.adv.update); if (upd) mark('model update: ' + upd.join(' | '));
     await sleep(hold); for (let k = 0; k < 3 && await G(() => window.__th.state === 'roundEnd'); k++) { await click(128, 100); await sleep(160); } // a first tap shows every line, the next continues
     if (!await waitState('intro', 3000)) mark('WARN no intro');
+    if (setup) await G(setup); // set the epoch up while its card is up
+    await sleep(1700); if (await G(() => window.__th.state === 'intro')) await click(128, 100); // read the card, then tap on (a tap skips it)
   };
 
   // ---- set-up, not recorded: skip the tutorial, pick the CRT look, make the first real click (it creates the AudioContext)
@@ -199,8 +201,7 @@ async function record() {
       if (await waitFor(() => { const g = window.__th.gotcha; return !g || !(g.t < g.end); }, null, 6000)) mark('rewind played'); await sleep(500); await fireAll('real');
       await waitState('fox', 8000); mark('critic: ' + await line()); await sleep(1500); } else mark('WARN no trained fake in epoch 2');
     // ---- 8  epoch 3, ROGUE AGENTS LOOSE: stop three, one gets through
-    await clearEpoch(2, ['hit', 'hit', 'miss', 'hit', 'hit', 'hit']); mark('epoch 3: swarm intro');
-    await G(() => { const g = window.__th; g.wave = 3; g.tally = ['hit', 'hit', 'hit']; g.swarmDone = false; }); // the swarm arrives once 3 requests are in
+    await clearEpoch(2, ['hit', 'hit', 'miss', 'hit', 'hit', 'hit'], 1000, () => { const g = window.__th; g.wave = 3; g.tally = ['hit', 'hit', 'hit']; g.swarmDone = false; }); mark('epoch 3: swarm intro'); // the swarm arrives once 3 requests are in
     await waitFor(() => window.__th.state === 'fly' && window.__th.swarm && !window.__th.swarm.boss, null, 6000); mark('swarm');
     await sleep(1200);
     for (let i = 0; i < 3; i++) { await waitFor(() => { const a = window.__th.birds.filter(b => b.st === 'fly' && b.agent); return a.length && Math.max(...a.map(b => b.y)) > 30; }, null, 3000); await fire('agent', { steps: 5, gain: 0.6 }); await sleep(380); }
@@ -209,8 +210,7 @@ async function record() {
     if (await waitState('fly', 6000)) { await G(() => { window.__th.props = [{ x: -18, y0: 64, y: 64, vx: 0.45, t: 0, st: 'fly' }]; }); mark('PROD DB'); await sleep(2300);
       await fire('prod', { steps: 8, gain: 0.5 }); await sleep(900); await fireAll('real'); await waitState('fox', 8000); mark('critic: ' + await line()); await sleep(1300); }
     // ---- 9  epoch 4, the DDoS boss fight, to the kill
-    await clearEpoch(3, ['hit', 'hit', 'miss', 'hit', 'hit', 'hit']); mark('epoch 4: boss intro');
-    await G(() => { const g = window.__th; g.wave = 2; g.tally = ['hit', 'hit']; g.bossDone = false; }); // the boss arrives once 2 requests are in
+    await clearEpoch(3, ['hit', 'hit', 'miss', 'hit', 'hit', 'hit'], 1000, () => { const g = window.__th; g.wave = 2; g.tally = ['hit', 'hit']; g.bossDone = false; }); mark('epoch 4: boss intro'); // the boss arrives once 2 requests are in
     await waitFor(() => window.__th.birds.some(b => b.boss && b.st === 'fly'), null, 9000); mark('DDoS boss');
     await waitFor(() => { const b = window.__th.birds.find(b => b.boss); return b && b.x + 24 > 24 && b.x + 24 < 232; }, null, 6000);
     for (let i = 0, t = Date.now(); i < 60 && Date.now() - t < 16000; i++) {
