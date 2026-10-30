@@ -22,6 +22,14 @@ Built by Claude (Anthropic) end to end (code, pixel art, shaders and synthesized
 
 **Controls:** click or tap to serve · arrows + Z (or X / Enter) to aim and fire · M mute · P / Esc pause (Q quits) · C CRT on/off · 1-4 or the arrows on the title for difficulty (4 = Daily) · Space / Enter to advance.
 
+**Secret codes** (type them on the title screen; on a phone, tap the logo 7 times to get a keyboard):
+- `duck`: **Fowl Weather**, the whole game reskinned as a meadow shoot with ducks, hawks, decoys and a bird feeder you must not hit. Type it again to switch back.
+- `finn`: **Finn Fam mode**: 5 VRAM, slower requests and 3× points (`vcc` works too).
+- `thumb`: **one-hand mode**: the crosshair aims itself; tap the HUD to fire.
+- `token`: back to Token Hunt.
+
+Every run counts toward your local top 5; Finn Fam and one-hand runs are tagged 3X / 1H on their row.
+
 ---
 
 ## One line

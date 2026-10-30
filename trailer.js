@@ -29,7 +29,7 @@ const CRT = (process.env.CRT || 'lite').toLowerCase(), SEED = (process.env.SEED 
 const NORMALIZE = process.env.NORMALIZE !== '0', PRESET = process.env.PRESET || 'medium', KEEP = process.env.KEEP === '1';
 const CAP = { W: 512, H: 480, vbps: 6e6, abps: 192e3, CW: 1024, CH: 960 }; // compositor size, bitrates, closer-still size
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const WEBM = path.join(TMP, 'trailer.webm'), STILL = path.join(TMP, 'closer.png'), META = path.join(TMP, 'meta.json');
+const WEBM = path.join(TMP, 'trailer.webm'), STILL = path.join(TMP, 'closer.png'), META = path.join(TMP, 'meta.json'), ENDCARD = path.join(TMP, 'endcard.png');
 let clock = Date.now(); const mark = s => console.log('[' + ((Date.now() - clock) / 1000).toFixed(1).padStart(5) + 's] ' + s);
 
 // ---------------------------------------------------------------------------------------------------------------- in-page code
@@ -52,11 +52,11 @@ function installCapture(cfg) {
     c2.save(); c2.shadowColor = 'rgba(138,92,245,0.45)'; c2.shadowBlur = Math.round(size * 0.06); c2.fillStyle = '#262238'; c2.fillRect(x - b, y - b, size + 2 * b, size + 2 * b); c2.restore();
     c2.imageSmoothingEnabled = true; c2.imageSmoothingQuality = 'high'; c2.drawImage(cardImg, x, y, size, size); c2.imageSmoothingEnabled = false;
   }
-  let t0 = null, tCard = null, armed = false, frames = 0, last = performance.now(); const ivl = [], slowAt = []; // slowAt: [seconds into the recording, ms] of every frame over 60 ms
+  let t0 = null, tCard = null, tCardEnd = null, tEnd = null, armed = false, frames = 0, last = performance.now(); const ivl = [], slowAt = []; // slowAt: [seconds into the recording, ms] of every frame over 60 ms
   (function loop() { // registered after the game's own rAF, so it always copies the frame the game just finished
     const now = performance.now(); ivl.push(now - last); if (armed && t0 !== null && now - last > 60 && slowAt.length < 40) slowAt.push([+((now - t0) / 1000).toFixed(1), Math.round(now - last)]); last = now; if (armed && t0 === null) t0 = now;
     const s = source(); o.drawImage(s, 0, 0, s.width, s.height, 0, 0, W, H);
-    if (cardUp()) { if (tCard === null && t0 !== null) tCard = (now - t0) / 1000; paintCard(o, W, H, Math.round(H * 0.92)); }
+    if (cardUp()) { if (tCard === null && t0 !== null) tCard = (now - t0) / 1000; paintCard(o, W, H, Math.round(H * 0.92)); } else if (tCard !== null && tCardEnd === null) tCardEnd = (now - t0) / 1000;
     vtrack.requestFrame(); frames++; requestAnimationFrame(loop);
   })();
 
@@ -69,6 +69,7 @@ function installCapture(cfg) {
   rec.start(1000); armed = true;
   window.__cap = {
     mimeType,
+    endCard() { tEnd = (performance.now() - t0) / 1000; }, // the code card goes over the rest of the recording
     closer() { // 1024x960 still of the share-card scene: the live frame, dimmed, with the real card on top
       const c = document.createElement('canvas'); c.width = CW; c.height = CH; const c2 = c.getContext('2d', { alpha: false }); c2.imageSmoothingEnabled = false;
       const s = source(); c2.drawImage(s, 0, 0, s.width, s.height, 0, 0, CW, CH); paintCard(c2, CW, CH, Math.round(CH * 0.92)); return c.toDataURL('image/png').split(',')[1];
@@ -76,7 +77,7 @@ function installCapture(cfg) {
     async stop() {
       const done = new Promise(r => rec.addEventListener('stop', r, { once: true })); rec.stop(); await done; armed = false;
       const iv = ivl.slice(5).sort((a, b) => a - b);
-      return { mimeType, chunks: parts.length, tCard, frames, n: iv.length, p50: iv[iv.length >> 1], p95: iv[Math.floor(iv.length * 0.95)], max: iv[iv.length - 1], slow: iv.filter(x => x > 25).length, slowAt, ac: ac.state, ct: ac.currentTime };
+      return { mimeType, chunks: parts.length, tCard, tCardEnd, tEnd, frames, n: iv.length, p50: iv[iv.length >> 1], p95: iv[Math.floor(iv.length * 0.95)], max: iv[iv.length - 1], slow: iv.filter(x => x > 25).length, slowAt, ac: ac.state, ct: ac.currentTime };
     },
     async drain() { // the whole recording to Node as base64, in 6 MB slices
       const blob = new Blob(parts); for (let o = 0; o < blob.size; o += 6 << 20) await window.__capChunk(await b64(blob.slice(o, o + (6 << 20)))); return blob.size;
@@ -228,6 +229,11 @@ async function record() {
     mark('share card'); await page.click('#share');
     if (!await waitFor(() => { const b = document.getElementById('cardbox'), i = document.getElementById('cardimg'); return !b.hidden && i.complete && i.naturalWidth > 0; }, null, 4000)) mark('WARN share card did not open');
     await sleep(250); still = await G(() => window.__cap.closer()); await sleep(3800);
+    // ---- 12  the codes: back to the title, type DUCK, a few seconds of the Fowl Weather skin, then the code card
+    await page.click('#cardclose'); await sleep(300); await page.keyboard.press('Escape'); if (!await waitState('title', 3000)) mark('WARN no title'); mark('title again'); await sleep(600);
+    await page.keyboard.type('duck', { delay: 170 }); mark('duck skin: ' + await G(() => window.__th.theme)); await sleep(2300);
+    await click(128, 100); if (await waitState('fly', 6000)) { mark('a flight in the duck skin'); await sleep(700); await fireAll('real', {}, 2); await sleep(900); }
+    await G(() => window.__cap.endCard()); mark('code card'); await sleep(5200);
     mark('end');
   } finally {
     result = await G(() => window.__cap.stop()); await G(() => window.__cap.drain()); out.end(); await new Promise(r => out.on('finish', r));
@@ -248,9 +254,12 @@ function encode() {
   const gain = NORMALIZE ? Math.max(0, Math.min(12, -3 - raw.max)) : 0; // a pure gain that puts the loudest peak at -3 dBFS (AAC can overshoot its input by ~1 dB)
   const lay = meta.still && meta.tCard != null;
   const tOn = lay ? Math.max(0, meta.tCard - 0.05) : 0; // the sharp card goes on a frame or so early rather than late (late would show the 512x480 card for a moment)
-  const vf = '[0:v]fps=30,scale=1024:960:flags=neighbor,format=yuv420p[b];' + (lay ? '[1:v]format=yuv420p[c];[b][c]overlay=0:0:enable=\'gte(t,' + tOn.toFixed(3) + ')\':shortest=1[v]' : '[b]null[v]');
-  ff(['-y', '-i', WEBM].concat(lay ? ['-loop', '1', '-framerate', '30', '-i', STILL] : [], ['-filter_complex', vf, '-map', '[v]', '-map', '0:a',
-    '-af', 'aresample=async=1:first_pts=0' + (gain > 0.05 ? ',volume=' + gain.toFixed(2) + 'dB' : ''),
+  const tOff = meta.tCardEnd != null ? meta.tCardEnd + 0.05 : 1e6, end = meta.tEnd != null;
+  if (end) spawnSync('python3', ['endcard.py', ENDCARD], { cwd: ROOT, stdio: 'inherit' });
+  const vf = '[0:v]fps=30,scale=1024:960:flags=neighbor,format=yuv420p[b];' + (lay ? '[1:v]format=yuv420p[c];[b][c]overlay=0:0:enable=\'between(t,' + tOn.toFixed(3) + ',' + tOff.toFixed(3) + ')\':shortest=1[b2];' : '[b]null[b2];')
+    + (end ? '[' + (lay ? 2 : 1) + ':v]format=yuv420p,fade=t=in:st=' + meta.tEnd.toFixed(3) + ':d=0.4[e];[b2][e]overlay=0:0:enable=\'gte(t,' + meta.tEnd.toFixed(3) + ')\':shortest=1[v]' : '[b2]null[v]');
+  ff(['-y', '-i', WEBM].concat(lay ? ['-loop', '1', '-framerate', '30', '-i', STILL] : [], end ? ['-loop', '1', '-framerate', '30', '-i', ENDCARD] : [], ['-filter_complex', vf, '-map', '[v]', '-map', '0:a',
+    '-af', 'aresample=async=1:first_pts=0' + (gain > 0.05 ? ',volume=' + gain.toFixed(2) + 'dB' : '') + (end ? ',afade=t=out:st=' + (meta.tEnd + 3.4).toFixed(2) + ':d=1.6' : ''),
     '-c:v', 'libx264', '-preset', PRESET, '-crf', '18', '-pix_fmt', 'yuv420p', '-r', '30', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-movflags', '+faststart', OUT]));
   const probe = JSON.parse(ff(['-v', 'error', '-show_entries', 'stream=codec_type,codec_name,width,height,r_frame_rate,duration:format=duration,size', '-of', 'json', OUT], 'ffprobe'));
   const fin = volume(OUT);
