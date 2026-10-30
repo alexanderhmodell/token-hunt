@@ -29,7 +29,7 @@ const CRT = (process.env.CRT || 'lite').toLowerCase(), SEED = (process.env.SEED 
 const NORMALIZE = process.env.NORMALIZE !== '0', PRESET = process.env.PRESET || 'medium', KEEP = process.env.KEEP === '1';
 const CAP = { W: 512, H: 480, vbps: 6e6, abps: 192e3, CW: 1024, CH: 960 }; // compositor size, bitrates, closer-still size
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const WEBM = path.join(TMP, 'trailer.webm'), STILL = path.join(TMP, 'closer.png'), META = path.join(TMP, 'meta.json'), ENDCARD = path.join(TMP, 'endcard.png');
+const WEBM = path.join(TMP, 'trailer.webm'), STILL = path.join(TMP, 'closer.png'), META = path.join(TMP, 'meta.json'), ENDCARD = path.join(TMP, 'endcard.png'), BONUS = path.join(TMP, 'bonus.png');
 let clock = Date.now(); const mark = s => console.log('[' + ((Date.now() - clock) / 1000).toFixed(1).padStart(5) + 's] ' + s);
 
 // ---------------------------------------------------------------------------------------------------------------- in-page code
@@ -77,7 +77,7 @@ function installCapture(cfg) {
     async stop() {
       const done = new Promise(r => rec.addEventListener('stop', r, { once: true })); rec.stop(); await done; armed = false;
       const iv = ivl.slice(5).sort((a, b) => a - b);
-      return { mimeType, chunks: parts.length, tCard, tCardEnd, tEnd, frames, n: iv.length, p50: iv[iv.length >> 1], p95: iv[Math.floor(iv.length * 0.95)], max: iv[iv.length - 1], slow: iv.filter(x => x > 25).length, slowAt, ac: ac.state, ct: ac.currentTime };
+      return { mimeType, chunks: parts.length, tCard, tCardEnd, tEnd, dur: t0 !== null ? (performance.now() - t0) / 1000 : null, frames, n: iv.length, p50: iv[iv.length >> 1], p95: iv[Math.floor(iv.length * 0.95)], max: iv[iv.length - 1], slow: iv.filter(x => x > 25).length, slowAt, ac: ac.state, ct: ac.currentTime };
     },
     async drain() { // the whole recording to Node as base64, in 6 MB slices
       const blob = new Blob(parts); for (let o = 0; o < blob.size; o += 6 << 20) await window.__capChunk(await b64(blob.slice(o, o + (6 << 20)))); return blob.size;
@@ -230,10 +230,11 @@ async function record() {
     if (!await waitFor(() => { const b = document.getElementById('cardbox'), i = document.getElementById('cardimg'); return !b.hidden && i.complete && i.naturalWidth > 0; }, null, 4000)) mark('WARN share card did not open');
     await sleep(250); still = await G(() => window.__cap.closer()); await sleep(3800);
     // ---- 12  the codes: back to the title, type DUCK, a few seconds of the Fowl Weather skin, then the code card
-    await page.click('#cardclose'); await sleep(300); await page.keyboard.press('Escape'); if (!await waitState('title', 3000)) mark('WARN no title'); mark('title again'); await sleep(600);
+    await page.click('#cardclose'); await sleep(200); await G(() => window.__cap.endCard()); mark('bonus card, then the code card'); // both go over the title while it idles
+    await page.keyboard.press('Escape'); if (!await waitState('title', 3000)) mark('WARN no title');
+    for (let i = 0; i < 7; i++) { await G(() => { window.__th.idle = 0; }); await sleep(1000); }
     await page.keyboard.type('duck', { delay: 170 }); mark('duck skin: ' + await G(() => window.__th.theme)); await sleep(2300);
-    await click(128, 100); if (await waitState('fly', 6000)) { mark('a flight in the duck skin'); await sleep(700); await fireAll('real', {}, 2); await sleep(900); }
-    await G(() => window.__cap.endCard()); mark('code card'); await sleep(5200);
+    await click(128, 100); if (await waitState('fly', 6000)) { mark('a flight in the duck skin'); await sleep(700); await fireAll('real', {}, 2); await sleep(1800); }
     mark('end');
   } finally {
     result = await G(() => window.__cap.stop()); await G(() => window.__cap.drain()); out.end(); await new Promise(r => out.on('finish', r));
@@ -255,11 +256,13 @@ function encode() {
   const lay = meta.still && meta.tCard != null;
   const tOn = lay ? Math.max(0, meta.tCard - 0.05) : 0; // the sharp card goes on a frame or so early rather than late (late would show the 512x480 card for a moment)
   const tOff = meta.tCardEnd != null ? meta.tCardEnd + 0.05 : 1e6, end = meta.tEnd != null;
-  if (end) spawnSync('python3', ['endcard.py', ENDCARD], { cwd: ROOT, stdio: 'inherit' });
+  if (end) { spawnSync('python3', ['endcard.py', ENDCARD], { cwd: ROOT, stdio: 'inherit' }); spawnSync('python3', ['endcard.py', BONUS, 'bonus'], { cwd: ROOT, stdio: 'inherit' }); }
+  const tB = end ? meta.tEnd : 0, tC = tB + 2.4, tD = tB + 7.4; // BONUS 2.4 s, then the codes 5 s, then the duck skin plays
   const vf = '[0:v]fps=30,scale=1024:960:flags=neighbor,format=yuv420p[b];' + (lay ? '[1:v]format=yuv420p[c];[b][c]overlay=0:0:enable=\'between(t,' + tOn.toFixed(3) + ',' + tOff.toFixed(3) + ')\':shortest=1[b2];' : '[b]null[b2];')
-    + (end ? '[' + (lay ? 2 : 1) + ':v]format=yuv420p,fade=t=in:st=' + meta.tEnd.toFixed(3) + ':d=0.4[e];[b2][e]overlay=0:0:enable=\'gte(t,' + meta.tEnd.toFixed(3) + ')\':shortest=1[v]' : '[b2]null[v]');
-  ff(['-y', '-i', WEBM].concat(lay ? ['-loop', '1', '-framerate', '30', '-i', STILL] : [], end ? ['-loop', '1', '-framerate', '30', '-i', ENDCARD] : [], ['-filter_complex', vf, '-map', '[v]', '-map', '0:a',
-    '-af', 'aresample=async=1:first_pts=0' + (gain > 0.05 ? ',volume=' + gain.toFixed(2) + 'dB' : '') + (end ? ',afade=t=out:st=' + (meta.tEnd + 3.4).toFixed(2) + ':d=1.6' : ''),
+    + (end ? '[' + (lay ? 3 : 2) + ':v]format=yuv420p[k];[b2][k]overlay=0:0:enable=\'between(t,' + tB.toFixed(3) + ',' + tC.toFixed(3) + ')\':shortest=1[b3];'
+      + '[' + (lay ? 2 : 1) + ':v]format=yuv420p[e];[b3][e]overlay=0:0:enable=\'between(t,' + tC.toFixed(3) + ',' + tD.toFixed(3) + ')\':shortest=1[v]' : '[b2]null[v]');
+  ff(['-y', '-i', WEBM].concat(lay ? ['-loop', '1', '-framerate', '30', '-i', STILL] : [], end ? ['-loop', '1', '-framerate', '30', '-i', ENDCARD, '-loop', '1', '-framerate', '30', '-i', BONUS] : [], ['-filter_complex', vf, '-map', '[v]', '-map', '0:a',
+    '-af', 'aresample=async=1:first_pts=0' + (gain > 0.05 ? ',volume=' + gain.toFixed(2) + 'dB' : '') + (end && meta.dur ? ',afade=t=out:st=' + (meta.dur - 1.5).toFixed(2) + ':d=1.5' : ''),
     '-c:v', 'libx264', '-preset', PRESET, '-crf', '18', '-pix_fmt', 'yuv420p', '-r', '30', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-movflags', '+faststart', OUT]));
   const probe = JSON.parse(ff(['-v', 'error', '-show_entries', 'stream=codec_type,codec_name,width,height,r_frame_rate,duration:format=duration,size', '-of', 'json', OUT], 'ffprobe'));
   const fin = volume(OUT);

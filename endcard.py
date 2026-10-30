@@ -1,5 +1,5 @@
 """Renders the trailer's closing card (1024x960 PNG) in the game's own 5x7 and title faces: the secret codes.
-Usage: python3 endcard.py out.png   (reads the fonts from dist/index.html; run build.py first)"""
+Usage: python3 endcard.py out.png [bonus]   (reads the fonts from dist/index.html; run build.py first)"""
 import json, re, sys
 from PIL import Image, ImageDraw
 src = open('dist/index.html', encoding='utf-8').read()
@@ -38,4 +38,9 @@ for code, desc, col in rows:
     t7(desc, y + (8 if code else 2), 3, '#f7f4e9' if code else '#cfc9dc', x=330)
     y += 54 if code else 44
 t7('TOKENHUNT-GAME.VERCEL.APP', H - 110, 4, '#3cd0ff')
+if len(sys.argv) > 2 and sys.argv[2] == 'bonus':
+    img = Image.new('RGB', (W, H), '#0a0a12'); d = ImageDraw.Draw(img)
+    d.rectangle([24, 24, W - 25, H - 25], outline='#262238', width=6)
+    t7('BONUS CONTENT', 370, 10, '#ffe98a')
+    t7('SECRET CODES AND A SECRET GAME', 540, 4, '#c4a9ff')
 img.save(sys.argv[1] if len(sys.argv) > 1 else 'endcard.png'); print('end card', img.size)
