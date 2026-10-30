@@ -19,7 +19,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
       for (const k in (T.tips || {})) if (w7(T.tips[k]) > 240) bad.push(id + ' tip ' + k + ' ' + w7(T.tips[k]));
       if (w7(T.tagline[1]) > 150) bad.push(id + ' tagline ' + w7(T.tagline[1]));
       for (const l of T.howto) if (w7(l) > 146) bad.push(id + ' howto ' + l + ' ' + w7(l));
-      const X = T.adv; const worst = [X.served + ' 10/12 ' + X.hi + ' -> ' + X.fake + ' GO ' + X.hi, X.served + ' 10/12 ' + X.lo + ' -> ' + X.fake + ' GO ' + X.lo, 'SERVE TIME 9.9S -> ' + X.fake + ' LOOK REAL 1.0S', X.served + ' ' + X.hi + ' FASTER -> ' + X.fake + ' GO ' + X.hi, 'DODGED 10/12 -> ' + X.hide, X.served + ' 10/12 ' + X.fake + ' -> MORE ' + X.fake, X.fake + ' GLITCH LESS: 75% -> 60%', X.ver + '12 ' + X.head];
+      const X = T.adv; const worst = [X.served + ' 10/12 ' + X.hi + ' -> ' + X.fake + ' GO ' + X.hi, X.served + ' 10/12 ' + X.lo + ' -> ' + X.fake + ' GO ' + X.lo, 'SERVE TIME 9.9S -> ' + X.fake + ' LOOK REAL 1.5S', X.served + ' ' + X.hi + ' FASTER -> ' + X.fake + ' GO ' + X.hi, 'DODGED 10/12 -> ' + X.hide, X.served + ' 10/12 ' + X.fake + ' -> MORE ' + X.fake, X.fake + ' GLITCH LESS: 75% -> 60%', X.ver + '12 ' + X.head];
       for (const l of worst) if (w7(l) > 240) bad.push(id + ' card ' + l + ' ' + w7(l)); }
     window.__applyTheme(th0); return bad; });
   rep('all rule cards, tips, title lines and card lines fit', widths.length === 0, widths.join('; ') || 'ok');
@@ -31,7 +31,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
         if (real.length) { const t = real.find(x => x.tier === 'hi') || real[0]; G.lastShotF = -99; window.__click(t.x + 12, t.y + 10); } } }
     await __wait(5); return { state: G.state, update: G.adv.update, policy: G.adv.policy, ver: G.adv.ver }; });
   rep('epoch 1 trains model v2 and prints what it will do', r1.state === 'roundEnd' && r1.ver === 2 && r1.update && r1.update.length >= 2 && r1.update.every(l => l.includes('->')), JSON.stringify(r1.update));
-  rep('policy matches the card: colour all-or-nothing, fire time 15..60 frames, glitch 60%', r1.policy && (r1.policy.tierHi === 1 || r1.policy.tierHi === 0) && r1.policy.hide >= 15 && r1.policy.hide <= 60 && r1.policy.duty === 0.6, JSON.stringify(r1.policy));
+  rep('policy matches the card: colour all-or-nothing, serve time 15..90 frames, glitch 60%', r1.policy && (r1.policy.tierHi === 1 || r1.policy.tierHi === 0) && r1.policy.hide >= 15 && r1.policy.hide <= 90 && r1.policy.duty === 0.6, JSON.stringify(r1.policy));
   // the card: a first tap shows every line, the second continues
   await p.evaluate(async () => { const G = window.__th; G.t = 45; await __wait(2); window.__click(128, 100); await __wait(2); });
   await p.screenshot({ path: SHOTS + '/adv_card_all.png' });

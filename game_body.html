@@ -513,14 +513,14 @@ const newFacts=()=>({hi:0,lastShot:false,firstShot:false,frozen:false,hiEscaped:
 // replays reproduce it exactly. Off in Daily (everyone gets the same requests) and in the demo.
 const newObs=()=>({lo:0,hi:0,seenLo:0,seenHi:0,tts:0,ttsN:0,ttsHi:0,ttsLo:0,dodged:0,served:0});
 const newAdv=()=>({on:!G.daily&&!G.attract, obs:newObs(), policy:null, update:null, fooled:0, built:0, ver:1, epochBuilt:0});
-const DUTY=[0.75,0.6,0.5,0.4]; // how much of the time a fake shows its glitch: untrained, then model v2, v3, v4 and up
+const DUTY=[0.75,0.6,0.5,0.42,0.35,0.3]; // how much of the time a fake shows its glitch: untrained, then model v2, v3, v4 and up
 function advTrain(){ const A=G.adv; if(!A||!A.on) return; const o=A.obs, prev=A.policy||{tierHi:-1, hide:0, hideTag:false, rateUp:false, duty:DUTY[0]};
   const P=Object.assign({},prev), U=[], X=T.adv; A.ver++; A.epochBuilt=0;
   if(o.hi+o.lo>=1&&((o.seenHi&&o.seenLo)||prev.tierHi<0)){ const rH= o.seenHi? o.hi/o.seenHi : -1, rL= o.seenLo? o.lo/o.seenLo : -1; let hi, faster=false; /* a colour it never saw this epoch is no evidence: it keeps what it had */
     if(o.hi&&o.lo&&Math.abs(rH-rL)<0.15){ hi= o.ttsHi/o.hi<=o.ttsLo/o.lo; faster=true; } else hi= rH>=0&&(rL<0||rH>=rL); // close rates: the colour you serve faster decides
     P.tierHi= hi? 1 : 0; const C=hi?X.hi:X.lo;
     U.push(faster? X.served+' '+C+' FASTER -> '+X.fake+' GO '+C : X.served+' '+(hi? o.hi+'/'+o.seenHi : o.lo+'/'+o.seenLo)+' '+C+' -> '+X.fake+' GO '+C); }
-  if(o.ttsN>=2){ const m=o.tts/o.ttsN, f=clamp(Math.round(m),15,60); P.hide=f; U.push('SERVE TIME '+Math.min(9.9,m/60).toFixed(1)+'S -> '+X.fake+' LOOK REAL '+(f/60).toFixed(1)+'S'); } // the window is your mean, capped at 1.0 s
+  if(o.ttsN>=2){ const m=o.tts/o.ttsN, f=clamp(Math.round(m),15,90); P.hide=f; U.push('SERVE TIME '+Math.min(9.9,m/60).toFixed(1)+'S -> '+X.fake+' LOOK REAL '+(f/60).toFixed(1)+'S'); } // the window is your mean, capped at 1.5 s
   P.rateUp=false; const seen=o.served+o.dodged; if(seen){ const dodged=o.dodged; // only fakes you could have fallen for count
     if(seen>=2&&dodged/seen>=0.75){ P.hideTag=true; U.push('DODGED '+dodged+'/'+seen+' -> '+X.hide); }
     else if(o.served/seen>=0.5){ P.rateUp=true; U.push(X.served+' '+o.served+'/'+seen+' '+X.fake+' -> MORE '+X.fake); }
@@ -664,7 +664,7 @@ function pickLine(n,goodCall,crossed3){ const f=G.wf||newFacts();
   if(!n&&G.streak.miss>=3) return line('miss3');
   if(crossed3) return line('hit3');
   if(n&&G.realEscaped&&T.lines.hitMixed) return line('hitMixed'); // served one, lost one: no praise
-  if(n){ const tags=[]; if(f.hi&&G.prevHi) tags.push('frontier2'); if(G.prevHallucServed) tags.push('afterHalluc'); if(f.lastShot) tags.push('lastShot'); if(f.frozen) tags.push('stormHit'); if(f.hi) tags.push('frontierHit'); if(f.firstShot&&n===1) tags.push('firstShot'); if(G.wx.gust) tags.push('gustHit');
+  if(n){ const tags=[]; if(f.frozen) tags.push('stormHit'); if(f.hi&&G.prevHi) tags.push('frontier2'); if(G.prevHallucServed) tags.push('afterHalluc'); if(f.lastShot) tags.push('lastShot'); if(f.hi) tags.push('frontierHit'); if(f.firstShot&&n===1) tags.push('firstShot'); if(G.wx.gust) tags.push('gustHit');
     return ctxLine(tags) || line(n>=3&&T.lines.hitTriple?'hitTriple':n>=2?'hit2':'hit'); }
   { const tags=[]; if(f.hiEscaped) tags.push('frontierMiss'); if(f.shots===0) tags.push('missNoShot'); if(f.frozen) tags.push('stormMiss'); if(f.shots>=D.ammo&&!G.assist) tags.push('missAll');
     return ctxLine(tags) || line('miss'); } }
@@ -942,7 +942,7 @@ function drawGotcha(){ const g=G.gotcha; if(!g||G.state==='gameOver'||G.paused) 
 function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
   if(G.state==='intro'){ if(t<110||(t&4)){ textC(T.hud.round+' '+pad(G.round,2),52,'#f7f4e9',2,true); textC(B.load+G.wx.name,74,'#ffe98a',1,true); textC(G.wx.tag,84,'#bdeeff',1,true); textC(fmt(B.quota),96,'#f7f4e9',1,true);
       const rule=ruleFor(G.round); if(rule&&!G.attract&&t>=10){ ctx.fillStyle='rgba(10,10,18,0.8)'; ctx.fillRect(4,107,W-8,14); text7C(rule,110,'#ffe98a'); } } }
-  if(G.tip&&!G.paused&&!G.swarm&&(G.state==='fly'||G.state==='fox'||G.state==='gap')){ G.tip.t++; if(G.tip.t>170) nextTip(); else { const tw=textW(G.tip.txt,1)+12; ctx.fillStyle='rgba(10,10,18,0.6)'; ctx.fillRect(Math.round(W/2-(textW7(G.tip.txt)+12)/2),16,textW7(G.tip.txt)+12,13); text7C(G.tip.txt,19,'#bdeeff',true); } }
+  if(G.tip&&!G.paused&&!G.swarm&&(G.state==='fly'||G.state==='fox'||G.state==='gap')){ G.tip.t++; if(G.tip.t>170) nextTip(); else { const tw=textW(G.tip.txt,1)+12; const ty=(G.state==='fly'&&T.boltLabel&&G.birds.some(b=>b.st==='fly'&&b.frozen>0))? 46 : 16; ctx.fillStyle='rgba(10,10,18,0.6)'; ctx.fillRect(Math.round(W/2-(textW7(G.tip.txt)+12)/2),ty,textW7(G.tip.txt)+12,13); text7C(G.tip.txt,ty+3,'#bdeeff',true); } }
   if(G.state==='fly'&&G.birds.some(b=>b.st==='away'&&!b.bad)) textC(B.escaped,64,'#f7f4e9',2,true);
   else if(G.state==='fly'&&T.boltLabel&&G.birds.some(b=>b.st==='fly'&&b.frozen>0)) textC(T.boltLabel+' '+T.frozenTag,30,ICE,2,true);
   if(G.state==='fly'&&G.swarm&&!G.swarm.boss){ textC(T.swarm.count+' '+G.swarm.stopped+'/'+G.swarm.total,6,G.swarm.breached?'#ff4d4d':'#ffe98a',1,true);
@@ -1120,7 +1120,7 @@ cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===fals
   if(ONEHAND&&G.state==='fly'&&!G.paused&&rawY>=176&&G.mouse.on){ p.x=G.mouse.x; p.y=G.mouse.y; p.touch=false; } // one-hand: the fire zone shoots at the crosshair (recorded as that point)
   if(!G.paused) recIn(p.touch?'t':'m',p.x,p.y);
   G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; handleTap(p.x,p.y); });
-cv.addEventListener('pointermove',e=>{ if(e.isPrimary===false||G.replay||(ONEHAND&&e.pointerType==='touch')) return; const p=pos(e); G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; });
+cv.addEventListener('pointermove',e=>{ if(e.isPrimary===false||G.replay||(ONEHAND&&e.pointerType==='touch')) return; const p=pos(e); if(ONEHAND&&p.y>=SKY_H) return; G.mouse.x=p.x; G.mouse.y=p.y; G.mouse.on=true; G.mouse.touch=p.touch; });
 cv.addEventListener('pointerleave',()=>{ G.mouse.on=false; });
 cv.addEventListener('pointerup',()=>{ audioInit(); if(ac&&ac.state==='suspended') ac.resume(); });
 cv.addEventListener('click',()=>{ if(ac&&ac.state==='suspended') ac.resume(); });
