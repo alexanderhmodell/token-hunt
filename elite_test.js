@@ -223,7 +223,7 @@ const runBot = (page, mode, ms, until) => page.evaluate(async ([mode, ms, until]
       ok(meta && meta.pitch === 1.4 && meta.rate === 1.15 && meta.volume === 1, `E2: pitch 1.4, rate 1.15, full volume when unmuted (${JSON.stringify(meta)})`);
       // skip cancels the line in progress
       await foxAt(page, 14, 'I HOPE THIS HELPS!'); await sleep(250); const c0 = await page.evaluate(() => ({ c: window.__ss.cancels, talking: window.__voice().talking, open: window.__voice().open }));
-      await page.evaluate(() => { window.__th.fox.t = 30; window.__tap(128, 100); }); await sleep(60); // typed (t=25) and still up (the critic leaves at typed+10): the tap skips it
+      await page.evaluate(() => { window.__th.fox.t = 30; window.__tap(128, 100); }); await sleep(60); // typed (t=25) and still up (the critic leaves at typed+18): the tap skips it
       const c1 = await page.evaluate(() => ({ c: window.__ss.cancels, talking: window.__voice().talking, t: window.__th.fox.t }));
       ok(c0.talking && c1.c === c0.c + 1 && !c1.talking, `E2: tapping to skip the critic cancels its speech (cancels ${c0.c} -> ${c1.c})`);
       ok(c0.open > 0, `E2: mouth flaps on speech word boundaries (${c0.open} open-mouth frames drawn)`);

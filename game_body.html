@@ -849,7 +849,7 @@ function update1(){
       if(G.fox.mode==='warn'){ if(G.fox.t>=foxLen()) startBoss(); break; }
       if(G.quotaLost){ if(G.fox.t>=foxLen()) endRound(); break; }
       // non-blocking critic: once the line is typed the next wave starts and the bubble lingers over play
-      if(!G.swarm&&G.wave<EPOCH_LEN&&G.fox.t>=foxTyped()+10){ G.linger={line:G.fox.line,x:G.fox.x,mode:G.fox.mode,count:G.fox.count,t:G.fox.t,len:foxLen()}; G.state='gap'; G.t=0; break; }
+      if(!G.swarm&&G.wave<EPOCH_LEN&&G.fox.t>=foxTyped()+18){ G.linger={line:G.fox.line,x:G.fox.x,mode:G.fox.mode,count:G.fox.count,t:G.fox.t,len:foxLen()}; G.state='gap'; G.t=0; break; }
       if(G.fox.t>=foxLen()){ if(G.wave>=EPOCH_LEN) endRound(); else { G.state='gap'; G.t=0; } } break;
     case 'gap': if(G.t>=12){ startWave(); if(G.linger) G.linger.len=G.linger.t; } break; // the bubble leaves as the wave starts: the spawn lane stays clear // the bubble leaves ~0.3 s into the next wave, and sits behind the requests
     case 'roundEnd': { const U=G.adv&&G.adv.update; if(U&&G.t>=40&&(G.t-40)%22===0&&(G.t-40)/22<U.length&&!G.advShown) SFX.blip(); if(G.t>=(U?60+22*U.length+220:200)) nextRound(); } break;
