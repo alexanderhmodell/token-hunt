@@ -698,7 +698,7 @@ function endRound(){ const hits=G.tally.filter(t=>t==='hit').length; const need=
     if(!G.attract&&!G.replay){ const sc=net(); if(G.assist||G.runAssisted){ if(sc>G.hiA){ G.hiA=sc; G.newRecord=true; try{ localStorage.setItem('th.hiAssist',String(G.hiA)); }catch(e){} } }
       else if(sc>G.hi){ G.hi=sc; G.newRecord=true; try{ localStorage.setItem(bestKey(),String(G.hi)); }catch(e){} }
       if(G.lastRun) G.lastRun.newRecord=G.newRecord;
-      if(!(G.assist||G.runAssisted)&&topQualifies(net())) startEntry(net()); }
+      if(topQualifies(net())){ const at=assistTag(); startEntry(net(), at? (/FINN/.test(at)? '3X' : '1H') : (G.runAssisted? '3X' : '')); } } // assisted runs count too, tagged on their row
     if(!G.replay&&!G.entry) showBrag(); } }
 function toTitle(){ hush(); music.stop(); rainStop(); unReplay(); G.freeze=0; G.flash=0; G.flashA=0; G.muzzle=null; G.trauma=0; G.gotcha=null; G.entry=null; G.topList=null; G.props=[]; G.attract=false; G.recOn=false; G.replay=null; G.swarm=null; G.vramLost=0; G.lostNow=0; G.swarmDone=false; G.state='title'; G.t=0; G.idle=0; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.combo=0; G.shots=G.assist?5:D.ammo; G.mouse.on=false; setWeather(); hideBrag(); }
 function attractAI(){ if(G.state!=='fly') return; G.aim.t++; const b=G.birds.find(b=>b.st==='fly'&&!b.bad); if(!b) return;
@@ -724,9 +724,9 @@ const INI_CH='ABCDEFGHIJKLMNOPQRSTUVWXYZ', INI_X=[104,128,152], TOP_SEED=[['BOT'
 const topKey=()=> 'th.top.'+G.diff+(G.diff==='daily'? '.'+dailySeed() : '');
 function loadTop(){ let t=null; try{ t=JSON.parse(localStorage.getItem(topKey())||'null'); }catch(e){} if(!Array.isArray(t)||!t.length||!t.every(x=>x&&typeof x.n==='string'&&typeof x.s==='number')) t=TOP_SEED.map(([n,v])=>({n,s:Math.round(v*D.mult)})); return t.slice(0,5); }
 function topQualifies(sc){ const t=loadTop(); return sc>0&&(t.length<5||sc>t[t.length-1].s); }
-function startEntry(sc){ let last='AAA'; try{ last=localStorage.getItem('th.ini')||'AAA'; }catch(e){} last=(String(last).toUpperCase().replace(/[^A-Z]/g,'')+'AAA').slice(0,3); G.entry={c:[...last].map(ch=>INI_CH.indexOf(ch)),pos:0,score:sc}; }
+function startEntry(sc,tag){ let last='AAA'; try{ last=localStorage.getItem('th.ini')||'AAA'; }catch(e){} last=(String(last).toUpperCase().replace(/[^A-Z]/g,'')+'AAA').slice(0,3); G.entry={c:[...last].map(ch=>INI_CH.indexOf(ch)),pos:0,score:sc,tag:tag||''}; }
 function confirmEntry(save){ const E=G.entry; if(!E) return; G.entry=null; G.goGuard=30; /* the next tap cannot reboot at once (a countdown: a replay resets the frame counter) */ const t=loadTop();
-  if(save){ const n=E.c.map(i=>INI_CH[i]).join(''); try{ localStorage.setItem('th.ini',n); }catch(e){} const row={n,s:E.score}; t.push(row); t.sort((a,b)=>b.s-a.s); const top=t.slice(0,5); G.topRank=top.indexOf(row); G.topList=top; try{ localStorage.setItem(topKey(),JSON.stringify(top)); }catch(e){} SFX.gold(); }
+  if(save){ const n=E.c.map(i=>INI_CH[i]).join(''); try{ localStorage.setItem('th.ini',n); }catch(e){} const row=E.tag? {n,s:E.score,a:E.tag} : {n,s:E.score}; t.push(row); t.sort((a,b)=>b.s-a.s); const top=t.slice(0,5); G.topRank=top.indexOf(row); G.topList=top; try{ localStorage.setItem(topKey(),JSON.stringify(top)); }catch(e){} SFX.gold(); }
   else { G.topList=null; G.topRank=-1; SFX.blip(); } G.t=Math.max(G.t,71); if(!G.replay) showBrag(); }
 function entryTap(x,y){ const E=G.entry, ry=y+(G.mouse.touch?TOUCH_LIFT:0); for(let i=0;i<3;i++) if(Math.abs(x-INI_X[i])<=11&&ry>=58&&ry<=94){ E.pos=i; E.c[i]=(E.c[i]+(ry<79?1:25))%26; SFX.blip(); return; } const ow=textW7('OK')+8, ox=Math.round(W/2-ow/2); if(x>=ox-6&&x<=ox+ow+6&&ry>=94&&ry<=114) confirmEntry(true); } // top half +1, bottom half -1; only OK saves (a mashed tap never does)
 function entryKey(k,e){ const E=G.entry; e.preventDefault(); if(G.t<40) return;
@@ -738,7 +738,7 @@ function arrow3(cx,y,dn,col){ ctx.fillStyle=col; for(let i=0;i<3;i++){ const w=d
 function drawEntry(){ const E=G.entry, tch=TOUCHY||document.body.classList.contains('touch'); text7C('NEW TOP 5. YOUR INITIALS',55,'#ffe98a',true);
   for(let i=0;i<3;i++){ const cx=INI_X[i], on=i===E.pos, col= on? (((G.t>>3)&1)?'#ffe98a':'#fff6c8') : '#f7f4e9'; arrow3(cx,63,false,on?'#ffe98a':'#5a5468'); big7(INI_CH[E.c[i]],cx-5,69,col,2); if(on){ ctx.fillStyle=col; ctx.fillRect(cx-6,85,12,1); } arrow3(cx,88,true,on?'#ffe98a':'#5a5468'); }
   const w=textW7('OK')+8; btn7('OK',Math.round(W/2-w/2),97,'#f7f4e9'); textC(tch? 'TAP A LETTER TOP OR BOTTOM, THEN OK' : 'TYPE 3 LETTERS, THEN ENTER',113,'#8a8494',1); }
-function drawTop(){ const L=G.topList||[]; for(let i=0;i<L.length;i++){ const e=L[i], me=i===G.topRank, s=(i+1)+'  '+(e.n+'   ').slice(0,3)+'  '+pad(e.s,6); textC(s,55+i*7,me? (((G.t>>3)&1)?'#ffe98a':'#fff6c8') : '#cfc9dc',1); }
+function drawTop(){ const L=G.topList||[]; for(let i=0;i<L.length;i++){ const e=L[i], me=i===G.topRank, s=(i+1)+'  '+(e.n+'   ').slice(0,3)+'  '+pad(e.s,6)+(typeof e.a==='string'&&/^(3X|1H)$/.test(e.a)? ' '+e.a : ''); textC(s,55+i*7,me? (((G.t>>3)&1)?'#ffe98a':'#fff6c8') : '#cfc9dc',1); }
   if(G.adv&&G.adv.built) textC(T.adv.fooled+' '+G.adv.fooled+'/'+G.adv.built,90,'#e2ccff',1); }
 const GO_BTN={y:108, menu:[36,79], rep:[131,222]}; let PAUSE_Q=[0,0,0,0]; // game-over and pause buttons: drawn and hit-tested from the same boxes
 function btn7(s,x,y,col){ const w=textW7(s)+8; ctx.fillStyle='rgba(58,52,76,0.92)'; ctx.fillRect(x,y,w,13); ctx.fillStyle=col; ctx.fillRect(x,y,w,1); ctx.fillRect(x,y+12,w,1); ctx.fillRect(x,y,1,13); ctx.fillRect(x+w-1,y,1,13); text7(s,x+4,y+3,col); return w; }
