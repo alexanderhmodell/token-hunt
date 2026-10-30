@@ -24,7 +24,7 @@
 const { chromium, launchOpts } = require('./pw');
 const path = require('path'); const fs = require('fs'); const { spawnSync } = require('child_process');
 
-const ROOT = __dirname, TMP = path.join(ROOT, 'video_tmp'), OUT = path.join(ROOT, 'dist', 'trailer.mp4');
+const ROOT = __dirname, TMP = path.join(ROOT, process.env.TMP_NAME || 'video_tmp'), OUT = path.join(ROOT, 'dist', process.env.OUT_NAME || 'trailer.mp4'); // MUSIC=0: an SFX-only take (the sizzle lays its own music bed)
 const CRT = (process.env.CRT || 'lite').toLowerCase(), SEED = (process.env.SEED || '20261029') | 0;
 const NORMALIZE = process.env.NORMALIZE !== '0', PRESET = process.env.PRESET || 'medium', KEEP = process.env.KEEP === '1';
 const CAP = { W: 512, H: 480, vbps: 6e6, abps: 192e3, CW: 1024, CH: 960 }; // compositor size, bitrates, closer-still size
@@ -162,7 +162,7 @@ async function record() {
   await click(128, 30); await sleep(250); // title screen, y < 70: only counts as a logo tap, but it is a real pointerdown
   console.log('crt:', JSON.stringify(await G(() => { const c = window.__crt(); return { active: c.active, tier: c.tier, canvas: c.w + 'x' + c.h }; })), 'audio:', JSON.stringify(await G(() => window.__audio())));
   await G(installShooter);
-  await G(installCapture, CAP);
+  await G(installCapture, CAP); if (process.env.MUSIC === '0') await G(() => { window.__audioNodes().music.gain.value = 0; });
   clock = Date.now(); let result, still = null;
   try {
     // ---- 1  title (2 s)

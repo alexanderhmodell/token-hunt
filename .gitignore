@@ -6,3 +6,6 @@ video_tmp/
 __pycache__/
 dist/trailer.mp4
 ci_out.txt
+video_sizzle/
+video_tmp_sfx/
+dist/sizzle_src.mp4
