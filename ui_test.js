@@ -164,6 +164,11 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
     G.combo = 0; const s0 = G.score; G.lastShotF = -99; window.__tapAt(132, 90); await __wait(3); o.fastPen = s0 - G.score; o.lo = window.__T().tiers ? 0 : 0; return o; });
   rep('a fake served inside the FAST window bills its FAST value twice', fb.fastPen > 0, JSON.stringify(fb));
 
+  // ---- v4.4: a PROD DB in the air when the skin has none is ignored, not a throw (state fuzz found it)
+  const sk = await p.evaluate(async () => { const G = window.__th, o = {}; G.state = 'fly'; G.freeze = 0; G.swarm = null; G.birds = []; G.shots = 3; G.flightT = 30;
+    G.props = [{ x: 120, y0: 80, y: 80, vx: 0, t: 0, st: 'fly' }]; window.__applyTheme('duck'); await __wait(3); G.lastShotF = -99; const s0 = G.score; window.__tapAt(128, 88); await __wait(3);
+    o.score = G.score - s0; o.still = (G.props || []).filter(q => q.st === 'fly').length; window.__applyTheme('gpu'); G.props = []; return o; });
+  rep('a PROD DB under a skin without one is neither drawn nor billed', sk.score > -1000, JSON.stringify(sk));
   rep('no page errors', errs.length === 0, errs.join(' | ') || 'none');
   for (const r of out) console.log((r.ok ? 'PASS ' : 'FAIL ') + r.n + ' — ' + r.how);
   const bad = out.filter(r => !r.ok).length; console.log(bad ? bad + ' FAILED' : 'ALL PASS'); await b.close(); process.exit(bad ? 1 : 0);

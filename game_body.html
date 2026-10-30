@@ -605,7 +605,7 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return;
     if(G.linger&&!under){ const L=G.linger, g=bubbleGeom(L.line,L.x,SKY_H-44,false,false); // a tap on the lingering critic or his bubble sends him off, free
       if((x>=L.x-6&&x<=L.x+38&&y>=SKY_H-50)||(x>=g.bx-4&&x<=g.bx+g.tw+4&&y>=g.by-6&&y<=g.by+g.th+6)){ G.linger=null; hush(); return; } } } /* sending him off also stops him talking */
   G.shots--; G.cost+=COST; G.run.shots++; G.wf.shots++; SFX.shot(x); G.flash=2; G.muzzle={x,y,t:2};
-  { const pd=(G.props||[]).find(q=>q.st==='fly'&&x>=q.x-4&&x<=q.x+20&&y>=q.y-10&&y<=q.y+20+(touch?8:0)); const near=G.birds.some(b=>b.st==='fly'&&!(b.hold>0)&&!b.boss&&(b.agent?inAgent(b):inBox(b))&&Math.hypot(x-(b.x+(b.agent?6:12)),y-(b.y+(b.agent?5:10)))<Math.hypot(x-(pd?pd.x+8:0),y-(pd?pd.y+8:0)));
+  { const pd=T.prod&&(G.props||[]).find(q=>q.st==='fly'&&x>=q.x-4&&x<=q.x+20&&y>=q.y-10&&y<=q.y+20+(touch?8:0)); const near=G.birds.some(b=>b.st==='fly'&&!(b.hold>0)&&!b.boss&&(b.agent?inAgent(b):inBox(b))&&Math.hypot(x-(b.x+(b.agent?6:12)),y-(b.y+(b.agent?5:10)))<Math.hypot(x-(pd?pd.x+8:0),y-(pd?pd.y+8:0)));
     if(pd&&!near){ pd.st='fall'; pd.vy=-1.5; const pen=Math.round(3000*D.mult*(G.assist?3:1)); G.score-=pen; G.combo=0; G.wf.prod=true; G.run.prod=(G.run.prod||0)+1; addTrauma(0.8); buzz([30,30,60]); G.flash=8; G.flashA=0.35; G.flashCol='255,77,77'; SFX.wrong(x); SFX.thud(x);
       const tx=T.prod.hit+' -'+pen; G.fx.push({type:'pts',x:Math.round(W/2-textW(tx,2)/2),y:66,t:0,txt:tx,col:'#ff4d4d',sc:2,box:1}); return; } } // YOU DROPPED PROD
   let hitAny=false, nearest=999, target=null, td=1e9;
@@ -791,7 +791,7 @@ function makeCard(){ const C=document.createElement('canvas'); C.width=1080; C.h
   px(T.lines.receipt[3]+': '+G.run.frontier,100,824,'#8a8494',6);
   if(G.adv&&G.adv.built) px(T.adv.fooled+': '+G.adv.fooled+' OF '+G.adv.built,100,870,'#e2ccff',6);
   px('ONE FILE. ZERO ASSETS. ZERO NETWORK REQUESTS.',100,940,'#5a5468',5);
-  const host=(location.host||'token hunt').toUpperCase().replace(/[^A-Z0-9.\-\/ ]/g,''); px(host,100,990,T.css.accent,6);
+  const host=(location.host||'token hunt').toUpperCase().replace(/[^A-Z0-9.\-\/ ]/g,''); px(host,100,990,T.css.accent,Math.max(3,Math.min(6,Math.floor(880/(Math.max(1,host.length)*4))))); // shrinks to fit a long host
   return C; }
 async function shareCard(){ const C=makeCard(); const blob=await new Promise(r=>C.toBlob(r,'image/png')); if(!blob){ bragTxt.textContent=bragText(); bragTxt.hidden=false; return; } const name='token-hunt-'+net()+'.png';
   try{ const file=new File([blob],name,{type:'image/png'}); if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:T.titleA+' '+T.titleB,text:bragText()}); toast('SHARED'); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
@@ -906,7 +906,7 @@ function fakePhase(b){ if(!b.adv) return (b.at>>2)&3; if(b.at<(b.hide||0)) retur
 // the FAKE tag and dashed box: a trained fake shows them through each glitch burst, or only on its pale frames once the adversary
 // has learned you read the tag; an untrained one shows them always until the mimic epoch, then on pale frames only (Daily)
 function fakeTag(b){ const ph=fakePhase(b); if(b.adv) return ph!==0&&(!b.hideTag||ph===2); return G.round<RULE.mimic||ph===2; }
-function drawProd(q){ const x=Math.round(q.x), y=Math.round(q.y); // a database on a little drone: classic cylinder, three platters, one green light
+function drawProd(q){ if(!T.prod) return; const x=Math.round(q.x), y=Math.round(q.y); // a database on a little drone: classic cylinder, three platters, one green light
   ctx.fillStyle='#1a1420'; ctx.fillRect(x+3,y-6,10,1); ctx.fillRect(x+7,y-5,2,5); ctx.fillStyle=((q.t>>1)&1)?'#cfc9dc':'#8a8494'; ctx.fillRect(x+(((q.t>>1)&1)?1:4),y-7,((q.t>>1)&1)?14:8,1); // rotor
   ctx.fillStyle='#1a1420'; ctx.fillRect(x+1,y,14,18); ctx.fillRect(x,y+1,16,16); ctx.fillStyle='#cfc9dc'; ctx.fillRect(x+1,y+1,14,16); ctx.fillStyle='#f7f4e9'; ctx.fillRect(x+2,y+1,12,3);
   ctx.fillStyle='#8a8494'; ctx.fillRect(x+1,y+6,14,1); ctx.fillRect(x+1,y+11,14,1); ctx.fillStyle=((q.t>>4)&1)?'#39d353':'#1e7a3a'; ctx.fillRect(x+11,y+8,2,2); ctx.fillRect(x+11,y+13,2,2);
@@ -919,7 +919,7 @@ function drawBird(b){ if(b.hold>0) return; const left=b.vx<0; let key, img; cons
   if(b.agent){ if(b.st!=='fly') return; const k=T.swarm.spr[(b.at>>2)&1];
     ctx.fillStyle='rgba(255,77,77,0.35)'; for(let i=1;i<=4;i++){ const tx=bx-i*2*(b.vx+Math.sin((b.at-i)/7)*0.9), ty=by-i*2*b.vy; ctx.fillRect(Math.round(tx+6-(4-i)/2),Math.round(ty+4),5-i,5-i); } // red trail
     drawScaled(S[k+(left?'L':'')],Math.round(bx+rnd(-1,1)),Math.round(by+rnd(-1,1)),1.5,1.5); // jitter, 1.5x so it reads on a phone
-    if(T.swarm.tag&&((b.at>>3)&3)!==3){ const tg=T.swarm.tag; textS(tg,clamp(Math.round(bx+6-textW(tg,1)/2),2,W-2-textW(tg,1)),Math.round(by-10),'#ff8a8a',1); } return; }
+    if(T.swarm.tag&&!(G.swarm&&G.swarm.boss)&&((b.at>>3)&3)!==3){ const tg=T.swarm.tag; textS(tg,clamp(Math.round(bx+6-textW(tg,1)/2),2,W-2-textW(tg,1)),Math.round(by-10),'#ff8a8a',1); } return; }
   if(b.st==='fall'||b.st==='landed'){ key=b.bad?T.spr.fallBad: hi?T.spr.fallHi:T.spr.fall; img=S[key];
     if(b.st==='fall') drawScaled(img, bx+4, by, Math.cos((b.at+ALPHA)*0.32), 1); else ctx.drawImage(img, Math.round(bx+4), Math.round(by)); return; } // coin-flip spin while falling
   key=(hi?T.spr.flyHi:T.spr.fly)[b.st==='hit'?1:BIRD_FRAMES[b.f]];
@@ -1027,7 +1027,7 @@ function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
     text(rc[0]+' '+accuracy()+'%',40,60,'#8a8494'); text(rc[1]+' X'+Math.max(1,R.bestCombo),136,60,'#8a8494');
     text(rc[2]+' '+R.hServed+' SERVED / '+R.hDodged+' DODGED',40,70,'#8a8494');
     text((G.adv&&G.adv.built)? T.adv.fooled+' '+G.adv.fooled+'/'+G.adv.built : rc[3]+' '+R.frontier,40,80,(G.adv&&G.adv.built)?'#e2ccff':'#8a8494'); { const got=G.tally.filter(x=>x==='hit').length; text(T.hud.served+' '+got+' '+T.hud.need+' '+req(G.round),136,80,'#ff8a8a'); } // why it ended
-    if(G.newRecord){ if((t>>2)&1) textC('NEW BEST!',89,'#ffe98a',1); } else { const hi=(G.assist||G.runAssisted)?G.hiA:G.hi, gap=hi-net(); textC(T.hud.best+' '+pad(hi,6)+(gap>0?'   '+gap.toLocaleString()+' TO BEAT':''),89,'#8a8494',1); } } // the one-more-run number
+    if(G.newRecord){ if((t>>2)&1) textC('NEW BEST!',89,'#ffe98a',1); } else { const hi=(G.assist||G.runAssisted)?G.hiA:G.hi, gap=hi-net(); textC(T.hud.best+' '+pad(hi,6)+(gap>0&&hi>0?'   '+gap.toLocaleString()+' TO BEAT':''),89,'#8a8494',1); } } // the one-more-run number
     if(t>70&&!G.entry){ text7C(T.restart,98,'#cfc9dc',true); const mt=(TOUCHY||document.body.classList.contains('touch'))? '< MENU' : '< MENU ESC'; GO_BTN.menu=[36,36+btn7(mt,36,GO_BTN.y,'#f7f4e9')]; if(G.lastRun&&!G.replay){ const rt='WATCH REPLAY >', w=textW7(rt)+8; GO_BTN.rep=[222-w,222]; btn7(rt,222-w,GO_BTN.y,'#bdeeff'); } } }
   if(G.state==='boot'){ ctx.fillStyle='#07070c'; ctx.fillRect(0,0,W,SKY_H); const n=Math.min(T.boot.length,Math.floor(G.boot.t/22)+1);
     for(let i=0;i<n;i++){ const full=i<n-1||G.boot.t%22>14; const ln=T.boot[i]; text(full?ln:ln.slice(0,Math.floor((G.boot.t%22)/14*ln.length)),16,20+i*14,i===n-1?'#f7f4e9':'#8a8494',1); }

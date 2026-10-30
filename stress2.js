@@ -97,9 +97,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       return thrown;
     });
     ok(r === 0 && errs.length === 0, `state fuzz: 1500 random states drawn, ${r} throws, ${errs.length} console errors`);
+    if (errs.length) console.log('FAIL detail: ' + errs.slice(0, 3).join(' | ').slice(0, 400)); // so CI shows the cause
     // random clicks while fuzzing continues
     for (let i = 0; i < 200; i++) { await page.evaluate(() => { const G = window.__th; G.state = ['title','fly','fox','roundEnd','gameOver','boot'][Math.floor(Math.random() * 6)]; G.t = 100; G.boot = { t: 50, line: 1 }; }); await page.mouse.click(box.x + Math.random() * box.width, box.y + Math.random() * box.height); }
     ok(errs.length === 0, 'state fuzz + clicks: no errors');
+    if (errs.length) console.log('FAIL detail: ' + errs.slice(0, 3).join(' | ').slice(0, 400));
     await ctx.close();
   }
 
