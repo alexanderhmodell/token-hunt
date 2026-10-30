@@ -58,7 +58,7 @@ body.nocrt .crt{display:none}
 .foot{color:var(--dim); font-size:10px; letter-spacing:.08em; text-align:center; line-height:1.9; max-width:96ch}
 @media (max-width:600px){ body{padding-block:10px} }
 @media (hover:none) and (pointer:coarse){ .foot .keys{display:none} }
-.foot{margin-top:18px} body.touch #share,body.touch #brag{bottom:-42px} body.touch .foot{margin-top:34px} /* on a phone the buttons sit under the cabinet, never over the HUD */
+.foot{margin-top:34px} /* the game-over buttons sit under the cabinet, never over the HUD; the gap is always reserved, so nothing jumps */
 body.pointer canvas:focus-visible{outline:none}
 .foot b{color:var(--accent); font-weight:normal}
 #cardbox{position:fixed; inset:0; z-index:20; background:rgba(5,5,10,.88); display:flex; align-items:center; justify-content:center; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); padding-block:16px}
@@ -67,8 +67,8 @@ body.pointer canvas:focus-visible{outline:none}
 .cardhint{font:600 10px/1.6 var(--font-ui); letter-spacing:.08em; color:var(--dim); text-align:center}
 #cardclose{font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--accent); border:0; padding:9px 16px; border-radius:2px; cursor:pointer}
 #cardclose:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
-#share{position:absolute; left:50%; bottom:-14px; transform:translateX(-112%); z-index:2; font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--ink); border:0; padding:8px 12px; cursor:pointer; border-radius:2px; box-shadow:0 2px 0 #000}
-#brag{position:absolute; left:50%; bottom:-14px; transform:translateX(12%); z-index:2; font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--accent); border:0; padding:8px 12px; cursor:pointer; border-radius:2px; box-shadow:0 2px 0 #000}
+#share{position:absolute; left:50%; bottom:-42px; transform:translateX(-112%); z-index:2; font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--ink); border:0; padding:8px 12px; cursor:pointer; border-radius:2px; box-shadow:0 2px 0 #000}
+#brag{position:absolute; left:50%; bottom:-42px; transform:translateX(12%); z-index:2; font:700 11px/1 var(--font-ui); letter-spacing:.1em; color:var(--cab); background:var(--accent); border:0; padding:8px 12px; cursor:pointer; border-radius:2px; box-shadow:0 2px 0 #000}
 #bragtxt{position:absolute; left:50%; bottom:-40px; transform:translateX(-50%); z-index:2; width:max(90%,280px)}
 #brag:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
 #bragtxt{font:11px/1.8 var(--font-ui); color:var(--ink); user-select:text; -webkit-user-select:text; max-width:60ch; text-align:center; word-break:break-all}
@@ -1160,7 +1160,7 @@ window.addEventListener('blur',()=>{ for(const k in HELD) delete HELD[k]; setPau
 
 // ------------------------------------------------------------------ sizing
 function fit(){ const foot=document.getElementById('foot'); const fh=foot?foot.offsetHeight:40; // fill the window: whatever is left after the footer and the share-button gap
-  const vw=Math.max(200,window.innerWidth-32), vh=Math.max(200,window.innerHeight-fh-62); let s=Math.min(vw/W,vh/H);
+  const vw=Math.max(200,window.innerWidth-32), vh=Math.max(200,window.innerHeight-fh-78); let s=Math.min(vw/W,vh/H);
   if(s>=2&&Math.floor(s)/s>=0.88) s=Math.floor(s); // integer (pixel-perfect) only when it costs under 12% of the screen; otherwise fill it
   cv.style.width=Math.round(W*s)+'px'; cv.style.height=Math.round(H*s)+'px'; document.documentElement.style.setProperty('--sl',s+'px'); crt.hidden=s<3||crtActive();
   glc.style.width=cv.style.width; glc.style.height=cv.style.height; const dpr=Math.min(2,window.devicePixelRatio||1); let bw=Math.round(W*s*dpr), bh=Math.round(H*s*dpr);
