@@ -8,7 +8,7 @@ const has = (s) => html.includes(s);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   // ---- static evidence
-  rep(1, 'Space/Enter start the game', has("handleTap(128,100); } e.preventDefault();"), 'keyboard start taps open sky (128,100), not the difficulty row');
+  rep(1, 'Space/Enter start the game', has("const ky=G.state==='gameOver'?60:100;") && has("handleTap(128,ky); } e.preventDefault();"), 'keyboard start taps open sky (128,100), not the difficulty row; at game over it taps the receipt, never a button');
   rep(2, 'Hallucination leaves when no real request is airborne', has("if(flying&&!G.birds.some(b=>b.st==='fly'&&!b.bad)){ for(const b of G.birds) if(b.st==='fly'&&b.bad){ b.flew=b.at; b.st='away'"), 'early-exit branch present in updateBirds');
   rep(3, '504 banner/tint ignore hallucinations', has("G.birds.some(b=>b.st==='away'&&!b.bad)) textC(B.escaped") && has("G.birds.some(b=>b.st==='away'&&!b.bad)){ ctx.fillStyle=T.banners.escapedTint"), 'both banner and tint filter !b.bad');
   rep(4, 'One shot hits only the nearest flyer', has("let hitAny=false, nearest=999, target=null, td=1e9;") && has("if(b===target){ hitAny=true;"), 'nearest-target selection before applying the hit');

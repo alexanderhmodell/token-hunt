@@ -81,9 +81,9 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
     const bo = G.birds.find(x => x.boss); if (!bo) return { none: true, state: G.state };
     o.enter = bo.enter; const s0 = G.shots; window.__click(Math.max(2, bo.x + 30), bo.y + 20); G.lastShotF = -99; await __wait(2); o.freeDeploy = G.shots === s0 && bo.hp === bo.hp0;
     while (bo.enter) await __wait(1); bo.vx *= 0.1; // slow it so the test fits on screen
-    while (((bo.fw || 0) % 60) < 22) await __wait(1); const s1 = G.shots, h1 = bo.hp; G.lastShotF = -99; window.__click(bo.x + 24, bo.y + 20); await __wait(2); o.freeFirewall = G.shots === s1 && bo.hp === h1;
-    while (((bo.fw || 0) % 60) >= 20 || ((bo.fw || 0) % 60) < 2) await __wait(1);
-    let guard = 0; while (bo.st === 'fly' && bo.hp > 0 && guard++ < 400) { if (!(((bo.fw || 0) % 60) >= 20) && G.freeze === 0) { G.lastShotF = -99; G.shots = Math.max(G.shots, 3); window.__click(bo.x + 24, bo.y + 20); } await __wait(4); }
+    while (((bo.fw || 0) % 60) < window.__fw.open + 2) await __wait(1); const s1 = G.shots, h1 = bo.hp; G.lastShotF = -99; window.__click(bo.x + 24, bo.y + 20); await __wait(2); o.freeFirewall = G.shots === s1 && bo.hp === h1;
+    while (((bo.fw || 0) % 60) >= window.__fw.open || ((bo.fw || 0) % 60) < 2) await __wait(1);
+    let guard = 0; while (bo.st === 'fly' && bo.hp > 0 && guard++ < 400) { if (!(((bo.fw || 0) % 60) >= window.__fw.open) && G.freeze === 0) { G.lastShotF = -99; G.shots = Math.max(G.shots, 3); window.__click(bo.x + 24, bo.y + 20); } await __wait(4); }
     o.killed = G.swarm && G.swarm.killed; o.agentsLeft = G.birds.filter(x => x.agent && x.st === 'fly').length; o.hp0 = bo.hp0; return o; });
   rep('epoch-8 intro counts the real HP', r5.line && /NINE/.test(r5.line) === /HITS/.test(r5.line), JSON.stringify(r5.line));
   rep('boss: deploying and firewalled taps are free', r5.freeDeploy && r5.freeFirewall, JSON.stringify(r5));

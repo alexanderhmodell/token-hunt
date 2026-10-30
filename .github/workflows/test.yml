@@ -30,6 +30,7 @@ jobs:
       - run: node elite_test.js
       - run: node visual_test.js
       - run: node adversary_test.js
+      - run: node ui_test.js
       - name: Screenshots
         if: always()
         uses: actions/upload-artifact@v4

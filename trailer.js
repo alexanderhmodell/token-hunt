@@ -194,7 +194,8 @@ async function record() {
     // ---- 7b  the adversary's first trained fake passes for a real request for the player's own reaction time: serve it
     if (await waitFor(() => window.__th.state === 'fly' && window.__th.birds.some(b => b.bad && b.adv && b.st === 'fly'), null, 9000)) {
       mark('trained fake: ' + JSON.stringify(await G(() => { const h = window.__th.birds.find(b => b.bad && b.adv); return { tier: h.tier, hide: h.hide, at: h.at }; })));
-      await sleep(120); await fire('fake', { steps: 6, gain: 0.5 }); await sleep(600); await fireAll('real');
+      await sleep(120); await fire('fake', { steps: 6, gain: 0.5 }); // fooled: the game holds and rewinds the trap (taps would skip it)
+      if (await waitFor(() => { const g = window.__th.gotcha; return !g || !(g.t < g.end); }, null, 6000)) mark('rewind played'); await sleep(500); await fireAll('real');
       await waitState('fox', 8000); mark('critic: ' + await line()); await sleep(1500); } else mark('WARN no trained fake in epoch 2');
     // ---- 8  epoch 3, ROGUE AGENTS LOOSE: stop three, one gets through
     await clearEpoch(2, ['hit', 'hit', 'miss', 'hit', 'hit', 'hit']); mark('epoch 3: swarm intro');
@@ -211,7 +212,7 @@ async function record() {
     for (let i = 0, t = Date.now(); i < 60 && Date.now() - t < 16000; i++) {
       const s = await G(() => { const g = window.__th, b = g.birds.find(b => b.boss && b.st === 'fly'), a = g.birds.filter(b => b.agent && b.st === 'fly'); return { boss: !!b, hp: b ? b.hp : 0, agents: a.length, low: a.length ? Math.max(...a.map(x => x.y)) : -1, shots: g.shots }; });
       if ((!s.boss && !s.agents) || s.shots <= 0) break;
-      if (s.boss && !s.agents && await G(() => { const b = window.__th.birds.find(b => b.boss && b.st === 'fly'); return b && (b.enter || ((b.fw || 0) % 60) >= 20); })) { await sleep(90); i--; continue; } // wait out the IP rotation
+      if (s.boss && !s.agents && await G(() => { const b = window.__th.birds.find(b => b.boss && b.st === 'fly'); return b && (b.enter || ((b.fw || 0) % 60) >= window.__fw.open); })) { await sleep(90); i--; continue; } // wait out the IP rotation
       { const k = s.agents && (s.low > 105 || !s.boss) ? 'agent' : 'boss'; await fire(k, k === 'boss' ? { steps: 2, gain: 0.9 } : { steps: 4, gain: 0.7 }); await sleep(k === 'boss' ? 80 : 200); } // rapid fire into each opening
     }
     await waitState('fox', 10000); mark('boss down. critic: ' + await line()); await sleep(1500);

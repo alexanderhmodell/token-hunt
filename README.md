@@ -2,10 +2,10 @@
 
 [![test](https://github.com/alexanderhmodell/token-hunt/actions/workflows/test.yml/badge.svg)](https://github.com/alexanderhmodell/token-hunt/actions/workflows/test.yml)
 
-An original 8-bit arcade game in one HTML file. You are a GPU cluster. Requests fly in with wings; you have three VRAM per flight to serve them before they time out. Some are hallucinations, and they train on you: after every epoch an adversary model reads your habits (the colour you serve most readily, your time to fire, whether you read its tag) and builds the next epoch's fakes to exploit them, printing exactly what it learned. The load changes every epoch, and a chatbot rises from the rack row to comment on your aim.
+An original 8-bit arcade game in one HTML file. You are a GPU cluster. Requests fly in with wings; you have three VRAM per flight to serve them before they time out. Some are hallucinations, and they train on you: after every epoch an adversary model reads your habits (the colour you serve most readily, your time to fire, whether you read its tag) and builds the next epoch's fakes to exploit them, printing exactly what it learned; when one fools you, the game rewinds the moment to show you what you saw, what it was, and the card line that built it. The load changes every epoch, and a chatbot rises from the rack row to comment on your aim.
 
 - **Play:** open `dist/index.html` in any browser, or host that one file anywhere (itch.io, Vercel, GitHub Pages).
-- **Controls:** click or tap to serve · arrows + `Z`/`X`/Enter to aim and fire · `M` mute · `P`/`Esc` pause · `C` CRT · `R` watch replay, `Esc` menu (game over) · `1`-`4` or the arrows on the title for difficulty (4 = Daily) · Space/Enter to advance. Wait on the title and it plays itself.
+- **Controls:** click or tap to serve · arrows + `Z`/`X`/Enter to aim and fire · `M` mute · `P`/`Esc` pause (`Q` or the MENU button quits) · `C` CRT · `R` watch replay, `Esc` menu (game over) · `1`-`4` or the arrows on the title for difficulty (4 = Daily) · Space/Enter to advance. Wait on the title and it plays itself.
 - **No assets.** Every sprite is hand-pixeled in `sprites.py`, the fonts are 3×5 and 5×7 bitmaps, and all audio (shot, chiptune loop, packet rain, thunder) is synthesized live with the Web Audio API. Native 256×240, scaled pixel-perfect, CRT overlay.
 - **Two skins.** Token Hunt (default) and Fowl Weather, the original meadow version. Both share every mechanic.
 
@@ -21,6 +21,7 @@ node stress2.js         # touch emulation, keyboard + state fuzz, blur/focus, ke
 node elite_test.js      # v3 systems: replay determinism, WebGL CRT tiers, speech, audio mix, interpolation, boss, flow, gates (ONLY=E0,E3 for a subset)
 node visual_test.js     # 9 canonical states rendered deterministically, pixel-diffed against goldens/ (0.5%); --update-goldens to rewrite
 node adversary_test.js  # the adversary (what it learns, prints and builds), the epoch card, the boss firewall, text widths, Daily independence
+node ui_test.js         # v4.2: game-over and pause buttons under real touch, tips never late, Easy's lines, the rewind, the boss's bounced taps
 node trailer.js         # ~60 s scripted trailer with game audio, recorded in the page -> dist/trailer.mp4 (git-ignored)
 ```
 

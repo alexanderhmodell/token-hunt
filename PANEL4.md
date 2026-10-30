@@ -93,3 +93,30 @@ Average 7.75; both AI-selector simulations put it in or at the edge of the top 3
 - **Scoring:** a fake costs twice the request it imitates; no free misses; FAST ×2 inside 0.6 s, ×1.5 inside 1.1 s; doubles spawn less predictably.
 - **Daily:** 429 strikes come from the seed per wave and tick only in flight.
 - Tips by priority and below the 429 banner; mixed waves never praised; game-over panel clears a two-line roast; touch drops keyboard hints; share dialog opaque; one-hand fixes; FINN twice; HUD best on the assisted board.
+
+---
+
+# Re-check panel on the v4.1 final build (Oct 29, night)
+
+Three cold seats on the build that made the trailer, same harness: the organizer stream simulation, a phone casual player on an emulated iPhone 13 with real touch, and a score-chaser (about 20 bot runs, 18 boss fights, long runs to epoch 47).
+
+| Seat | Score | Placement | One line |
+|---|---|---|---|
+| Organizer stream sim | 8 | **TOP 3**, shortlist YES | "Today it's my assistant-backed pick." One change: when a trained fake fools you, hold and rewind its last second with the disguise peeled off, beside the card line that built it |
+| Phone casual | 7 | TOP 10 | Playing in seconds, rewarded at once, the adversary is real; Easy never bites, a tap on < MENU started a run, small grey labels |
+| Score-chaser | 7 (was 6) | TOP 10 (was TOP 25%) | The adversary punishes any fixed style, but a lone request was always real, mashing beat the boss, a 429 left only the fake moving, and runs never ended |
+
+## Applied (v4.2)
+
+- **The rewind** (the organizer's one change): the first time each model version fools you, the game dims, rewinds the fake along its path as you saw it, plays it forward as what it was (the grey ghost, tagged, with its own clock), stops on your crosshair and prints the card line that built the trap ("IT LEARNED THIS FROM YOU / SERVE TIME 0.5S -> FAKES LOOK REAL 0.5S"). A tap skips it after 0.33 s and never fires into the frozen sky; later fools by the same version keep the short card; the trap's bill is in its panel. Then one tip: WAIT A BEAT LONGER. THE FAKES GLITCH.
+- **The adversary got harder to read:** in the waves it builds, one request (real or fake) may arrive up to 0.7 s late, so a lone request can be the trap; a 429 freezes the fakes too; trained fakes sign their tag (MODEL V3) once they show, and a dodged one says DODGED; a disguise never outlasts 60% of its wave.
+- **Boss:** a tap on the rotating IPs bounces (no VRAM or damage, but points and your combo); the openings are 26 frames of every 60, long enough to time, and the icy box blinks before it drops; the firewall tip shows during the fight, never after it; the HP bar never runs over the name.
+- **Scoring:** the FAST clock keeps running through a 429; the long game ends (from epoch 26 the flight window closes to 0.8 s by epoch 33); the card prints serve time and disguise from one rounded number.
+- **Phone:** game-over MENU and WATCH REPLAY are real 5x7 buttons and a touch on the label works (it used to start a run); pause has a MENU button (and Q); purple vs green reads on the body (saturated wings and a tier-coloured flap); the epoch card's prompt is 5x7.
+- **Tips and lines:** FAST only in epoch 1 (it argued with the trained fakes); Easy never suggests Easy mode; Easy's pace may climb a little further (still under Medium's).
+- **Collisions:** pops draw above particles; penalties and the swarm banner sit on a dark backing; COMBO sits under its own score pop; boss hits pop beside the boss; the COPIED toast clears the critic.
+- New CI suite `ui_test.js` (buttons under real touch, tips, Easy lines, the rewind, the boss's bounced taps, late arrivals, 429, the closing window).
+
+## Left as is
+
+Card-reading still beats snap-shooting (the score-chaser's best line): reading the card and breaking your habit is the counterplay the game teaches, and the model answers by moving the disguise to your new timing up to its cap. Daily keeps Medium's multiplier (each mode has its own best). Touch keeps its larger hit box.
