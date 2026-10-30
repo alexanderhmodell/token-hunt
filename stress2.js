@@ -39,11 +39,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     await page.evaluate(() => { const G = window.__th; G.state = 'title'; G.attract = false; G.idle = 0; });
     for (let i = 0; i < 7; i++) { await page.touchscreen.tap(...tp(128, 40)); await sleep(30); }
     await sleep(150);
-    ok(await page.evaluate(() => document.activeElement && document.activeElement.id === 'code'), 'touch: 7 logo taps focus the code input');
+    ok(await page.evaluate(() => !document.getElementById('codebox').hidden && document.activeElement && document.activeElement.id === 'codefield'), 'touch: 7 logo taps open the code box, field focused');
     ok((await page.evaluate(() => window.__th.state)) === 'title', 'touch: logo taps did not start the game');
-    await page.keyboard.type('duck'); await sleep(150);
-    ok((await page.evaluate(() => window.__th.theme)) === 'duck', 'touch: code typed into the input switches skin');
-    await page.evaluate(() => document.activeElement.blur());
+    await page.keyboard.type('duck'); await page.keyboard.press('Enter'); await sleep(150);
+    ok((await page.evaluate(() => window.__th.theme === 'duck' && document.getElementById('codebox').hidden)), 'touch: a code typed into the box switches skin and closes it');
     // pause icon / mute icon tap targets at phone scale
     await page.evaluate(() => { const G = window.__th; G.state = 'fly'; G.paused = false; });
     await page.touchscreen.tap(...tp(234, 7)); await sleep(80); ok(await page.evaluate(() => window.__th.paused), 'touch: pause icon tap target works');
