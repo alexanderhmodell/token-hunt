@@ -128,7 +128,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
 
   // ---- v4.3: top 5 with initials, providers, PROD DB, boss rotation, fake bill, colour habit
   const ini = await p.evaluate(async () => { const G = window.__th, o = {}; try { localStorage.removeItem(window.__top().key); localStorage.removeItem('th.ini'); } catch (e) {}
-    window.__tapAt(128, 100); await __wait(3); await __skipIntro(); G.tally = ['miss', 'miss', 'miss', 'miss', 'miss']; G.wave = 5; G.score = 30000; G.cost = 0;
+    window.__tapAt(128, 100); await __wait(3); await __skipIntro(); G.tally = ['miss', 'miss', 'miss', 'miss', 'miss']; G.wave = 5; G.score = 50000; G.cost = 0;
     for (let i = 0; i < 60 * 40 && G.state !== 'gameOver'; i++) { if (G.state === 'fox') G.fox.t = 999; if (G.state === 'intro' || G.state === 'gap') G.t = Math.max(G.t, 999); await __wait(1); }
     await __wait(45); o.entry = !!G.entry; o.brag = !document.getElementById('brag').hidden;
     for (const k of ['q', 'a', 'z']) document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true })); await __wait(2);
@@ -137,7 +137,7 @@ const LIB = () => { window.__wait = f => new Promise(r => { let n = 0; const t =
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); await __wait(3);
     o.saved = !G.entry && G.topList && G.topList[G.topRank] && G.topList[G.topRank].n; o.rank = G.topRank; o.stored = window.__top().list.map(e => e.n + e.s).join(','); o.bragAfter = !document.getElementById('brag').hidden;
     window.__tapAt(128, 60); await __wait(3); o.guarded = G.state === 'gameOver'; await __wait(30); window.__tapAt(128, 60); await __wait(3); o.reboot = G.state; return o; }); // a tap right after saving cannot reboot; one 0.5 s later does
-  rep('top 5: a run that makes the table asks for initials (keys and touch), saves them, then the share buttons', ini.entry && !ini.brag && ini.letters === 'QAA' && ini.saved === 'QAA' && ini.rank === 1 && /QAA45000|QAA/.test(ini.stored) && ini.bragAfter && ini.guarded && ini.reboot !== 'gameOver', JSON.stringify(ini));
+  rep('top 5: a run that makes the table asks for initials (keys and touch), saves them, then the share buttons', ini.entry && !ini.brag && ini.letters === 'QAA' && ini.saved === 'QAA' && ini.rank === 2 && /QAA45000|QAA/.test(ini.stored) && ini.bragAfter && ini.guarded && ini.reboot !== 'gameOver', JSON.stringify(ini));
   const ini2 = await p.evaluate(async () => { const G = window.__th, o = {}; await __skipIntro(); G.tally = ['miss', 'miss', 'miss', 'miss', 'miss']; G.wave = 5; G.score = 100; G.cost = 0;
     for (let i = 0; i < 60 * 40 && G.state !== 'gameOver'; i++) { if (G.state === 'fox') G.fox.t = 999; if (G.state === 'intro' || G.state === 'gap') G.t = Math.max(G.t, 999); await __wait(1); } await __wait(30); o.lowEntry = !!G.entry;
     window.__tapAt(128, 60); await __wait(3); await __skipIntro(); G.runAssisted = true; G.tally = ['miss', 'miss', 'miss', 'miss', 'miss']; G.wave = 5; G.score = 999999; G.cost = 0;

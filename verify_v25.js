@@ -16,7 +16,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   rep(6, 'Restart skips the BIOS crawl', has("else startGame(false,true); } break;") && has("if(skipBoot||G.bootedOnce){ bootDone(); return; }"), 'game-over tap calls startGame(false,true) → bootDone()');
   rep(7, 'iOS audio unlock on pointerup/click', has("cv.addEventListener('pointerup',()=>{ audioInit(); if(ac&&ac.state==='suspended') ac.resume(); });") && has("cv.addEventListener('click',()=>{ if(ac&&ac.state==='suspended') ac.resume(); });"), 'both listeners present (iOS behavior itself not verifiable headlessly)');
   rep(8, 'Attract auto-resumes on tab return; real play stays paused', has("if(G.attract) setPaused(false); } }); // a hidden tab is silent in every state") && has("window.addEventListener('focus',()=>{ if(G.attract) setPaused(false); });"), 'visibilitychange + focus handlers gate on G.attract');
-  rep(9, 'First intro shortened', has("case 'intro': if(G.t>=introHold()){") && has("const introHold=()=> G.round===1? 70 : ruleFor(G.round)? 210 : 150;"), 'epoch-1 intro is 70 frames; later epochs 150, or 210 when the card brings a new rule (a tap skips)');
+  rep(9, 'First intro shortened', has("case 'intro': if(G.t>=introHold()){") && has("const introHold=()=> G.round===1? 100 : ruleFor(G.round)? 210 : 150;"), 'epoch-1 intro is 100 frames; later epochs 150, or 210 when the card brings a new rule (a tap skips)');
   rep(10, "Glitch tag '@' removed", !/glitchTags:\[[^\]]*@/.test(html), "no '@' in any glitchTags array");
 
   // ---- dynamic evidence

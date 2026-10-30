@@ -323,7 +323,7 @@ const THEMES={
     },
     rules:{3:'NEW: ROGUE AGENTS. STOP ALL 4.', 6:'NEW: PROD DB FLOATS BY. DO NOT TOUCH.', 4:'NEW RULE: FAKES CAN LOOK PURPLE', 5:'NEW RULE: BURSTS OF THREE. +1 VRAM.', 7:'LOAD KEEPS CLIMBING FROM HERE.'}, rulesAdv:{2:'NEW: THE FAKES NOW TRAIN ON YOU', 4:null},
     adv:{ver:'MODEL V', head:'TRAINED ON YOU', gotYou:'FOOLED YOU', youFired:'YOU FIRED AT', lookedReal:'IT LOOKED REAL FOR', hi:'PURPLE', lo:'GREEN', fake:'FAKES', served:'SERVED', hide:'TAG ONLY FLICKERS NOW', keeps:'IT KEEPS TRYING', fooled:'MODEL FOOLED YOU', noHabit:'NO COLOR HABIT', rewind:'<< REWIND', learned:'IT LEARNED THIS FROM YOU', skip:'TAP TO SKIP', dodged:'DODGED'},
-    tips:{frontier:'PURPLE = FRONTIER. PAYS 3X.', fake:'GREY GHOST = FAKE. LET IT GO.', frozen:'FROZEN = RATE LIMITED. WAIT.', fast:'SERVE EARLY = FAST BONUS X2', adv:'TRAINED FAKES LOOK REAL AT FIRST', firewall:'ICY BOX = ROTATING IPS. WAIT.', gotcha:'WAIT A BEAT LONGER. THE FAKES GLITCH.', prod:'PROD DB = DO NOT TOUCH. EVER.'},
+    tips:{frontier:'PURPLE = FRONTIER. PAYS 3X.', fake:'IT GLITCHES = FAKE. LET IT GO.', frozen:'FROZEN = RATE LIMITED. WAIT.', fast:'SERVE EARLY = FAST BONUS X2', adv:'TRAINED FAKES LOOK REAL AT FIRST', firewall:'ICY BOX = ROTATING IPS. WAIT.', gotcha:'WAIT A BEAT LONGER. THE FAKES GLITCH.', prod:'PROD DB = DO NOT TOUCH. EVER.'},
     burstTxt:'AUTOSCALE +1 VRAM', lostTxt:' VRAM THIS WAVE',
     scenery:'datacenter', showCatch:true,
     boot:['TOKEN HUNT BIOS V2.3','6 GPUS DETECTED','VRAM ........... OK','LOADING WEIGHTS','CHATBOT ....... ONLINE'],
@@ -396,7 +396,7 @@ const THEMES={
     },
     rules:{3:'NEW: HAWKS. DROP ALL 4.', 6:'NEW: A FEEDER FLOATS BY. DO NOT TOUCH.', 4:'NEW RULE: DECOYS CAN LOOK GOLDEN', 5:'NEW RULE: FLOCKS OF THREE. +1 SHELL.', 7:'THE WEATHER TURNS FROM HERE.'}, rulesAdv:{2:'NEW: THE DECOYS NOW STUDY YOU', 4:null},
     adv:{ver:'CARVER V', head:'STUDIED YOU', gotYou:'FOOLED YOU', youFired:'YOU FIRED AT', lookedReal:'IT LOOKED REAL FOR', hi:'GOLD', lo:'BROWN', fake:'DECOYS', served:'SHOT', hide:'TAG ONLY FLICKERS NOW', keeps:'IT KEEPS CARVING', fooled:'DECOYS FOOLED YOU', noHabit:'NO COLOR HABIT', rewind:'<< REWIND', learned:'IT STUDIED THIS ABOUT YOU', skip:'TAP TO SKIP', dodged:'DODGED'},
-    tips:{frontier:'GOLD BIRD = 3X. IT FLIES FAST.', fake:'GREY GHOST = DECOY. LET IT GO.', frozen:'STUNNED BIRDS: WAIT.', fast:'SHOOT EARLY = FAST BONUS X2', adv:'CARVED DECOYS LOOK REAL AT FIRST', firewall:'ICE BOX = STORMWALL. WAIT.', gotcha:'WAIT A BEAT LONGER. DECOYS CRACK.', prod:'FEEDER = DO NOT TOUCH. EVER.'},
+    tips:{frontier:'GOLD BIRD = 3X. IT FLIES FAST.', fake:'IT GLITCHES = DECOY. LET IT GO.', frozen:'STUNNED BIRDS: WAIT.', fast:'SHOOT EARLY = FAST BONUS X2', adv:'CARVED DECOYS LOOK REAL AT FIRST', firewall:'ICE BOX = STORMWALL. WAIT.', gotcha:'WAIT A BEAT LONGER. DECOYS CRACK.', prod:'FEEDER = DO NOT TOUCH. EVER.'},
     burstTxt:'+1 SHELL', lostTxt:' SHELL THIS FLIGHT',
     scenery:'meadow', showCatch:false,
     boot:['FOWL WEATHER','FIELD GUIDE V2.3','SHELLS ........ OK','WIND .......... CHECK','FOX ........... AWAKE'],
@@ -448,7 +448,7 @@ function resetRun(){ G.run={shots:0,hits:0,timeouts:0,hServed:0,hDodged:0,bestCo
 try{ G.hiA=parseInt(localStorage.getItem('th.hiAssist')||'0',10)||0; G.seen=localStorage.getItem('th.seen')==='1'; }catch(e){}
 try{ G.hi=parseInt(localStorage.getItem('th.hi')||'0',10)||0; }catch(e){}
 const pick=a=>a[Math.floor(G.rng2()*a.length)];
-const introHold=()=> G.round===1? 70 : ruleFor(G.round)? 210 : 150; // long enough to read on a phone; a tap skips
+const introHold=()=> G.round===1? 100 : ruleFor(G.round)? 210 : 150; // long enough to read on a phone; a tap skips
 function line(kind){ let pool=T.lines[kind]||T.lines.miss; const R=G.recent||(G.recent=[]); if(kind==='miss3'&&G.diff==='easy'&&T.lines.miss3Easy) pool=pool.filter(x=>!/EASY/.test(x)).concat(T.lines.miss3Easy); const U=(G.used||(G.used={}))[kind]||(G.used[kind]=[]); // a bag per kind: no line twice until its pool has played; never one of the last six
   let fresh=pool.filter(x=>!U.includes(x)&&!R.includes(x)&&x!==G.lastLine); if(!fresh.length){ U.length=0; fresh=pool.filter(x=>!R.includes(x)&&x!==G.lastLine); } if(!fresh.length) fresh=pool.filter(x=>x!==G.lastLine); if(!fresh.length) fresh=pool;
   const s=fresh[Math.floor(G.rng2()*fresh.length)]; U.push(s);
@@ -472,7 +472,7 @@ function shakeOffset(now){ const tr=G.trauma||0; if(tr<=0||G.paused||REDUCED) re
 function resetRunState(){ resetRun(); G.flow={speed:1,halluc:0,hist:[]}; G.bossDone=false; G.swarmDone=false; G.vramLost=0; G.swarm=null; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.newRecord=false; G.combo=0; G.comboFlash=0; G.streak={hit:0,miss:0}; G.nearMiss=false;
   G.freeze=0; G.flash=0; G.flashA=0; G.flashCol=null; G.trauma=0; G.muzzle=null; G.tapMark=null; G.flightT=0; G.hallucServed=false; G.hallucEscaped=false; G.realEscaped=false; G.perfect=false; G.needFlash=0; G.paused=false;
   G.shots=G.assist?5:D.ammo; G.fox={mode:null,t:0,x:112,count:0,line:''};
-  G.prevHi=false; G.prevHallucServed=false; G.wf=newFacts(); G.unpauseT=0; G.lastShotF=-99; G.lostNow=0; G.runAssisted=G.assist||ONEHAND; G.quotaLost=false; G.linger=null; G.firstMissDone=false; G.roundHalluc=0; G.roundBreach=false; G.boltSeen=false; G.runFinn=G.assist; G.runOne=ONEHAND; G.adv=newAdv(); G.gotcha=null; G.tip=null; G.tipQ=[]; G.props=[]; G.entry=null; G.topList=null; G.topRank=-1; G.epochWaves=0; G.advShown=false; G.recent=[]; G.used={}; }
+  G.prevHi=false; G.prevHallucServed=false; G.roundProd=false; G.wf=newFacts(); G.unpauseT=0; G.lastShotF=-99; G.lostNow=0; G.runAssisted=G.assist||ONEHAND; G.quotaLost=false; G.linger=null; G.firstMissDone=false; G.roundHalluc=0; G.roundBreach=false; G.boltSeen=false; G.runFinn=G.assist; G.runOne=ONEHAND; G.adv=newAdv(); G.gotcha=null; G.tip=null; G.tipQ=[]; G.props=[]; G.entry=null; G.topList=null; G.topRank=-1; G.epochWaves=0; G.advShown=false; G.recent=[]; G.used={}; }
 // E6 flow channel (Easy/Medium only; Hard, Daily, assisted and demo runs stay fixed so they remain fair and comparable): a wave
 // succeeds when every real request in it is served; over the last 8 waves, above 75% nudges speed +6% and hallucinations +1/20,
 // below 65% nudges them back down. Pure sim state, so replays and the seed stay deterministic.
@@ -492,11 +492,11 @@ function bootDone(){ G.state='intro'; G.t=0; SFX.fanfare(); music.start(); if(!G
 // A run is (snapshot at bootDone, inputs stamped with the sim frame they arrived after). Inputs only ever reach the sim between
 // update() calls (event handlers never run inside a step), so replaying input k just before step G.frame===k reproduces the run.
 function snap(){ return { seed:G.seed, r1:G.rng.get(), r2:G.rng2.get(), diff:G.diff, theme:G.theme, assist:G.assist, daily:G.daily, seen:G.seen, fmd:!!G.firstMissDone, lastLine:G.lastLine,
-  cheat:!!G.cheatPending, ws:G.wavesStarted||0, keys:G.keys, touch:!!G.touchRun, windDir:G.windDir, nl:G.nextLightning, clouds:G.clouds.map(c=>({x:c.x,y:c.y,w:c.w})) }; }
+  cheat:!!G.cheatPending, one:!!ONEHAND, ws:G.wavesStarted||0, keys:G.keys, touch:!!G.touchRun, windDir:G.windDir, nl:G.nextLightning, clouds:G.clouds.map(c=>({x:c.x,y:c.y,w:c.w})) }; }
 function recStart(){ G.frame=0; G.rec=[]; G.recInit=snap(); G.recOn=true; }
 function recIn(type,a,b){ if(G.recOn&&!G.replay&&G.rec.length<60000) G.rec.push(b===undefined?[G.frame,type,a]:[G.frame,type,a,b]); }
 function applyInput(e){ const ty=e[1]; if(ty==='k'){ feedKeyRaw(e[2]); return; } if(ty==='u'){ G.unpauseT=24; return; } G.mouse.touch= ty==='t'; G.mouse.x=e[2]; G.mouse.y=e[3]; G.mouse.on=true; handleTap(e[2],e[3]); }
-function restoreRun(s){ setDiff(s.diff); applyTheme(s.theme); G.assist=!!s.assist; G.daily=!!s.daily; G.seen=!!s.seen; G.firstMissDone=s.fmd; G.lastLine=s.lastLine; G.cheatPending=s.cheat; G.wavesStarted=s.ws; G.keys=s.keys; G.touchRun=!!s.touch;
+function restoreRun(s){ setDiff(s.diff); applyTheme(s.theme); G.assist=!!s.assist; G.daily=!!s.daily; G.seen=!!s.seen; G.firstMissDone=s.fmd; G.lastLine=s.lastLine; G.cheatPending=s.cheat; G.wavesStarted=s.ws; G.keys=s.keys; G.touchRun=!!s.touch; if(s.one!==undefined) ONEHAND=!!s.one; /* the run's one-hand state, not saved */
   G.attract=false; G.recOn=false; resetRunState(); setWeather(); seedRun(s.seed); G.rng.set(s.r1); G.rng2.set(s.r2); G.windDir=s.windDir; G.nextLightning=s.nl; G.lightning=0; G.clouds=s.clouds.map(c=>({...c})); G.frame=0; }
 function unReplay(){ const s=G.preReplay; if(!s) return; G.preReplay=null; if(G.theme!==s.theme) applyTheme(s.theme); if(G.diff!==s.diff) setDiff(s.diff); G.assist=s.assist; G.cheatPending=s.cheat; G.keys=s.keys; if(ONEHAND!==s.one){ ONEHAND=s.one; try{ localStorage.setItem('th.onehand',ONEHAND?'1':'0'); }catch(e){} } } // codes typed in the run replay inside it, never after it
 function startReplay(run,speed){ if(!run||!run.init) return false; if(!G.preReplay) G.preReplay={theme:G.theme, diff:G.diff, assist:G.assist, cheat:G.cheatPending, keys:G.keys, one:ONEHAND}; hush(); hideBrag(); cardBox.hidden=true; music.stop(); rainStop();
@@ -505,7 +505,7 @@ function startReplay(run,speed){ if(!run||!run.init) return false; if(!G.preRepl
 function replayFeed(){ const R=G.replay; while(R.i<R.rec.length&&R.rec[R.i][0]<=G.frame) applyInput(R.rec[R.i++]);
   // ghost cursor: glide toward the next recorded tap so the replay reads like a person playing
   for(let j=R.i;j<R.rec.length&&j<R.i+4;j++){ const e=R.rec[j]; if(e[1]==='k'||e[1]==='u') continue; if(e[0]-G.frame<45){ G.mouse.x+=(e[2]-G.mouse.x)*0.18; G.mouse.y+=(e[3]-G.mouse.y)*0.18; G.mouse.on=true; } break; } }
-function endReplay(){ const R=G.replay; if(!R) return; G.replay=null; unReplay(); G.newRecord=!!R.run.newRecord; if(G.state==='gameOver'){ G.t=Math.max(G.t,71); showBrag(); } }
+function endReplay(){ const R=G.replay; if(!R) return; G.replay=null; unReplay(); G.goGuard=30; /* a double-tap to skip stops at game over */ G.newRecord=!!R.run.newRecord; if(G.state==='gameOver'){ G.t=Math.max(G.t,71); showBrag(); } }
 function skipReplay(){ if(!G.replay) return; const cap=G.replay.end+3600; G.paused=false; quiet=true; try{ let n=0; while(G.replay&&n<cap){ update(); n++; } } finally{ quiet=false; } if(G.replay) endReplay(); }
 function watchReplay(){ if(G.lastRun&&startReplay(G.lastRun,2)){ SFX.blip(); } }
 function beginFirstWave(){ if(!G.seen&&!G.attract){ G.seen=true; try{ localStorage.setItem('th.seen','1'); }catch(e){}
@@ -522,9 +522,10 @@ const newAdv=()=>({on:!G.daily&&!G.attract, obs:newObs(), policy:null, update:nu
 const DUTY=[0.75,0.6,0.5,0.42,0.35,0.3]; // how much of the time a fake shows its glitch: untrained, then model v2, v3, v4 and up
 function advTrain(){ const A=G.adv; if(!A||!A.on) return; const o=A.obs, prev=A.policy||{tierHi:-1, hide:0, hideTag:false, rateUp:false, duty:DUTY[0]};
   const P=Object.assign({},prev), U=[], X=T.adv; A.ver++; A.epochBuilt=0;
-  if(o.hi+o.lo>=1&&((o.seenHi&&o.seenLo)||prev.tierHi<0)){ const rH= o.seenHi? o.hi/o.seenHi : -1, rL= o.seenLo? o.lo/o.seenLo : -1; let hi, faster=false; /* a colour it never saw this epoch is no evidence: it keeps what it had */
-    const fH=o.firstHi||0, fL=o.firstLo||0, first= fH+fL>=2&&fH!==fL; // your habit first: the colour you serve first when both are up
-    let none=false; if(first) hi= fH>fL; else if(o.hi&&o.lo&&Math.abs(rH-rL)<0.15){ const dT=o.ttsLo/o.lo-o.ttsHi/o.hi; if(Math.abs(dT)<9) none=true; else { hi= dT>=0; faster=true; } } else hi= rH>=0&&(rL<0||rH>=rL); // under 0.15 s apart is noise, not a habit // close rates: the colour you serve faster decides
+  if(prev.tierHi<0&&o.hi+o.lo>=1&&!(o.seenHi&&o.seenLo)){ P.tierHi=0.5; A.colorLine=X.noHabit+' -> '+X.fake+' 50/50'; U.push(A.colorLine); } // one colour all epoch: nothing to choose between, so no habit
+  else if(o.hi+o.lo>=1&&o.seenHi&&o.seenLo){ const rH= o.seenHi? o.hi/o.seenHi : -1, rL= o.seenLo? o.lo/o.seenLo : -1; let hi, faster=false; /* a colour it never saw this epoch is no evidence: it keeps what it had */
+    const fH=o.firstHi||0, fL=o.firstLo||0, first= fH+fL>=3&&Math.abs(fH-fL)>=1.5; // three choices and a clear lead: 2 of 2 is noise // your habit first: the colour you serve first when both are up
+    let none=false; if(first) hi= fH>fL; else if(Math.abs(rH-rL)<0.15) none=true; else hi= rH>=0&&(rL<0||rH>=rL); // only a habit you can see, with its count: never a speed read // under 0.15 s apart is noise, not a habit // close rates: the colour you serve faster decides
     P.tierHi= none? 0.5 : hi? 0.8 : 0.2; const C=hi?X.hi:X.lo; // 4 in 5 wear your colour: the card is exact, but colour alone no longer clears a request
     A.colorLine= none? X.noHabit+' -> '+X.fake+' 50/50' : first? C+' FIRST '+Math.round(Math.max(fH,fL))+'/'+Math.round(fH+fL)+' -> '+X.fake+' 80% '+C : faster? X.served+' '+C+' FASTER -> '+X.fake+' 80% '+C : X.served+' '+(hi? o.hi+'/'+o.seenHi : o.lo+'/'+o.seenLo)+' '+C+' -> '+X.fake+' 80% '+C; U.push(A.colorLine); }
   if(o.ttsN>=2){ const m=Math.max(o.tts/o.ttsN, o.ttsTN? o.ttsT/o.ttsTN : 0) /* how long you wait when a fake is up, if that is longer */, sv=Math.round(m), f=clamp(sv,18,90); P.hide=f; A.hideLine='SERVE TIME '+Math.min(9.9,sv/60).toFixed(1)+'S -> '+X.fake+' LOOK REAL '+(f/60).toFixed(1)+'S'; U.push(A.hideLine); } // the window is your mean, capped at 1.5 s
@@ -611,7 +612,7 @@ function shoot(x,y,touch){ if(G.state!=='fly'||G.shots<=0||G.unpauseT>0) return;
       if((x>=L.x-6&&x<=L.x+38&&y>=SKY_H-50)||(x>=g.bx-4&&x<=g.bx+g.tw+4&&y>=g.by-6&&y<=g.by+g.th+6)){ G.linger=null; hush(); return; } } } /* sending him off also stops him talking */
   G.shots--; G.cost+=COST; G.run.shots++; G.wf.shots++; SFX.shot(x); G.flash=2; G.muzzle={x,y,t:2};
   { const pd=T.prod&&(G.props||[]).find(q=>q.st==='fly'&&x>=q.x-4&&x<=q.x+20&&y>=q.y-10&&y<=q.y+20+(touch?8:0)); const near=G.birds.some(b=>b.st==='fly'&&!(b.hold>0)&&!b.boss&&(b.agent?inAgent(b):inBox(b))&&Math.hypot(x-(b.x+(b.agent?6:12)),y-(b.y+(b.agent?5:10)))<Math.hypot(x-(pd?pd.x+8:0),y-(pd?pd.y+8:0)));
-    if(pd&&!near){ pd.st='fall'; pd.vy=-1.5; const pen=Math.round(3000*D.mult*(G.assist?3:1)); G.score-=pen; G.combo=0; G.wf.prod=true; G.run.prod=(G.run.prod||0)+1; addTrauma(0.8); buzz([30,30,60]); G.flash=8; G.flashA=0.35; G.flashCol='255,77,77'; SFX.wrong(x); SFX.thud(x);
+    if(pd&&!near){ pd.st='fall'; pd.vy=-1.5; const pen=Math.round(3000*D.mult*(G.assist?3:1)); G.score-=pen; G.combo=0; G.wf.prod=true; G.roundProd=true; G.run.prod=(G.run.prod||0)+1; addTrauma(0.8); buzz([30,30,60]); G.flash=8; G.flashA=0.35; G.flashCol='255,77,77'; SFX.wrong(x); SFX.thud(x);
       const tx=T.prod.hit+' -'+pen; G.fx.push({type:'pts',x:Math.round(W/2-textW(tx,2)/2),y:66,t:0,txt:tx,col:'#ff4d4d',sc:2,box:1}); return; } } // YOU DROPPED PROD
   let hitAny=false, nearest=999, target=null, td=1e9;
   for(const b of G.birds){ if(b.st!=='fly'||b.hold>0) continue; if(b.boss? inBoss(b) : b.agent? inAgent(b) : inBox(b)){ const d=Math.hypot(x-(b.x+(b.boss?24:b.agent?6:12)),y-(b.y+(b.boss?20:b.agent?5:10))); if(d<td){ td=d; target=b; } } }
@@ -646,7 +647,7 @@ function updateBirds(){ const limit=flightLimit(); let flying=0;
       continue; }
     if(b.agent&&b.st==='fly'){ flying++; b.at++; b.x+=b.vx+Math.sin(b.at/7)*0.9; b.y+=b.vy; if(b.x<0){ b.x=0; b.vx=Math.abs(b.vx); } if(b.x>W-12){ b.x=W-12; b.vx=-Math.abs(b.vx); }
       if(b.y>=FRONT-12){ b.st='gone'; G.swarm.breached++; G.roundBreach=true; G.combo=0; addTrauma(0.6); G.flash=5; G.flashA=0.3; G.flashCol='255,77,77'; SFX.wrong(b.x+6);
-        if(G.swarm.boss){ G.score=Math.max(0,G.score-300); if(G.shots>0) G.shots--; G.fx.push({type:'pts',x:clamp(b.x-6,2,W-40),y:FRONT-24,t:0,txt:'-300 -1 '+T.hud.ammo,col:'#ff4d4d',sc:1}); } // a splinter that reaches the racks takes a VRAM from the fight
+        if(G.swarm.boss){ G.score-=300; if(G.shots>0) G.shots--; G.fx.push({type:'pts',x:clamp(b.x-6,2,W-40),y:FRONT-24,t:0,txt:'-300 -1 '+T.hud.ammo,col:'#ff4d4d',sc:1}); } // a splinter that reaches the racks takes a VRAM from the fight
         else { G.vramLost=1; if(G.swarm.breached===1) G.fx.push({type:'pts',x:Math.round(W/2-textW(T.swarm.breach,1)/2),y:72,t:0,txt:T.swarm.breach,col:'#ff4d4d',sc:1}); } }
       continue; }
     if(b.st==='fly'){ flying++; if(b.hold>0){ b.hold--; continue; } b.age=(b.age||0)+1; if(b.frozen>0){ b.frozen--; continue; } /* age keeps the FAST clock running through a 429 */ b.x+=b.vx+G.wind*0.9; b.y+=b.vy; b.dirT--; if(b.dirT<=0) newDir(b);
@@ -656,7 +657,7 @@ function updateBirds(){ const limit=flightLimit(); let flying=0;
     else if(b.st==='hit'){ b.hitT++; if(b.hitT>=22){ b.st='fall'; b.at=0; SFX.fall(b.x+12); } }
     else if(b.st==='fall'){ b.y+=2.5; b.x+=Math.sin(b.at/5)*0.8; b.at++; if(b.y>=GROUND-6){ b.st='landed'; SFX.thud(b.x+12); b.lx=b.x;
       for(let i=0;i<8;i++) G.fx.push({type:'puff',x:b.x+8+rnd(0,8),y:GROUND,vx:rnd(-1.2,1.2),vy:rnd(-2,-0.5),t:0,col:T.fx.puff}); } }
-    else if(b.st==='away'){ b.y-=3.5; b.at++; if(b.at%3===0) b.f=(b.f+1)&3; if(b.y<-26){ b.st='gone'; if(b.bad){ if((b.flew||0)>=Math.max(40,(b.hide||0)+8)||b.tut){ G.hallucEscaped=true; G.run.hDodged++; if(G.adv) G.adv.obs.dodged++; if(b.adv) G.fx.push({type:'pts',x:clamp(Math.round(b.x),2,W-2-textW(T.adv.dodged,1)),y:18,t:0,txt:T.adv.dodged,col:GHOST,sc:1}); } else G.run.hDodged++; /* left unserved: dodged on the receipt; the model learns only from the ones you had time for */ } else { /* a fake only counts as dodged if you had 0.67 s to fall for it */ G.tally.push('miss'); G.realEscaped=true; G.run.timeouts++; if(b.tier==='hi') G.wf.hiEscaped=true; } } } }
+    else if(b.st==='away'){ b.y-=3.5; b.at++; if(b.at%3===0) b.f=(b.f+1)&3; if(b.y<-26){ b.st='gone'; if(b.bad){ if((b.flew||0)>=Math.max(40,(b.hide||0)+8)||b.tut){ G.hallucEscaped=true; G.run.hDodged++; if(G.adv) G.adv.obs.dodged++; if(b.adv) G.fx.push({type:'pts',x:clamp(Math.round(b.x),2,W-2-textW(T.adv.dodged,1)),y:28,t:0,txt:T.adv.dodged,col:GHOST,sc:1}); } else G.run.hDodged++; /* left unserved: dodged on the receipt; the model learns only from the ones you had time for */ } else { /* a fake only counts as dodged if you had 0.67 s to fall for it */ G.tally.push('miss'); G.realEscaped=true; G.run.timeouts++; if(b.tier==='hi') G.wf.hiEscaped=true; } } } }
   if(!G.birds.some(b=>b.st==='fly'&&b.frozen>0)) G.flightT++; // the flight clock stops while a 429 holds the requests
   if(flying&&!G.birds.some(b=>b.st==='fly'&&!b.bad)){ for(const b of G.birds) if(b.st==='fly'&&b.bad){ b.flew=b.at; b.st='away'; b.at=0; } flying=0; }
   if(G.swarm){ G.swarm.t++; if(G.birds.every(b=>b.st==='gone')){ const bo=G.swarm.boss, win= bo? G.swarm.killed : G.swarm.breached===0; G.streak.miss= win?0:G.streak.miss+1; G.state='fox'; G.fox.t=0; G.fox.count=0; G.fox.mode= win?'hit':'miss'; G.fox.line= bo? line(win?'bossWin':'bossLoss') : win? line('swarmWin') : line('swarmLoss'); G.fox.x=112; if(win) SFX.blip(); else SFX.laugh(); } return; }
@@ -691,7 +692,7 @@ function pickLine(n,goodCall,crossed3){ const f=G.wf||newFacts();
   { const tags=[]; if(f.hiEscaped) tags.push('frontierMiss'); if(f.shots===0) tags.push('missNoShot'); if(f.frozen) tags.push('stormMiss'); if(f.shots>=D.ammo&&!G.assist) tags.push('missAll');
     return ctxLine(tags) || line('miss'); } }
 function endRound(){ const hits=G.tally.filter(t=>t==='hit').length; const need=req(G.round);
-  if(hits>=need){ G.state='roundEnd'; G.t=0; G.perfect=hits===EPOCH_LEN&&!(G.roundHalluc>0)&&!G.roundBreach; advTrain(); if(G.perfect){ G.score+=perfectBonus(); SFX.perfect(); } else SFX.clear(); }
+  if(hits>=need){ G.state='roundEnd'; G.t=0; G.perfect=hits===EPOCH_LEN&&!(G.roundHalluc>0)&&!G.roundBreach&&!G.roundProd; advTrain(); if(G.perfect){ G.score+=perfectBonus(); SFX.perfect(); } else SFX.clear(); }
   else { G.state='gameOver'; G.t=0; G.lightning=0; music.stop(); rainStop(); SFX.over(); G.fox.mode='miss'; G.fox.t=0; G.fox.x=112; G.fox.line=roast(); buzz([20,40,20]);
     if(G.recOn){ G.recOn=false; G.lastRun={init:G.recInit, rec:G.rec, frames:G.frame, score:G.score, round:G.round}; }
     if(!G.attract&&!G.replay){ const sc=net(); if(G.assist||G.runAssisted){ if(sc>G.hiA){ G.hiA=sc; G.newRecord=true; try{ localStorage.setItem('th.hiAssist',String(G.hiA)); }catch(e){} } }
@@ -699,7 +700,7 @@ function endRound(){ const hits=G.tally.filter(t=>t==='hit').length; const need=
       if(G.lastRun) G.lastRun.newRecord=G.newRecord;
       if(!(G.assist||G.runAssisted)&&topQualifies(net())) startEntry(net()); }
     if(!G.replay&&!G.entry) showBrag(); } }
-function toTitle(){ hush(); unReplay(); G.freeze=0; G.flash=0; G.flashA=0; G.muzzle=null; G.trauma=0; G.gotcha=null; G.entry=null; G.topList=null; G.props=[]; G.attract=false; G.recOn=false; G.replay=null; G.swarm=null; G.vramLost=0; G.lostNow=0; G.swarmDone=false; G.state='title'; G.t=0; G.idle=0; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.combo=0; G.shots=G.assist?5:D.ammo; G.mouse.on=false; setWeather(); hideBrag(); }
+function toTitle(){ hush(); music.stop(); rainStop(); unReplay(); G.freeze=0; G.flash=0; G.flashA=0; G.muzzle=null; G.trauma=0; G.gotcha=null; G.entry=null; G.topList=null; G.props=[]; G.attract=false; G.recOn=false; G.replay=null; G.swarm=null; G.vramLost=0; G.lostNow=0; G.swarmDone=false; G.state='title'; G.t=0; G.idle=0; G.round=1; G.score=0; G.cost=0; G.wave=0; G.tally=[]; G.birds=[]; G.fx=[]; G.combo=0; G.shots=G.assist?5:D.ammo; G.mouse.on=false; setWeather(); hideBrag(); }
 function attractAI(){ if(G.state!=='fly') return; G.aim.t++; const b=G.birds.find(b=>b.st==='fly'&&!b.bad); if(!b) return;
   const tx=b.x+12+b.vx*6+Math.sin(G.aim.t/9)*6, ty=b.y+10+b.vy*6+Math.cos(G.aim.t/7)*5; G.aim.x+=(tx-G.aim.x)*0.25; G.aim.y+=(ty-G.aim.y)*0.25; G.mouse.x=G.aim.x; G.mouse.y=G.aim.y; G.mouse.on=true;
   if(G.aim.t%30===0&&G.shots>0&&G.flightT>20) shoot(G.aim.x+rnd(-4,4),G.aim.y+rnd(-4,4)); }
@@ -711,20 +712,20 @@ function roast(){ const R=G.run, L=T.lines, acc=accuracy(); const f=(tpl,o)=>tpl
   if(k>=2&&L.roastAdv) pool=L.roastAdv; else if(R.hServed>=2) pool=L.roastHalluc; else if(R.shots>=6&&acc<40) pool=L.roastAccuracy; else if(R.bestCombo>=6) pool=L.roastCombo; else if(R.timeouts>=4&&G.round<=2) pool=L.roastTimeouts; else if(G.round>=4) pool=L.roastDeep;
   if(pool&&pool.length){ const t=pick(pool); G.lastLine=t; return f(t,o); } return line('over'); }
 function buzz(p){ try{ if(navigator.vibrate&&!REDUCED) navigator.vibrate(p); }catch(e){} }
-function nextRound(){ const before=req(G.round); G.round++; G.quotaLost=false; G.linger=null; G.roundHalluc=0; G.roundBreach=false; G.boltSeen=false; G.bossDone=false; G.swarmDone=false; G.vramLost=0; G.lostNow=0; G.shots=G.assist?5:D.ammo; G.wave=0; G.epochWaves=0; G.tally=[]; G.birds=[]; setWeather(); G.state='intro'; G.t=0; G.needFlash= req(G.round)>before? 150:0; SFX.fanfare(); }
+function nextRound(){ const before=req(G.round); G.round++; G.roundProd=false; G.quotaLost=false; G.linger=null; G.roundHalluc=0; G.roundBreach=false; G.boltSeen=false; G.bossDone=false; G.swarmDone=false; G.vramLost=0; G.lostNow=0; G.shots=G.assist?5:D.ammo; G.wave=0; G.epochWaves=0; G.tally=[]; G.birds=[]; setWeather(); G.state='intro'; G.t=0; G.needFlash= req(G.round)>before? 150:0; SFX.fanfare(); }
 
 // the bubble stays up long enough to read the whole line: typing starts at frame 16, 1 char/frame, then a hold
 const foxTyped=()=>16+Math.ceil(G.fox.line.length/2); // 2 chars per frame
-const foxLeave=()=>foxTyped()+clamp(Math.round(G.fox.line.length*1.8),40,90); // then hold long enough to read it
+const foxLeave=()=> G.fox.leaveAt!==undefined? G.fox.leaveAt : foxTyped()+clamp(Math.round(G.fox.line.length*1.8),40,90); // then hold long enough to read it
 const foxLen=()=>foxLeave()+18;
 const PAUSABLE={intro:1,fly:1,fox:1,gap:1};
 // ---- top 5 with initials: per mode, in this browser only (zero network); the critic holds the top seed
-const INI_CH='ABCDEFGHIJKLMNOPQRSTUVWXYZ', INI_X=[104,128,152], TOP_SEED=[['BOT',30000],['GPU',18000],['LLM',10000],['API',5000],['404',2000]];
+const INI_CH='ABCDEFGHIJKLMNOPQRSTUVWXYZ', INI_X=[104,128,152], TOP_SEED=[['BOT',90000],['GPU',45000],['LLM',20000],['API',8000],['404',2000]];
 const topKey=()=> 'th.top.'+G.diff+(G.diff==='daily'? '.'+dailySeed() : '');
 function loadTop(){ let t=null; try{ t=JSON.parse(localStorage.getItem(topKey())||'null'); }catch(e){} if(!Array.isArray(t)||!t.length||!t.every(x=>x&&typeof x.n==='string'&&typeof x.s==='number')) t=TOP_SEED.map(([n,v])=>({n,s:Math.round(v*D.mult)})); return t.slice(0,5); }
 function topQualifies(sc){ const t=loadTop(); return sc>0&&(t.length<5||sc>t[t.length-1].s); }
 function startEntry(sc){ let last='AAA'; try{ last=localStorage.getItem('th.ini')||'AAA'; }catch(e){} last=(String(last).toUpperCase().replace(/[^A-Z]/g,'')+'AAA').slice(0,3); G.entry={c:[...last].map(ch=>INI_CH.indexOf(ch)),pos:0,score:sc}; }
-function confirmEntry(save){ const E=G.entry; if(!E) return; G.entry=null; G.goGuard=G.frame+30; /* the next tap cannot reboot at once */ const t=loadTop();
+function confirmEntry(save){ const E=G.entry; if(!E) return; G.entry=null; G.goGuard=30; /* the next tap cannot reboot at once (a countdown: a replay resets the frame counter) */ const t=loadTop();
   if(save){ const n=E.c.map(i=>INI_CH[i]).join(''); try{ localStorage.setItem('th.ini',n); }catch(e){} const row={n,s:E.score}; t.push(row); t.sort((a,b)=>b.s-a.s); const top=t.slice(0,5); G.topRank=top.indexOf(row); G.topList=top; try{ localStorage.setItem(topKey(),JSON.stringify(top)); }catch(e){} SFX.gold(); }
   else { G.topList=null; G.topRank=-1; SFX.blip(); } G.t=Math.max(G.t,71); if(!G.replay) showBrag(); }
 function entryTap(x,y){ const E=G.entry, ry=y+(G.mouse.touch?TOUCH_LIFT:0); for(let i=0;i<3;i++) if(Math.abs(x-INI_X[i])<=11&&ry>=58&&ry<=94){ E.pos=i; E.c[i]=(E.c[i]+(ry<79?1:25))%26; SFX.blip(); return; } const ow=textW7('OK')+8, ox=Math.round(W/2-ow/2); if(x>=ox-6&&x<=ox+ow+6&&ry>=94&&ry<=114) confirmEntry(true); } // top half +1, bottom half -1; only OK saves (a mashed tap never does)
@@ -752,12 +753,12 @@ function handleTap(x,y){
   switch(G.state){
     case 'title': if(y<70){ logoTap(x,y); return; } if(y+(G.mouse.touch?TOUCH_LIFT:0)>=184){ startGame(true); return; } /* undo the finger lift, like the row above */ if(!titleTap(x,y)) startGame(); break;
     case 'boot': if(G.boot.t>10) bootDone(); break;
-    case 'fly': if(gotHold()){ if(G.gotcha.full&&G.gotcha.t>=20){ G.gotcha.t=G.gotcha.end; G.freeze=0; } break; } shoot(x,y,G.mouse.touch); break; // while the trap holds, a tap skips it: never a free shot into a frozen sky
+    case 'fly': if(gotHold()){ if(G.gotcha.full&&G.gotcha.t>=20){ G.gotcha.t=G.gotcha.end; G.freeze=0; G.unpauseT=Math.max(G.unpauseT,24); } break; } shoot(x,y,G.mouse.touch); break; // while the trap holds, a tap skips it: never a free shot into a frozen sky
     case 'intro': if(G.t>(ruleFor(G.round)?70:20)) G.t=999; break; // an epoch that brings a new rule holds its card a little longer
     case 'fox': if(G.fox.mode==='tut') break; // first tap finishes the typing, second tap sends the critic away
       if(G.fox.t>16&&G.fox.t<foxTyped()) G.fox.t=foxTyped(); else if(G.fox.t>=foxTyped()&&G.fox.t<foxLeave()){ G.fox.t=foxLeave(); hush(); } break;
     case 'roundEnd': if(G.t>40){ if(!advTyped()) G.advShown=true; else nextRound(); } break; // first tap shows every line, the next one continues
-    case 'gameOver': if(G.entry){ if(G.t>40) entryTap(x,y); break; } if(G.t>70&&G.frame>=(G.goGuard||0)){ hideBrag(); const ry=y+(G.mouse.touch?TOUCH_LIFT:0), inB=r=> x>=r[0]-2&&x<=r[1]+2&&ry>=GO_BTN.y-4&&ry<=GO_BTN.y+17; /* buttons are targets you look at: undo the finger lift */ if(inB(GO_BTN.menu)) toTitle(); else if(G.lastRun&&!G.replay&&inB(GO_BTN.rep)) watchReplay(); else startGame(false,true); } break;
+    case 'gameOver': if(G.entry){ if(G.t>40) entryTap(x,y); break; } if(G.t>70&&!(G.goGuard>0)){ hideBrag(); const ry=y+(G.mouse.touch?TOUCH_LIFT:0), inB=r=> x>=r[0]-2&&x<=r[1]+2&&ry>=GO_BTN.y-4&&ry<=GO_BTN.y+17; /* buttons are targets you look at: undo the finger lift */ if(inB(GO_BTN.menu)) toTitle(); else if(G.lastRun&&!G.replay&&inB(GO_BTN.rep)) watchReplay(); else startGame(false,true); } break;
   } }
 // 7 taps on the logo within 4 s opens the keyboard for code entry (mobile has no keys)
 const codeInput=document.getElementById('code');
@@ -788,14 +789,14 @@ function makeCard(){ const C=document.createElement('canvas'); C.width=1080; C.h
   const critic=S[G.fox.mode==='miss'?T.spr.criticFlat:T.spr.criticHappy]; x.drawImage(critic,0,0,32,30,120,330,32*7,30*7);
   // speech bubble: word-wrapped to 22 chars per line at scale 6, right of the critic
   const words=(G.fox.line||'').split(' '); const lines=[]; let cur=''; for(const w of words){ if((cur+' '+w).trim().length>22){ lines.push(cur.trim()); cur=w; } else cur=(cur+' '+w); } if(cur.trim()) lines.push(cur.trim());
-  const lsc=6, lh=lsc*5+14, bw=22*4*lsc+36, bh=lines.length*lh+26, bx=420, by=330; x.fillStyle='#f7f4e9'; x.fillRect(bx,by,bw,bh); x.fillStyle=SHADOW; x.fillRect(bx+8,by+bh,bw-16,8); x.fillStyle='#f7f4e9'; x.fillRect(bx-16,by+30,16,14); x.fillRect(bx-30,by+44,14,10); // the tail points at the critic
-  lines.forEach((ln,i)=>px(ln,bx+18,by+16+i*lh,SHADOW,lsc));
+  const lsc=6, lh=lsc*5+14, bw=22*4*lsc+48, bh=lines.length*lh+26, bx=420, by=330; x.fillStyle='#f7f4e9'; x.fillRect(bx,by,bw,bh); x.fillStyle=SHADOW; x.fillRect(bx+8,by+bh,bw-16,8); x.fillStyle='#f7f4e9'; x.fillRect(bx-16,by+30,16,14); x.fillRect(bx-30,by+44,14,10); // the tail points at the critic
+  lines.forEach((ln,i)=>px(ln,bx+30,by+16+i*lh,SHADOW,lsc)); // clear of the tail
   pxC(T.banners.unit+' '+net().toLocaleString(),566,'#f7f4e9',10);
   pxC(modeTag()+' · '+T.hud.round+' '+G.round+' · '+accuracy()+'% ACC · BEST COMBO X'+Math.max(1,G.run.bestCombo)+(assistTag()?' · '+assistTag():''),640,'#bdeeff',5);
   px(T.banners.over,100,700,T.banners.overColor,10);
   px(T.lines.receipt[2]+': '+G.run.hServed+' SERVED, '+G.run.hDodged+' DODGED',100,778,'#8a8494',6);
   px(T.lines.receipt[3]+': '+G.run.frontier,100,824,'#8a8494',6);
-  if(G.adv&&G.adv.built) px(T.adv.fooled+': '+G.adv.fooled+' OF '+G.adv.built,100,870,'#e2ccff',6);
+  if(G.adv&&G.adv.built) px(T.adv.fooled+': '+G.adv.fooled+' OF '+G.adv.built+' TRAINED',100,870,'#e2ccff',6);
   px('ONE FILE. ZERO ASSETS. ZERO NETWORK REQUESTS.',100,940,'#5a5468',5);
   const host=(location.host||'token hunt').toUpperCase().replace(/[^A-Z0-9.\-\/ ]/g,''); px(host,100,990,T.css.accent,Math.max(3,Math.min(6,Math.floor(880/(Math.max(1,host.length)*4))))); // shrinks to fit a long host
   return C; }
@@ -821,7 +822,7 @@ function update(){
   if(G.state==='fly'&&!G.replay&&!G.attract){ const dx=(HELD.ArrowRight?1:0)-(HELD.ArrowLeft?1:0), dy=(HELD.ArrowDown?1:0)-(HELD.ArrowUp?1:0); // keyboard aim: the crosshair accelerates while an arrow is held
     if(dx||dy){ G.kbAim=(G.kbAim||0)+1; const sp=Math.min(4.5,1.5+G.kbAim*0.1); G.mouse.x=clamp(G.mouse.x+dx*sp,0,W-1); G.mouse.y=clamp(G.mouse.y+dy*sp,0,SKY_H-1); G.mouse.on=true; G.mouse.touch=false; } else G.kbAim=0; }
   if(G.gotcha){ const g=G.gotcha; ++g.t; if(g.full&&G.freeze>0){ if(g.t===GOT_PRE) SFX.rewind(); else if(g.t===GOT_PRE+GOT_RW) SFX.tick(); } if(g.t>(g.full? g.end+20 : 104)){ G.gotcha=null; if(g.full) tip('gotcha'); } }
-  G.frame++; if(G.unpauseT>0) G.unpauseT--; if(G.linger&&(++G.linger.t>=G.linger.len||G.state==='fox'||G.state==='gameOver'||G.state==='roundEnd'||G.state==='title'||G.state==='intro')) G.linger=null; snapPrev();
+  G.frame++; if(G.unpauseT>0) G.unpauseT--; if(G.goGuard>0) G.goGuard--; if(G.linger&&(++G.linger.t>=G.linger.len||G.state==='fox'||G.state==='gameOver'||G.state==='roundEnd'||G.state==='title'||G.state==='intro')) G.linger=null; snapPrev();
   update1();
   if(G.replay&&(G.state==='gameOver'||G.frame>G.replay.end+3600)) endReplay(); }
 function snapPrev(){ for(const b of G.birds){ b.px=b.x; b.py=b.y; } for(const f of G.fx){ f.px=f.x; f.py=f.y; } for(const c of G.clouds) c.px=c.x; for(const d of G.rain){ d.px=d.x; d.py=d.y; } G.amb.px=G.amb.x; G.amb.py=G.amb.y; }
@@ -851,9 +852,9 @@ function update1(){
       if(G.fox.mode==='warn'){ if(G.fox.t>=foxLen()) startBoss(); break; }
       if(G.quotaLost){ if(G.fox.t>=foxLen()) endRound(); break; }
       // non-blocking critic: once the line is typed the next wave starts and the bubble lingers over play
-      if(!G.swarm&&G.wave<EPOCH_LEN&&G.fox.t>=foxTyped()+18){ G.linger={line:G.fox.line,x:G.fox.x,mode:G.fox.mode,count:G.fox.count,t:G.fox.t,len:foxLen()}; G.state='gap'; G.t=0; break; }
+      if(!G.swarm&&G.wave<EPOCH_LEN&&G.fox.t>=foxTyped()+clamp(Math.round(G.fox.line.length*0.9),18,45)){ G.linger={line:G.fox.line,x:G.fox.x,mode:G.fox.mode,count:G.fox.count,t:G.fox.t,len:foxLen()}; G.state='gap'; G.t=0; break; }
       if(G.fox.t>=foxLen()){ if(G.wave>=EPOCH_LEN) endRound(); else { G.state='gap'; G.t=0; } } break;
-    case 'gap': if(G.t>=12){ startWave(); if(G.linger) G.linger.len=G.linger.t; } break; // the bubble leaves as the wave starts: the spawn lane stays clear // the bubble leaves ~0.3 s into the next wave, and sits behind the requests
+    case 'gap': if(G.t>=12){ startWave(); if(G.linger){ G.linger.leaveAt=G.linger.t; G.linger.len=G.linger.t+18; } } break; // the wave starts: the bubble goes, he slides down behind the new requests // the bubble leaves ~0.3 s into the next wave, and sits behind the requests
     case 'roundEnd': { const U=G.adv&&G.adv.update; if(U&&G.t>=40&&(G.t-40)%22===0&&(G.t-40)/22<U.length&&!G.advShown) SFX.blip(); if(G.t>=(U?60+22*U.length+220:200)) nextRound(); } break;
     case 'gameOver': G.fox.t++; if(G.fox.t===16) say(G.fox.line); break;
   }
@@ -956,7 +957,7 @@ function withLinger(fn){ const saved=G.fox; G.fox=G.linger; try{ fn(); } finally
 function drawFox(part){ const f=G.fox; const t=f.t; const tut=f.mode==='tut', over=G.state==='gameOver'; // part 0: critic + catch (behind the front row); part 1: the bubble (over everything)
   const y=Math.round(criticY(t+(G.freeze>0?0:ALPHA)-1, tut||over));
   const miss=f.mode==='miss'; const bob= t>=24&&((t>>3)&1)?1:0;
-  const catchUp=!miss&&!tut&&T.showCatch&&f.count>0&&t>=14&&f!==G.linger;
+  const catchUp=!miss&&!tut&&T.showCatch&&f.count>0&&t>=14&&(f!==G.linger||f.leaveAt!==undefined);
   if(part===1){ drawBubble(f,y,t,foxLeave(),tut,catchUp); return; }
   const face= over? (T.spr.criticRoast||T.spr.criticFlat) : tut? T.spr.critic : (miss||f.mode==='warn')? T.spr.criticFlat : T.spr.criticHappy;
   const talk= mouthOpen(t,f.line||'')&&S[face+'O']; if(talk) VOICE.open++;
@@ -973,7 +974,7 @@ function drawRain(){ if(!G.wx.rain) return; ctx.fillStyle= G.wx.rain===2?T.rainH
 function drawFx(){ for(const f of G.fx) if(f.type!=='pts'){ ctx.fillStyle=f.col; ctx.fillRect(Math.round(ip(f.px,f.x)),Math.round(ip(f.py,f.y)),2,2); } // particles first: a number is never buried in its own burst
   for(const f of G.fx) if(f.type==='pts'){ const fade=f.t<32?1:Math.max(0,1-(f.t-32)/16), sc=f.sc||1, x=Math.round(f.x), y=Math.round(ip(f.py,f.y)); if(fade<1) ctx.globalAlpha=fade;
     if(f.box){ ctx.fillStyle='rgba(10,10,18,0.8)'; ctx.fillRect(x-2*sc,y-2*sc,textW(f.txt,sc)+5*sc,9*sc); } textS(f.txt,x,y,f.col,sc); ctx.globalAlpha=1; }
-  if(G.muzzle){ const m=G.muzzle, x=Math.round(m.x), y=Math.round(m.y); ctx.fillStyle='#fff6c8'; for(let i=0;i<8;i++){ const a=i*Math.PI/4; ctx.fillRect(x+Math.round(Math.cos(a)*5),y+Math.round(Math.sin(a)*5),2,2); ctx.fillRect(x+Math.round(Math.cos(a)*8),y+Math.round(Math.sin(a)*8),1,1); } } }
+  if(G.muzzle&&!G.paused&&!(G.gotcha&&gotHold())){ const m=G.muzzle, x=Math.round(m.x), y=Math.round(m.y); ctx.fillStyle='#fff6c8'; for(let i=0;i<8;i++){ const a=i*Math.PI/4; ctx.fillRect(x+Math.round(Math.cos(a)*5),y+Math.round(Math.sin(a)*5),2,2); ctx.fillRect(x+Math.round(Math.cos(a)*8),y+Math.round(Math.sin(a)*8),1,1); } } }
 
 function drawHUD(){ ctx.fillStyle=SHADOW; ctx.fillRect(0,SKY_H,W,H-SKY_H); ctx.fillStyle='#0a0a12'; ctx.fillRect(0,SKY_H,W,1);
   const lab='#8a8494', ink='#f7f4e9', h=T.hud; const hits=G.tally.filter(t=>t==='hit').length, need=req(G.round);
@@ -1002,7 +1003,6 @@ function drawRewind(g){ const t=g.t, n=g.n, tr=g.tr; // the fooled moment, rewou
   const at=tr[o+4], clk=(at/60).toFixed(2)+'S'; textS(clk,clamp(x+2,2,W-2-textW(clk,1)),Math.max(8,y-9),at>=g.hide?'#ff8a8a':'#f7f4e9',1);
   if(i>=n-1){ const cx=Math.round(g.tx), cy=Math.round(g.ty); ctx.fillStyle='#ff4d4d'; ctx.fillRect(cx-7,cy,5,1); ctx.fillRect(cx+3,cy,5,1); ctx.fillRect(cx,cy-7,1,5); ctx.fillRect(cx,cy+3,1,5); } } // your shot
 function drawGotcha(){ const g=G.gotcha; if(!g||G.state==='gameOver'||G.paused) return; const hold=gotHold();
-  if(g.full&&hold) drawRewind(g);
   const a= Math.min(1, g.full? (hold? 1 : 1-(g.t-g.end)/20) : (g.t<84? 1 : 1-(g.t-84)/20)); if(a<=0) return; ctx.globalAlpha=a; // the trap, spelled out
   const L1=T.adv.ver+g.ver+' '+T.adv.gotYou, P1='-'+g.pen, L2=T.adv.youFired+' '+(g.fired/60).toFixed(2)+'S', L3=T.adv.lookedReal+' '+(g.hide/60).toFixed(2)+'S';
   const lrn= g.full&&g.ln&&(!hold||g.t>=GOT_PRE+GOT_RW+g.n)? g.ln : null; // after the replay: the card line that built it
@@ -1012,12 +1012,14 @@ function drawGotcha(){ const g=G.gotcha; if(!g||G.state==='gameOver'||G.paused) 
   text7C(L2,y+18,'#f7f4e9',true); text7C(L3,y+30,GHOST,true);
   if(lrn){ ctx.fillStyle='#3a344c'; ctx.fillRect(x+6,y+41,w-12,1); textC(T.adv.learned,y+44,'#8a8494',1); text7Split(lrn,y+52); }
   if(g.full&&hold&&g.t>=20) textS(T.adv.skip,x+w-textW(T.adv.skip,1),y+h+3,'#8a8494',1);
-  ctx.globalAlpha=1; }
+  ctx.globalAlpha=1; if(g.full&&hold) drawRewind(g); } // the rewound fake rides over the panel: never hidden by it
 function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
   if(G.state==='intro'){ if(t<introHold()-30||(t&4)){ textC(T.hud.round+' '+pad(G.round,2),50,'#f7f4e9',2,true); if(G.wx.who){ const ws=T.trafficFrom+G.wx.who+': '+G.wx.whoTag, ww=textW(ws,1); ctx.fillStyle='rgba(10,10,18,0.6)'; ctx.fillRect(Math.round(W/2-ww/2)-3,63,ww+6,9); textC(ws,65,'#e2ccff',1,true); } textC(B.load+G.wx.name,74,'#ffe98a',1,true); textC(G.wx.tag,84,'#bdeeff',1,true); textC(fmt(B.quota),96,'#f7f4e9',1,true);
       const rule=ruleFor(G.round); if(rule&&!G.attract&&t>=10){ ctx.fillStyle='rgba(10,10,18,0.8)'; ctx.fillRect(4,107,W-8,14); text7C(rule,110,'#ffe98a'); } } }
   if(G.tip&&((G.tip.id==='fast'&&G.round>1)||(G.tip.id==='firewall'&&!(G.swarm&&G.swarm.boss)))) dropTip(); /* never late: FAST after epoch 1, the firewall tip after the fight */
-  if(G.tip&&!G.paused&&!(G.gotcha&&G.gotcha.top)&&(!G.swarm||(G.swarm.boss&&G.tip.id==='firewall'))&&(G.state==='fly'||G.state==='fox'||G.state==='gap')){ G.tip.t++; if(G.tip.t>170) nextTip(); else { const tw=textW(G.tip.txt,1)+12; const ty=(G.swarm&&G.swarm.boss)? 88 : (G.state==='fly'&&T.boltLabel&&G.birds.some(b=>b.st==='fly'&&b.frozen>0))? 46 : 16; /* in the fight: under the boss, clear of its label */ ctx.fillStyle='rgba(10,10,18,0.85)'; ctx.fillRect(Math.round(W/2-(textW7(G.tip.txt)+12)/2),ty,textW7(G.tip.txt)+12,13); text7C(G.tip.txt,ty+3,'#bdeeff',true); } }
+  if(G.tip&&!G.paused&&!(G.gotcha&&G.gotcha.top)&&(!G.swarm||(G.swarm.boss&&G.tip.id==='firewall'))&&(G.state==='fly'||G.state==='fox'||G.state==='gap')){ G.tip.t++; const ty=(G.swarm&&G.swarm.boss)? 88 : (G.state==='fly'&&T.boltLabel&&G.birds.some(b=>b.st==='fly'&&b.frozen>0))? 46 : 16, tbw=textW7(G.tip.txt)+12, tbx=Math.round(W/2-tbw/2);
+    const thru= !(G.swarm&&G.swarm.boss)&&G.birds.some(b=>b.st==='fly'&&!(b.hold>0)&&!b.boss&&b.y<ty+13&&b.y+20>ty&&b.x+24>tbx&&b.x<tbx+tbw); if(thru) G.tip.t--; /* a request flying through: the banner steps aside, its clock waits */
+    if(G.tip.t>170) nextTip(); else if(!thru){ const tw=textW(G.tip.txt,1)+12; /* in the fight: under the boss, clear of its label */ ctx.fillStyle='rgba(10,10,18,0.85)'; ctx.fillRect(Math.round(W/2-(textW7(G.tip.txt)+12)/2),ty,textW7(G.tip.txt)+12,13); text7C(G.tip.txt,ty+3,'#bdeeff',true); } }
   if(G.state==='fly'&&G.birds.some(b=>b.st==='away'&&!b.bad)) textC(B.escaped,64,'#f7f4e9',2,true);
   else if(G.state==='fly'&&T.boltLabel&&G.birds.some(b=>b.st==='fly'&&b.frozen>0)) textC(T.boltLabel+' '+T.frozenTag,30,ICE,2,true);
   if(G.state==='fly'&&G.swarm&&!G.swarm.boss){ textC(T.swarm.count+' '+G.swarm.stopped+'/'+G.swarm.total,6,G.swarm.breached?'#ff4d4d':'#ffe98a',1,true);
@@ -1029,7 +1031,7 @@ function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
       U.forEach((ln,i)=>{ if(all||t>=40+22*i) text7Split(ln,y+56+12*i,all? null : Math.max(1,(t-40-22*i)*3)); }); }
     if(t>40) text7C(n&&!advTyped()? 'TAP TO SHOW ALL' : 'TAP TO CONTINUE',top+h-13,'#cfc9dc'); } /* 5x7: readable on a phone */
   if(G.state==='gameOver'){ const R=G.run, rc=T.lines.receipt; panel(28,24,200,102); textC(B.over,32,B.overColor,2); // sits high enough that a two-line roast clears it
-    textC(B.unit+' '+pad(net(),6)+'  '+modeTag()+(assistTag()?'  '+assistTag():''),G.entry?46:48,'#f7f4e9',1);
+    textC('NET '+B.unit+' '+pad(net(),6)+'  '+modeTag()+(assistTag()?'  '+assistTag():''),G.entry?46:48,'#f7f4e9',1);
     if(G.entry) drawEntry(); else if(G.topList) drawTop(); else {
     text(rc[0]+' '+accuracy()+'%',40,60,'#8a8494'); text(rc[1]+' X'+Math.max(1,R.bestCombo),136,60,'#8a8494');
     text(rc[2]+' '+R.hServed+' SERVED / '+R.hDodged+' DODGED',40,70,'#8a8494');
@@ -1050,7 +1052,7 @@ function drawBanner(){ const t=G.t, B=T.banners; drawBossBar();
 function drawCaptions(){ if(!muted||!CAPS.length) return; const now=performance.now(); while(CAPS.length&&now-CAPS[0].at>1500) CAPS.shift();
   CAPS.forEach((c,i)=>{ const w=textW(c.t,1)+4, y=G.replay?24+i*9:4+i*9; ctx.fillStyle=SHADOW; ctx.fillRect(2,y-2,w,9); text(c.t,4,y,'#bdeeff',1); }); }
 function drawReplayBadge(){ if(!G.replay) return; ctx.fillStyle=SHADOW; ctx.fillRect(2,2,46,9); if((G.frame>>4)&1){ ctx.fillStyle='#ff4d4d'; ctx.fillRect(5,4,4,5); } text('REPLAY '+G.replay.speed+'X',12,4,'#f7f4e9',1);
-  if(G.state!=='gameOver'){ ctx.fillStyle=SHADOW; ctx.fillRect(2,12,46,9); text('TAP TO SKIP',4,14,'#8a8494',1); } }
+  if(G.state!=='gameOver'&&!G.paused){ ctx.fillStyle=SHADOW; ctx.fillRect(2,12,46,9); text('TAP TO SKIP',4,14,'#8a8494',1); } }
 function panel(x,y,w,h){ ctx.fillStyle=SHADOW; ctx.fillRect(x,y,w,h); ctx.fillStyle='#f7f4e9'; ctx.fillRect(x+2,y+2,w-4,1); ctx.fillRect(x+2,y+h-3,w-4,1); ctx.fillRect(x+2,y+2,1,h-4); ctx.fillRect(x+w-3,y+2,1,h-4); }
 
 function drawTitle(){ const t=G.t;
@@ -1178,8 +1180,8 @@ function draw(){ ctx.save(); ctx.imageSmoothingEnabled=false; { const [ox,oy]=sh
   drawSky(); back();
   if(G.state==='title') drawTitle();
   else if(G.paused){ ctx.fillStyle='rgba(10,10,18,0.7)'; ctx.fillRect(0,0,W,SKY_H); } // paused: the sky is hidden, so pausing cannot be used to aim
-  else { const foxUp=G.state==='fox'||G.state==='gameOver'; if(!G.paused&&!foxUp&&G.linger) withLinger(()=>drawFox(1)); for(const b of G.birds) if(b.st!=='gone'&&!(foxUp&&b.st==='landed')) drawBird(b); for(const q of G.props||[]) drawProd(q); if(foxUp) drawFox(0); else if(G.linger) withLinger(()=>drawFox(0)); }
-  front(); if(G.state==='title') drawTitleFront(); drawRain(); if(!G.paused&&(G.state==='fox'||G.state==='gameOver')) drawFox(1); drawFx(); ctx.restore();
+  else { const foxUp=G.state==='fox'||G.state==='gameOver'||G.state==='gap'; if(!G.paused&&!foxUp&&G.linger) withLinger(()=>{ drawFox(1); drawFox(0); }); /* leaving: behind the new requests */ for(const b of G.birds) if(b.st!=='gone'&&!(foxUp&&b.st==='landed')) drawBird(b); for(const q of G.props||[]) drawProd(q); if(foxUp) drawFox(0); }
+  front(); if(G.state==='title') drawTitleFront(); drawRain(); if(!G.paused&&(G.state==='fox'||G.state==='gameOver'||G.state==='gap')) drawFox(1); drawFx(); ctx.restore();
   if(G.flash>0){ ctx.fillStyle='rgba('+(G.flashCol||'255,255,255')+','+((G.flashA||0.18)*(REDUCED?0.35:1))+')'; ctx.fillRect(0,0,W,SKY_H); } // softer under reduced motion
   drawBanner(); drawGotcha(); drawHUD(); drawCrosshair(); drawIcons(); drawReplayBadge(); drawCaptions();
   if(ONEHAND&&G.state==='fly'&&!G.paused){ text('ONE-HAND',150,221,'#bdeeff',1); if((G.t>>5)&1) textC('TAP THE HUD TO FIRE',191,'#bdeeff',1); } }
@@ -1191,7 +1193,7 @@ function pos(e){ const r=cv.getBoundingClientRect(); const touch=e.pointerType==
 cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(e.isPrimary===false) return; if(e.pointerType==='mouse'&&e.button!==0) return; document.body.classList.add('pointer'); if(e.pointerType==='touch') document.body.classList.add('touch'); cv.focus({preventScroll:true}); audioInit(); voiceGesture(); if(ac&&ac.state==='suspended') ac.resume(); const p=pos(e);
   const rawY=p.y+(p.touch?TOUCH_LIFT:0);
   const birdUnder= G.state==='fly'&&G.birds.some(b=>b.st==='fly'&&!(b.hold>0)&&p.x>=b.x-8&&p.x<=b.x+32&&p.y>=b.y-8&&p.y<=b.y+40);
-  { const band= G.state==='title'? 24 : (G.frame-(G.lastShotF||-99)<30? 0 : 14); // outside the title the icons take only a precise tap, and none right after a shot
+  { const band= G.state==='title'? 24 : (!G.replay&&G.frame-(G.lastShotF||-99)<30? 0 : 14); // outside the title the icons take only a precise tap, and none right after a shot
     if(!birdUnder&&rawY<=band){ if(p.x>=240){ toggleMute(); return; } if(p.x>=228&&p.x<240){ setPaused(!G.paused); return; } if(p.x>=205&&p.x<228){ toggleCRT(); return; } } }
   if(G.replay){ if(G.paused){ const ry=p.y+(p.touch?TOUCH_LIFT:0); if(p.x>=PAUSE_Q[0]&&p.x<=PAUSE_Q[1]&&ry>=PAUSE_Q[2]&&ry<=PAUSE_Q[3]) quitToMenu(); else setPaused(false); return; } skipReplay(); return; } // a paused replay resumes (or quits); otherwise a tap jumps to its end
   if(ONEHAND&&G.state==='fly'&&!G.paused&&rawY>=176&&G.mouse.on){ p.x=G.mouse.x; p.y=G.mouse.y; p.touch=false; } // one-hand: the fire zone shoots at the crosshair (recorded as that point)
